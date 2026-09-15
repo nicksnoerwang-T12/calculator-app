@@ -1,0 +1,23 @@
+'use strict';
+const {JSDOM,VirtualConsole}=require('jsdom');
+const fs=require('fs'),assert=require('assert');
+const errors=[];const vc=new VirtualConsole();vc.on('jsdomError',e=>{if(!/Not implemented: (Window|window)\.(scrollTo|focus)/.test(e.message))errors.push(e.message);});
+const dom=new JSDOM(fs.readFileSync('werkbank-design-preview.html','utf8'),{runScripts:'dangerously',url:'https://example.org/werkbank-design-preview.html',virtualConsole:vc,beforeParse(w){w.scrollTo=()=>{};w.confirm=()=>true;}});
+const w=dom.window,d=w.document;
+assert.equal(d.querySelector('#design-dashboard').hidden,false);
+d.querySelector('#design-new').click();assert.equal(d.querySelector('#cost').hidden,false);
+d.querySelector('#c-project').value='Frame test';d.querySelector('#c-project').dispatchEvent(new w.Event('input',{bubbles:true}));
+d.querySelector('#add-material').click();const radio=d.querySelector('input[name="material-profile"][value="rectTube"]');assert(radio);radio.checked=true;radio.dispatchEvent(new w.Event('change',{bubbles:true}));
+assert(d.querySelector('#e-material'));assert(d.querySelector('#catalog-choices'));
+const a=Array.from(d.querySelectorAll('input[name="catalog-article"]')).find(el=>el.closest('label').textContent.includes('50 × 30 × 2'));
+assert(a);a.checked=true;a.dispatchEvent(new w.Event('change',{bubbles:true}));
+for(const [id,value] of [['e-length','1000'],['e-count','4']]){const el=d.getElementById(id);assert(el,id);el.value=value;el.dispatchEvent(new w.Event('input',{bubbles:true}));}
+assert.equal(d.querySelector('#editor-save').disabled,false);d.querySelector('#editor-save').click();
+assert.equal(d.querySelectorAll('.material-card').length,1);
+d.querySelector('#tab-overview').click();assert.equal(d.querySelector('#cost-result').hidden,false);
+d.querySelector('#cost-save').click();
+const saved=JSON.parse(w.localStorage.getItem('werkbank.design.v1.calculations'));assert.equal(saved.length,1);assert.equal(saved[0].data.project,'Frame test');assert.equal(saved[0].data.materials.length,1);
+assert.equal(w.localStorage.getItem('werkbank.v2.calculations'),null);
+d.querySelector('[data-route="home"]').click();assert(d.querySelector('[data-recent]'));d.querySelector('[data-recent]').click();assert.equal(d.querySelectorAll('.material-card').length,1);
+d.querySelector('[data-route="instellingen"]').click();assert.equal(d.querySelector('#design-settings').hidden,false);d.querySelector('[data-design-theme="light"]').click();assert.equal(d.documentElement.dataset.theme,'light');
+assert.equal(d.querySelector('#runtime-error').hidden,true);assert.deepEqual(errors,[]);console.log('Full DOM: navigation, native profile/catalog selection, add, save, reopen, tabs, theme and isolated storage passed.');setTimeout(()=>dom.window.close(),50);
