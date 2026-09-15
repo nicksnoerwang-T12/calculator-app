@@ -1,0 +1,36 @@
+/* Presentation layer: the catalog, calculation kernel and native editor stay intact. */
+const UI_PATHS={document:'M6 3h8l4 4v14H6z M14 3v5h4 M9 12h6 M9 16h6',tools:'M14 4a5 5 0 0 0-6 6L3 17l4 4 7-7a5 5 0 0 0 6-6l-4 3-3-3z',materials:'M3 7l9-4 9 4v11l-9 4-9-4z M3 7l9 5 9-5 M12 12v10',settings:'M5 4v16 M12 4v16 M19 4v16 M2 8h6 M9 15h6 M16 10h6',weight:'M5 5h14v3h-5v9h5v3H5v-3h5V8H5z',cut:'M3 5h18v4H3z M3 13h18v4H3z M10 3v18 M16 3v18',cone:'M12 3L2 18q10 8 20 0z M12 3v19',circle:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18 M12 7v2 M12 15v2 M7 12h2 M15 12h2'};
+function uiIcon(name,cls='ui-icon'){return '<svg class="'+cls+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+(UI_PATHS[name]||UI_PATHS.tools)+'"/></svg>';}
+const originalProfileIcon=profileIcon;
+profileIcon=function(type,label=''){
+ let art='';
+ if(type==='squareTube'||type==='rectTube'){const h=type==='rectTube'?18:28;art='<path d="M12 32l40-19 25 0-40 19z M37 32l40-19v'+h+'L37 '+(32+h)+'z" fill="currentColor" fill-opacity=".10"/><path d="M12 32h25v'+h+'H12z M16 36h17v'+(h-8)+'H16z M12 32l40-19h25v'+h+'L37 '+(32+h)+' M37 32l40-19"/>';}
+ else if(type==='roundTube'||type==='roundBar'){art='<path d="M17 33L58 14c18-5 24 20 12 28L30 63" fill="currentColor" fill-opacity=".09"/><ellipse cx="22" cy="48" rx="13" ry="17"/>'+(type==='roundTube'?'<ellipse cx="22" cy="48" rx="9" ry="13"/>':'');}
+ else if(['IPE','HEA','HEB'].includes(type)){const w=type==='IPE'?22:31;art='<path d="M10 31l43-19h'+w+'L'+(10+w)+' 31z M'+(10+w)+' 31l43-19 M'+(10+w)+' 57l43-19 M'+(10+w/2)+' 35l43-19"/><path d="M10 31h'+w+'v4H'+(10+w/2+2)+'v22h'+(w/2-2)+'v4H10v-4h'+(w/2-2)+'V35H10z" fill="currentColor" fill-opacity=".10"/>';}
+ else if(['equalAngle','unequalAngle'].includes(type)){art='<path d="M12 30l45-20v30l20-9v5L32 56H12z M12 30h5v21h15v5 M17 51l45-20 M17 30l40-18" fill="currentColor" fill-opacity=".08"/>';}
+ else if(['plate','strip'].includes(type)){art='<path d="M8 49l42-29h29L37 49z M8 49v4h29l42-29v-4 M37 49v4" fill="currentColor" fill-opacity=".10"/>';}
+ if(!art)return originalProfileIcon(type,label);
+ return '<svg class="profile-icon" viewBox="0 0 88 76" role="img" aria-label="'+esc(PROFILES[type]?.name||type)+'"><g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round">'+art+'</g></svg>';
+};
+const homeTools=[['gewicht','Gewicht','Profielen en platen','weight'],['zaaglijst','Zaagplan','Zaaglijsten maken','cut'],['conus','Uitslag','Plaatwerk ontwikkelen','cone'],['steekcirkel','Steekcirkel','Gaten verdelen','circle']];
+function renderDashboard(){const list=safeGet(STORE.calculations,[]);const rows=Array.isArray(list)?list:[];const target=$('recent-design');target.innerHTML=rows.length?rows.slice(0,5).map(x=>'<button class="recent-row" data-recent="'+esc(x.id)+'">'+uiIcon('document')+'<span><b>'+esc(x.data?.project||'Naamloze calculatie')+'</b><small>'+esc(new Date(x.datum).toLocaleDateString('nl-NL'))+' · '+(x.data?.materials?.length||0)+' materiaalregels</small></span><span aria-hidden="true" style="flex:0">›</span></button>').join(''):'<p class="recent-empty">Je eerste project begint hier. Voeg materialen toe en bouw je kostprijs op.</p>';target.querySelectorAll('[data-recent]').forEach(b=>b.onclick=()=>{const row=rows.find(x=>x.id===b.dataset.recent);history.pushState(null,'','#kostprijs');openPage('kostprijs');renderCostPage(migrateCalculation(row.data));});$('quick-design').innerHTML=homeTools.map(([id,name,desc,icon])=>'<a class="quick-tool" href="#'+id+'">'+uiIcon(icon,'tool-art')+'<b>'+name+'</b><small>'+desc+'</small></a>').join('');}
+const baseMenu=renderMenu;
+renderMenu=function(){baseMenu();$('menu').querySelectorAll('.group').forEach(g=>{const grid=document.createElement('div');grid.className='tool-grid';Array.from(g.querySelectorAll('.item')).forEach(it=>{it.insertAdjacentHTML('afterbegin',uiIcon(homeTools.find(x=>x[0]===it.dataset.id)?.[3]||'tools','tool-art'));grid.append(it);});g.append(grid);});};
+const baseShowHome=showHome;
+showHome=function(route='home'){baseShowHome(route);$('design-dashboard').hidden=route==='tools';$('tool-directory').hidden=route!=='tools';if(route==='home')renderDashboard();};
+const baseHide=hidePages;
+hidePages=function(){baseHide();$('design-settings').hidden=true;};
+const baseRoute=routeHash;
+routeHash=function(){if(location.hash==='#instellingen'){hidePages();$('design-settings').hidden=false;setNav('instellingen');window.scrollTo({top:0});return;}baseRoute();};
+window.removeEventListener('hashchange',baseRoute);window.addEventListener('hashchange',routeHash);
+let designTab='materials';
+const baseCost=renderCostPage;
+renderCostPage=function(values,message){baseCost(values,message);const blocks=Array.from($('cost-content').querySelectorAll(':scope > .cost-block'));blocks.forEach((b,i)=>b.dataset.designGroup=i===0?'materials':i===3?'overview':'labor');const tabs=document.createElement('div');tabs.className='cost-tabs';tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Onderdelen calculatie');tabs.innerHTML=[['materials','Materiaal'],['labor','Arbeid'],['overview','Overzicht']].map(([id,name])=>'<button role="tab" id="tab-'+id+'" aria-selected="false" data-tab="'+id+'">'+name+'</button>').join('');$('cost-content').firstElementChild.after(tabs);function selectTab(id){designTab=id;tabs.querySelectorAll('button').forEach(b=>{b.setAttribute('aria-selected',String(b.dataset.tab===id));b.tabIndex=b.dataset.tab===id?0:-1;});blocks.forEach(b=>{b.hidden=b.dataset.designGroup!==id;b.open=true;});$('cost-result').hidden=id!=='overview';}tabs.querySelectorAll('button').forEach((b,i)=>{b.onclick=()=>selectTab(b.dataset.tab);b.onkeydown=e=>{if(!['ArrowRight','ArrowLeft','Home','End'].includes(e.key))return;e.preventDefault();const all=Array.from(tabs.children),n=e.key==='Home'?0:e.key==='End'?2:(i+(e.key==='ArrowRight'?1:2))%3;all[n].click();all[n].focus();};});selectTab(designTab);$('cost-save').parentElement.classList.add('cost-actions');$('cost-title').textContent=costState.project||'Nieuwe calculatie';$('c-project').addEventListener('input',()=>{$('cost-title').textContent=$('c-project').value||'Nieuwe calculatie';});};
+// Preserve a draft when switching between navigation pages.
+const baseOpenPage=openPage;
+openPage=function(page){const draft=costState?JSON.parse(JSON.stringify(costState)):null;baseOpenPage(page);if(page==='kostprijs'&&draft)renderCostPage(draft);};
+$('design-new').onclick=()=>{designTab='materials';history.pushState(null,'','#kostprijs');baseOpenPage('kostprijs');};
+document.querySelectorAll('[data-design-theme]').forEach(b=>b.onclick=()=>applyTheme(b.dataset.designTheme));
+document.querySelectorAll('.nav-btn').forEach(b=>{const map={home:['document','Calculaties'],tools:['tools','Tools'],prijzen:['materials','Materialen'],instellingen:['settings','Instellingen']},entry=map[b.dataset.route];if(entry){b.innerHTML=uiIcon(entry[0])+entry[1];b.setAttribute('aria-label',entry[1]);}});
+const settingsNav=document.querySelector('[data-route="instellingen"]');settingsNav.parentElement.append(settingsNav);
+renderMenu();applyTheme(safeGet(STORE.theme,'dark'));routeHash();
