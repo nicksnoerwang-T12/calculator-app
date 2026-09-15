@@ -61,6 +61,36 @@ assert.equal(api.calculateMaterialLine({...base,profile:'item',priceBasis:'piece
 assert.equal(api.calculateMaterialLine({...base,profile:'plate',priceBasis:'m2',unitPrice:10,dims:{length:1000,width:1000,t:1}},1,{}).lineCents,2000);
 assert.equal(api.calculateMaterialLine({...base,profile:'flat',priceBasis:'m',unitPrice:10,dims:{b:1,t:1,length:1000}},1,{}).lineCents,2000);
 
+// Reproducties materiaalpreview: geldige profielen mogen niet door een ander/leeg veld blokkeren.
+const validExamples=[
+ ['shs',{b:'50',t:'3',length:'1000'}],
+ ['rhs',{b:'50',h:'30',t:'2',length:'1000'}],
+ ['plate',{length:'1000',width:'50',t:'3'}],
+ ['angle',{a:'50',t:'5',length:'1000'}]
+];
+for(const [profile,profileDims] of validExamples){
+ const line={...base,profile,count:1,dims:profileDims};
+ assert.deepEqual(clone(api.validateLine(line,1)),{},`${profile} heeft onverwachte validatiefouten`);
+ assert(!api.calculateMaterialLine(line,1,{}).errors,`${profile} kan niet worden toegevoegd`);
+}
+const incompleteRhs=api.validateLine({...base,profile:'rhs',count:1,dims:{b:'50'}},1);
+assert(!incompleteRhs.b,'geldige breedte kreeg een fout');
+assert(incompleteRhs.h.includes('hoogte')&&incompleteRhs.h.includes('mm'));
+assert(incompleteRhs.t.includes('wanddikte')&&incompleteRhs.t.includes('mm'));
+assert(incompleteRhs.length.includes('stuklengte')&&incompleteRhs.length.includes('mm'));
+const roundAfterSwitch={...base,profile:'round',count:1,dims:{D:'20',length:'1000'}};
+assert.deepEqual(clone(api.validateLine(roundAfterSwitch,1)),{},'verborgen oude hoogte blokkeert rondstaf');
+assert.equal(api.strictNumber(' 50,5 '),50.5); assert.equal(api.strictNumber('50.5'),50.5);
+assert(Number.isNaN(api.strictNumber(''))); assert(Number.isNaN(api.strictNumber('50abc')));
+assert(Number.isNaN(api.strictNumber('NaN'))); assert(Number.isNaN(api.strictNumber('Infinity')));
+const thickError=api.validateLine({...base,profile:'shs',count:1,dims:{b:'50',t:'30',length:'1000'}},1);
+assert.equal(thickError.t,'Vul een wanddikte tussen 0 en 25 mm in.');
+const broken={...base,profile:'rhs',count:1,dims:{b:'50',h:'30',t:'20',length:'1000'}};
+assert(api.calculateMaterialLine(broken,1,{}).errors.t);
+const repaired={...broken,dims:{...broken.dims,t:'2'}};
+const repairedResult=api.calculateMaterialLine(repaired,1,{});
+assert(!repairedResult.errors); assert(repairedResult.weight>0); assert(repairedResult.lineCents>0);
+
 // Lijstbewerkingen en honderd regels.
 const original={id:'a',dims:{b:10}}, copy=api.duplicateMaterialLine(original,'b'); copy.dims.b=20;
 assert.equal(original.dims.b,10); assert.equal(copy.id,'b');
