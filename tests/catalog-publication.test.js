@@ -1,0 +1,35 @@
+'use strict';
+const fs=require('fs'),vm=require('vm'),assert=require('assert'),crypto=require('crypto');
+const file='werkbank-catalogus-test.html',html=fs.readFileSync(file,'utf8');
+const script=html.split('<script>')[1].split('</script>')[0];
+const catalog=script.slice(script.indexOf('const SECTIONS ='),script.indexOf('function sectionOptions'));
+const escSource=script.slice(script.indexOf('const esc ='),script.indexOf('const rad ='));
+const model=script.slice(script.indexOf('const MATERIAL_SCHEMA='),script.indexOf('function readCostInput'));
+const data={};let serial=0;
+const context={console,Math,Number,Object,Array,String,Date,JSON,Intl,Set,Map,isFinite,parseFloat,
+ safeGet:(key,fallback)=>data[key]??fallback,getPrices:()=>({s235:1.35}),finiteNonNegative:v=>Number(v)||0,
+ uid:()=>`test-${++serial}`,SECTIONS:null};
+vm.createContext(context);
+vm.runInContext(escSource+'\n'+catalog+'\n'+model+`\nthis.api={CATALOG_VERSION,CATALOG_ARTICLES,applyCatalogArticle,catalogArticle,calculateMaterialLine,buildPriceReview,applyPriceReview,calculationPayload,validateCalculationPayload};`,context);
+const api=context.api,clone=x=>JSON.parse(JSON.stringify(x));
+assert.equal(api.CATALOG_VERSION,'nl-suppliers-2026-09-15-v1');
+assert.equal(api.CATALOG_ARTICLES.length,115,'complete catalogus uit PR #9');
+const article=api.CATALOG_ARTICLES.find(x=>x.profileType==='rectTube'&&x.label==='50 × 30 × 2 mm');
+assert(article&&article.price.amount===4.29);
+const source={id:'saved',catalogArticleId:article.id,profile:'rectTube',material:'s235',count:4,countMode:'project',dims:{b:50,h:30,t:2,length:1000},waste:0,priceBasis:'m',priceMode:'manual',priceOrigin:'catalog',unitPrice:4.29,priceSnapshot:{price:4.29,basis:'m',source:'oude snapshot'}};
+article.price.amount=9.99;
+assert.equal(api.calculateMaterialLine(source,1,{}).lineCents,1716,'catalogusupdate raakt bestaande prijs niet');
+const imported=api.validateCalculationPayload(api.calculationPayload({schemaVersion:4,qty:1,materials:[source]}));
+assert(imported.ok);assert.equal(api.calculateMaterialLine(imported.data.materials[0],1,{}).lineCents,1716,'import behoudt snapshot');
+const two=[{...source,id:'a'},{...source,id:'b'}],review=api.buildPriceReview(two,1,{}),before=clone(two),updated=api.applyPriceReview(two,review,['b'],'2026-09-15T00:00:00.000Z');
+assert.deepEqual(two,before,'review/annuleren muteert niet');assert.equal(updated[0].unitPrice,4.29);assert.equal(updated[1].unitPrice,9.99);assert.equal(updated[1].previousPriceSnapshot.price,4.29);
+const keys=[...html.matchAll(/werkbank\.[a-z0-9.-]+/g)].map(x=>x[0]);
+assert(keys.length>0&&keys.every(x=>x.startsWith('werkbank.catalogus-test.v1.')),'alle browseropslag is geïsoleerd');
+const staticHtml=html.replace(/<script>[\s\S]*?<\/script>/,'');
+const assets=[...staticHtml.matchAll(/<(?:script|img|link)\b[^>]*(?:src|href)="([^"]+)"/gi)].map(x=>x[1]);
+assert.deepEqual(assets,[],'geen ontbrekende lokale of online runtimeafhankelijkheden');
+const sha=f=>crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
+assert.equal(sha('werkbank-preview.html'),'e322309ab0c3b4198718f71469bff3f56980e2b7464cceb15b10554fb19c2e12');
+assert.equal(sha('werkbank-v2.html'),'5def1b2e5f847d5500a3973e1be28adce09e42ef043590de31603e90e15b3171');
+assert.equal(sha('werkbank.html'),'d964307b9a66667df0c15ab4c9d41a625e4c7b0d3170c15cbafea51cb16a7ce2');
+console.log('publicatiepagina: catalogus, snapshots, selectie, offline en opslagisolatie geslaagd');
