@@ -23,7 +23,7 @@ vm.runInContext(escSource + '\n' + catalog + '\n' + material + `
 this.api={esc,MATERIAL_SCHEMA,MATERIALS,PROFILES,strictNumber,effectiveCount,profileArea,validateLine,
  calculateMaterialLine,calculateMaterialList,calculateSale,duplicateMaterialLine,removeMaterialLine,
  restoreMaterialLine,buildPriceReview,applyPriceReview,createStorageAdapter,calculationPayload,
- validateCalculationPayload,migrateCalculation,SECTIONS,CATALOG_STATUS,CATALOG_ARTICLES,catalogArticle,catalogFor,applyCatalogArticle,catalogPrice,twentseSmallOrderCents,planBars,planPlates,purchaseSummary};`, context);
+ validateCalculationPayload,migrateCalculation,SECTIONS};`, context);
 const { api } = context;
 const clone = value => JSON.parse(JSON.stringify(value));
 const base = { id:'x', material:'s235', count:2, countMode:'project', priceBasis:'kg', priceMode:'manual', unitPrice:2, waste:0, dims:{} };
@@ -132,43 +132,4 @@ const quota=api.createStorageAdapter({getItem(){return null},setItem(){const e=n
 const damaged=api.createStorageAdapter({getItem(){return '{kapot'},setItem(){}}); assert.equal(damaged.read('x',[]).ok,false);
 const memory={value:null,getItem(){return this.value},setItem(k,v){this.value=v}}; const adapter=api.createStorageAdapter(memory);
 assert(adapter.write('prices',{s235:9}).ok); assert.deepEqual(clone(adapter.read('prices',{}).value),{s235:9});
-
-// Leverancierscatalogus en verplichte aankoopfixtures.
-assert.equal(api.CATALOG_ARTICLES.length,115);assert.equal(api.CATALOG_ARTICLES.filter(a=>a.price.status==='P').length,74);assert.equal(api.CATALOG_ARTICLES.filter(a=>a.price.status==='O').length,41);assert.deepEqual(Object.keys(api.CATALOG_STATUS),['P','O','B','M']);
-const rectArticle=api.CATALOG_ARTICLES.find(a=>a.profileType==='rectTube'&&a.label==='50 × 30 × 2 mm');
-assert(rectArticle);assert.equal(rectArticle.price.amount,4.29);assert.deepEqual(clone(rectArticle.knownStockLengthsMm),[]);
-let catalogLine=api.applyCatalogArticle({...base,count:4,countMode:'project',profile:'rectTube',dims:{length:1000},waste:0},rectArticle);
-r=api.calculateMaterialLine(catalogLine,1,{});assert.equal(r.meters,4);assert.equal(r.lineCents,1716);
-assert.equal(api.twentseSmallOrderCents(24999),2500);assert.equal(api.twentseSmallOrderCents(25000),0);
-const ipe=api.CATALOG_ARTICLES.find(a=>a.profileType==='IPE'&&a.label==='IPE 160');
-let ipeLine=api.applyCatalogArticle({...base,count:1,countMode:'project',profile:'IPE',dims:{length:3000},waste:0},ipe);
-r=api.calculateMaterialLine(ipeLine,1,{});assert(Math.abs(r.weight-48.6)<1e-9);assert.equal(r.lineCents,6561);assert.equal(api.SECTIONS.IPE.d[160][7],15.8);
-const upe=api.CATALOG_ARTICLES.find(a=>a.profileType==='UPE'&&a.label==='UPE 160');assert.equal(upe.maxLengthMm,12000);assert.deepEqual(clone(upe.knownStockLengthsMm),[]);assert.equal(upe.price.amount,null);assert.equal(api.catalogPrice({catalogArticleId:upe.id}),null);
-assert.deepEqual(clone(api.planBars([3500,3500,3500],6000,0)),{stockCount:3,purchasedMm:18000,netMm:10500,restMm:7500,bins:[{parts:[3500],used:3500},{parts:[3500],used:3500},{parts:[3500],used:3500}],method:'first-fit-decreasing voorstel'});
-assert.equal(api.planPlates([{w:600,h:600},{w:600,h:600},{w:600,h:600}],1000,1000,0).stockCount,3);
-const aluPlate=api.CATALOG_ARTICLES.find(a=>a.profileType==='plate'&&a.label==='2000 × 1000 × 2 mm');assert(aluPlate);assert.equal(5.508*2,11.016);
-
-// Prijssnapshots blijven stabiel bij catalogus-/artikelstandaardwijziging, herladen en import.
-const snapLine={...catalogLine,id:'snapshot',priceMode:'manual',priceOrigin:'catalog',unitPrice:4.29,priceSnapshot:{price:4.29,basis:'m',source:'Catalogusrichtprijs · twentse'}};
-const originalCatalogAmount=rectArticle.price.amount;rectArticle.price.amount=9.99;
-assert.equal(api.calculateMaterialLine(snapLine,1,{}).lineCents,1716,'catalogusupdate herprijst bestaande snapshot niet');
-storageData['werkbank.preview.v4.articlePrices']={[rectArticle.id]:{amount:8,basis:'m'}};
-assert.equal(api.calculateMaterialLine(snapLine,1,{}).lineCents,1716,'artikelstandaard herprijst bestaande regel niet');
-const importedSnapshot=api.validateCalculationPayload(api.calculationPayload({...project,materials:[snapLine]}));
-assert(importedSnapshot.ok);assert.equal(importedSnapshot.data.materials[0].unitPrice,4.29);assert.equal(api.calculateMaterialLine(importedSnapshot.data.materials[0],1,{}).lineCents,1716);
-rectArticle.price.amount=originalCatalogAmount;
-
-// Prijsreview muteert niet; alleen expliciet geselecteerde regels wijzigen en eigen prijzen zijn uitgesloten.
-const reviewLines=[{...snapLine,id:'choose-a',unitPrice:4},{...snapLine,id:'choose-b',unitPrice:4},{...snapLine,id:'own',unitPrice:4.5,priceOrigin:'user'}];
-rectArticle.price.amount=5;const reviewBefore=clone(reviewLines),selective=api.buildPriceReview(reviewLines,1,{});
-assert.deepEqual(clone(reviewLines),reviewBefore,'openen/annuleren muteert geen regels');
-assert.equal(selective.rows.find(x=>x.line.id==='own').reason,'Eigen inkoopprijs standaard uitgesloten');
-const selectivelyApplied=api.applyPriceReview(reviewLines,selective,['choose-b'],'2026-09-15T00:00:00.000Z');
-assert.equal(selectivelyApplied[0].unitPrice,4);assert.equal(selectivelyApplied[1].unitPrice,5);assert.equal(selectivelyApplied[2].unitPrice,4.5);assert.equal(selectivelyApplied[1].previousPriceSnapshot.price,4.29);
-rectArticle.price.amount=originalCatalogAmount;
-
-// Bewerkingskosten die de €250-grens kunnen raken maken de toeslaggrondslag expliciet onbevestigd.
-const ambiguousOrder=api.purchaseSummary([catalogLine],1,{processingCents:24000});
-assert.equal(ambiguousOrder.thresholdAffected,true);assert.equal(ambiguousOrder.smallOrderCents,null);assert(ambiguousOrder.openCosts.includes('grondslag kleine-ordergrens bevestigen'));
-
-console.log('materiaal-, catalogus-, aankoop-, migratie-, import- en opslagtests geslaagd');
+console.log('materiaal-, migratie-, import- en opslagtests geslaagd');

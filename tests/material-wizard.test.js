@@ -28,7 +28,7 @@ class GeneratedDocument {
 }
 const document=new GeneratedDocument(),window={addEventListener(){}};
 const context={console,Math,Number,Object,Array,String,Date,JSON,Intl,Set,Map,isFinite,parseFloat,SECTIONS:null,window,document,
- euro:n=>'€ '+Number(n).toFixed(2),queueMicrotask:fn=>fn(),$:()=>({focus(){}}),safeGet:(_k,f)=>f,safeSet:()=>true,getPrices:()=>({s235:2}),finiteNonNegative:v=>Number(v)||0,uid:()=> 'new',
+ queueMicrotask:fn=>fn(),$:()=>({focus(){}}),safeGet:(_k,f)=>f,safeSet:()=>true,getPrices:()=>({s235:2}),finiteNonNegative:v=>Number(v)||0,uid:()=> 'new',
  profileIcon:p=>`<svg data-icon="${p}"></svg>`,lineDescription:()=>'',costState:{qty:1,materials:[]}};
 vm.createContext(context);
 vm.runInContext(escSource+'\n'+catalog+'\n'+model+'\n'+editor+'\n'+documentListener+`\nthis.api={MATERIAL_PROFILE_TYPES,PROFILES,newLine,createMaterialEditorState,handleProfileSelection,pickerHtml,editorFormHtml,technicalProfileDiagram};this.activate=x=>activeMaterialEditor=x;`,context);
