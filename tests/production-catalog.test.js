@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('fs'),vm=require('vm'),assert=require('assert'),crypto=require('crypto');
-const file='werkbank-catalogus-test.html',html=fs.readFileSync(file,'utf8');
+const file='werkbank-v2.html',html=fs.readFileSync(file,'utf8');
 const script=html.split('<script>')[1].split('</script>')[0];
 const catalog=script.slice(script.indexOf('const SECTIONS ='),script.indexOf('function sectionOptions'));
 const escSource=script.slice(script.indexOf('const esc ='),script.indexOf('const rad ='));
@@ -24,7 +24,7 @@ assert(imported.ok);assert.equal(api.calculateMaterialLine(imported.data.materia
 const two=[{...source,id:'a'},{...source,id:'b'}],review=api.buildPriceReview(two,1,{}),before=clone(two),updated=api.applyPriceReview(two,review,['b'],'2026-09-15T00:00:00.000Z');
 assert.deepEqual(two,before,'review/annuleren muteert niet');assert.equal(updated[0].unitPrice,4.29);assert.equal(updated[1].unitPrice,9.99);assert.equal(updated[1].previousPriceSnapshot.price,4.29);
 const keys=[...html.matchAll(/werkbank\.[a-z0-9.-]+/g)].map(x=>x[0]);
-assert(keys.length>0&&keys.every(x=>x.startsWith('werkbank.catalogus-test.v1.')),'alle browseropslag is geïsoleerd');
+assert(keys.length>0&&keys.every(x=>x.startsWith('werkbank.v2.')),'alle browseropslag is geïsoleerd');
 const staticHtml=html.replace(/<script>[\s\S]*?<\/script>/,'');
 const assets=[...staticHtml.matchAll(/<(?:script|img|link)\b[^>]*(?:src|href)="([^"]+)"/gi)].map(x=>x[1]);
 assert.deepEqual(assets,[],'geen ontbrekende lokale of online runtimeafhankelijkheden');
@@ -34,3 +34,7 @@ assert.equal(sha('werkbank-v2.html'),'53e43bb5f63cc0e3c970f334c0da3e6fabcc36b9c8
 assert.equal(sha('werkbank.html'),'d964307b9a66667df0c15ab4c9d41a625e4c7b0d3170c15cbafea51cb16a7ce2');
 console.log('publicatiepagina: catalogus, snapshots, selectie, offline en opslagisolatie geslaagd');
 
+
+const expected=fs.readFileSync('werkbank-catalogus-test.html','utf8').replace('Werkbank — catalogustest voor iPhone','Werkbank — rekentools en kostprijscalculator').replace('Catalogustest voor iPhone — geïsoleerde opslag','Werkbank — leverancierscatalogus 1').replaceAll('werkbank.catalogus-test.v1.','werkbank.v2.');
+assert.equal(html.trimEnd(),expected.trimEnd(),'geteste applicatie behouden, alleen titel en opslag aangepast');
+assert(html.includes("calculations: 'werkbank.v2.calculations'"));
