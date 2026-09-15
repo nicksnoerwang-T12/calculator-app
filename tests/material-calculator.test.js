@@ -31,42 +31,42 @@ const base = { id:'x', material:'s235', count:2, countMode:'project', priceBasis
 // Vaste voorbeelden A–E.
 let r = api.calculateMaterialLine({...base,profile:'plate',dims:{length:1000,width:500,t:3}},1,{});
 assert.equal(r.weight,23.55); assert.equal(r.lineCents,4710);
-r = api.calculateMaterialLine({...base,profile:'shs',count:4,dims:{b:40,t:3,length:2000}},1,{});
-assert.equal(api.profileArea('shs',{b:40,t:3}),444); assert(Math.abs(r.weight-27.8832)<1e-10); assert.equal(r.lineCents,5577);
-r = api.calculateMaterialLine({...base,profile:'shs',count:4,waste:10,dims:{b:40,t:3,length:2000}},1,{}); assert.equal(r.lineCents,6134);
-r = api.calculateMaterialLine({...base,profile:'custom',unitPrice:3,dims:{kgm:15.8,length:3000}},1,{});
+r = api.calculateMaterialLine({...base,profile:'squareTube',count:4,dims:{b:40,t:3,length:2000}},1,{});
+assert.equal(api.profileArea('squareTube',{b:40,t:3}),444); assert(Math.abs(r.weight-27.8832)<1e-10); assert.equal(r.lineCents,5577);
+r = api.calculateMaterialLine({...base,profile:'squareTube',count:4,waste:10,dims:{b:40,t:3,length:2000}},1,{}); assert.equal(r.lineCents,6134);
+r = api.calculateMaterialLine({...base,profile:'customKgM',unitPrice:3,dims:{kgm:15.8,length:3000}},1,{});
 assert(Math.abs(r.weight-94.8)<1e-10); assert.equal(r.lineCents,28440);
-r = api.calculateMaterialLine({...base,profile:'custom',priceBasis:'m',unitPrice:20,dims:{kgm:15.8,length:3000}},1,{}); assert.equal(r.lineCents,12000);
+r = api.calculateMaterialLine({...base,profile:'customKgM',priceBasis:'m',unitPrice:20,dims:{kgm:15.8,length:3000}},1,{}); assert.equal(r.lineCents,12000);
 assert.equal(api.effectiveCount({...base,count:4,countMode:'perProduct'},3),12);
 assert.equal(api.effectiveCount({...base,count:4,countMode:'project'},3),4);
 assert.deepEqual(clone(api.calculateSale(10000,10,20)),{afterCents:11000,saleCents:13750});
 
 // Alle vrije profielgeometrieën.
-const areas={flat:120,round:Math.PI*100,square:400,hex:Math.sqrt(3)*200,tube:Math.PI*(1600-1156)/4,shs:444,rectTube:444,angle:304,unequalAngle:304};
-const dims={flat:{b:30,t:4},round:{D:20},square:{b:20},hex:{sw:20},tube:{D:40,t:3},shs:{b:40,t:3},rectTube:{b:50,h:30,t:3},angle:{a:40,t:4},unequalAngle:{a:50,b:30,t:4}};
+const areas={strip:120,roundBar:Math.PI*100,squareBar:400,hexBar:Math.sqrt(3)*200,roundTube:Math.PI*(1600-1156)/4,squareTube:444,rectTube:444,equalAngle:304,unequalAngle:304};
+const dims={strip:{b:30,t:4},roundBar:{D:20},squareBar:{b:20},hexBar:{sw:20},roundTube:{D:40,t:3},squareTube:{b:40,t:3},rectTube:{b:50,h:30,t:3},equalAngle:{a:40,t:4},unequalAngle:{a:50,b:30,t:4}};
 for(const [profile,area] of Object.entries(areas)) assert(Math.abs(api.profileArea(profile,dims[profile])-area)<1e-9,profile);
 
 // Validatie, prijsbasissen en prijsfallback.
 assert(Number.isNaN(api.strictNumber('12abc'))); assert.equal(api.strictNumber('12,5'),12.5); assert.equal(api.strictNumber('12.5'),12.5);
-assert(api.validateLine({...base,profile:'tube',dims:{D:40,t:21,length:1000}},1).t);
+assert(api.validateLine({...base,profile:'roundTube',dims:{D:40,t:21,length:1000}},1).t);
 assert(api.validateLine({...base,profile:'rectTube',dims:{b:40,h:30,t:16,length:1000}},1).t);
-assert(api.validateLine({...base,profile:'angle',dims:{a:4,t:4,length:1000}},1).t);
-storageData={'werkbank.preview.v3.exactPrices':{'s235|ipe|160':{basis:'kg',price:5}},'werkbank.preview.v3.familyPrices':{'s235|staf':{basis:'kg',price:4}}};
-const cat={...base,profile:'ipe',catalogSize:'160',count:1,dims:{length:1000}};
+assert(api.validateLine({...base,profile:'equalAngle',dims:{a:4,t:4,length:1000}},1).t);
+storageData={'werkbank.preview.v3.exactPrices':{'s235|IPE|160':{basis:'kg',price:5}},'werkbank.preview.v3.familyPrices':{'s235|staf':{basis:'kg',price:4}}};
+const cat={...base,profile:'IPE',catalogSize:'160',count:1,dims:{length:1000}};
 assert.equal(api.calculateMaterialLine({...cat,priceMode:'list'},1,{s235:2}).price,5);
-assert.equal(api.calculateMaterialLine({...base,profile:'flat',priceMode:'list',dims:{b:20,t:2,length:1000}},1,{s235:2}).price,4);
+assert.equal(api.calculateMaterialLine({...base,profile:'strip',priceMode:'list',dims:{b:20,t:2,length:1000}},1,{s235:2}).price,4);
 assert.equal(api.calculateMaterialLine({...base,profile:'plate',priceMode:'list',dims:{length:100,width:100,t:2}},1,{s235:2}).price,2);
 assert.equal(api.calculateMaterialLine({...base,profile:'plate',priceMode:'list',priceBasis:'m2',dims:{length:100,width:100,t:2}},1,{}).lineCents,null);
-assert.equal(api.calculateMaterialLine({...base,profile:'item',description:'Bout',priceBasis:'piece',unitPrice:0,waste:99},1,{}).lineCents,0);
+assert.equal(api.calculateMaterialLine({...base,profile:'purchasedItem',description:'Bout',priceBasis:'piece',unitPrice:0,waste:99},1,{}).lineCents,0);
 assert.equal(api.calculateMaterialLine({...base,profile:'plate',priceBasis:'m2',unitPrice:10,dims:{length:1000,width:1000,t:1}},1,{}).lineCents,2000);
-assert.equal(api.calculateMaterialLine({...base,profile:'flat',priceBasis:'m',unitPrice:10,dims:{b:1,t:1,length:1000}},1,{}).lineCents,2000);
+assert.equal(api.calculateMaterialLine({...base,profile:'strip',priceBasis:'m',unitPrice:10,dims:{b:1,t:1,length:1000}},1,{}).lineCents,2000);
 
 // Reproducties materiaalpreview: geldige profielen mogen niet door een ander/leeg veld blokkeren.
 const validExamples=[
- ['shs',{b:'50',t:'3',length:'1000'}],
+ ['squareTube',{b:'50',t:'3',length:'1000'}],
  ['rectTube',{b:'50',h:'30',t:'2',length:'1000'}],
  ['plate',{length:'1000',width:'50',t:'3'}],
- ['angle',{a:'50',t:'5',length:'1000'}]
+ ['equalAngle',{a:'50',t:'5',length:'1000'}]
 ];
 for(const [profile,profileDims] of validExamples){
  const line={...base,profile,count:1,dims:profileDims};
@@ -78,12 +78,12 @@ assert(!incompleteRhs.b,'geldige breedte kreeg een fout');
 assert(incompleteRhs.h.includes('hoogte')&&incompleteRhs.h.includes('mm'));
 assert(incompleteRhs.t.includes('wanddikte')&&incompleteRhs.t.includes('mm'));
 assert(incompleteRhs.length.includes('stuklengte')&&incompleteRhs.length.includes('mm'));
-const roundAfterSwitch={...base,profile:'round',count:1,dims:{D:'20',length:'1000'}};
+const roundAfterSwitch={...base,profile:'roundBar',count:1,dims:{D:'20',length:'1000'}};
 assert.deepEqual(clone(api.validateLine(roundAfterSwitch,1)),{},'verborgen oude hoogte blokkeert rondstaf');
 assert.equal(api.strictNumber(' 50,5 '),50.5); assert.equal(api.strictNumber('50.5'),50.5);
 assert(Number.isNaN(api.strictNumber(''))); assert(Number.isNaN(api.strictNumber('50abc')));
 assert(Number.isNaN(api.strictNumber('NaN'))); assert(Number.isNaN(api.strictNumber('Infinity')));
-const thickError=api.validateLine({...base,profile:'shs',count:1,dims:{b:'50',t:'30',length:'1000'}},1);
+const thickError=api.validateLine({...base,profile:'squareTube',count:1,dims:{b:'50',t:'30',length:'1000'}},1);
 assert.equal(thickError.t,'Vul een wanddikte tussen 0 en 25 mm in.');
 const broken={...base,profile:'rectTube',count:1,dims:{b:'50',h:'30',t:'20',length:'1000'}};
 assert(api.calculateMaterialLine(broken,1,{}).errors.t);
