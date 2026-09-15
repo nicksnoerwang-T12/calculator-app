@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F1F2F0">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Werkbank — rekentools voor RVS en staal</title>
+<style>
+:root{
+  --paper:#F1F2F0;
+  --surface:#FFFFFF;
+  --ink:#15181B;
+  --muted:#5C646C;
+  --faint:#8B939B;
+  --line:#D5D8D4;
+  --line-soft:#E6E8E5;
+  --blue:#1B3A6B;
+  --blue-mid:#3F6199;
+  --blue-soft:#E9EEF6;
+  --blue-line:#B9C7DC;
+  --rest:#9AA3AB;
+  --warn:#8A4B10;
+  --warn-soft:#FBF1E4;
+  --radius:3px;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-size:16px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:780px;margin:0 auto;padding:0 14px calc(72px + env(safe-area-inset-bottom))}
+
+/* ---------- masthead ---------- */
+.masthead{padding:20px 0 14px}
+.mark{font-size:23px;font-weight:600;letter-spacing:-0.025em;margin:0;line-height:1.1}
+.mark span{color:var(--blue)}
+.sub{margin:3px 0 0;font-size:13.5px;color:var(--muted)}
+
+/* ---------- search ---------- */
+.search{position:relative;margin:18px 0 26px}
+.search input{
+  width:100%;padding:12px 14px;font:inherit;font-size:16px;
+  border:1px solid var(--line);border-radius:var(--radius);background:#fff;min-height:46px;
+}
+.search input:focus{outline:2px solid var(--blue);outline-offset:-1px;border-color:var(--blue)}
+
+/* ---------- menu ---------- */
+.group{margin-bottom:28px}
+.group>h2{
+  margin:0 0 2px;font-size:12.5px;font-weight:600;color:var(--blue);
+  letter-spacing:0.02em;padding-bottom:7px;border-bottom:1px solid var(--blue-line);
+}
+.group[hidden]{display:none}
+.item{
+  display:block;width:100%;text-align:left;appearance:none;background:none;
+  border:0;border-bottom:1px solid var(--line-soft);
+  padding:14px 26px 14px 0;font:inherit;cursor:pointer;position:relative;color:inherit;
+}
+.item:last-child{border-bottom:0}
+.item[hidden]{display:none}
+.item .nm{font-size:16px;font-weight:600;letter-spacing:-0.01em;display:block}
+.item .ds{font-size:13.5px;color:var(--muted);display:block;margin-top:1px;max-width:58ch}
+.item::after{
+  content:"";position:absolute;right:6px;top:50%;width:8px;height:8px;
+  border-right:1.5px solid var(--faint);border-top:1.5px solid var(--faint);
+  transform:translateY(-50%) rotate(45deg);
+}
+.item:hover .nm{color:var(--blue)}
+.item:hover::after{border-color:var(--blue)}
+.item:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+.noresult{color:var(--muted);font-size:14.5px;padding:8px 0}
+
+/* ---------- tool view ---------- */
+.toolbar{
+  position:sticky;top:0;z-index:10;background:var(--paper);
+  border-bottom:1px solid var(--line);padding:12px 0;margin-bottom:20px;
+  display:flex;align-items:center;gap:12px;
+}
+button.back{
+  appearance:none;background:none;border:1px solid var(--line);border-radius:var(--radius);
+  padding:8px 13px 8px 10px;font:inherit;font-size:14px;color:var(--ink);cursor:pointer;
+  min-height:40px;white-space:nowrap;
+}
+button.back:hover{border-color:var(--blue);color:var(--blue)}
+.toolbar h1{margin:0;font-size:16px;font-weight:600;letter-spacing:-0.015em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lede{margin:0 0 20px;font-size:14.5px;color:var(--muted);max-width:64ch}
+
+/* ---------- cards & forms ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:16px}
+.card>h2{margin:0 0 14px;font-size:14.5px;font-weight:600;letter-spacing:-0.01em}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.f-full{grid-column:1/-1}
+label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}
+input[type=number],input[type=text],select{
+  width:100%;padding:11px 10px;font:inherit;font-size:16px;
+  border:1px solid var(--line);border-radius:var(--radius);background:#fff;color:var(--ink);min-height:44px;
+}
+input[type=number]{font-family:var(--mono);font-variant-numeric:tabular-nums}
+input:focus,select:focus{outline:2px solid var(--blue);outline-offset:-1px;border-color:var(--blue)}
+.hint{font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.45}
+.f-hint{grid-column:1/-1;font-size:12.5px;color:var(--muted);margin:-4px 0 0;line-height:1.45}
+
+button.act{
+  appearance:none;border:1px solid var(--blue);background:var(--blue);color:#fff;
+  font:inherit;font-size:15px;font-weight:600;padding:12px 18px;border-radius:var(--radius);
+  cursor:pointer;min-height:46px;
+}
+button.act:hover{background:#16305a}
+button.ghost{
+  appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);
+  font:inherit;font-size:14px;padding:10px 14px;border-radius:var(--radius);cursor:pointer;min-height:42px;
+}
+button.ghost:hover{border-color:var(--blue);color:var(--blue)}
+button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+
+/* ---------- readout ---------- */
+.readout{border-left:3px solid var(--blue);background:var(--blue-soft);padding:14px 16px;border-radius:0 var(--radius) var(--radius) 0;margin-bottom:16px}
+.readout .big{font-family:var(--mono);font-size:29px;font-weight:600;letter-spacing:-0.025em;font-variant-numeric:tabular-nums;line-height:1.15;word-break:break-word}
+.readout .biglabel{font-size:13px;color:var(--muted);margin-top:3px}
+dl.vals{margin:0;display:grid;grid-template-columns:1fr auto;gap:0}
+dl.vals dt{padding:7px 12px 7px 0;font-size:14px;border-bottom:1px solid var(--line-soft);color:var(--muted)}
+dl.vals dd{padding:7px 0;margin:0;font-family:var(--mono);font-size:14.5px;font-variant-numeric:tabular-nums;text-align:right;border-bottom:1px solid var(--line-soft);white-space:nowrap}
+dl.vals dt.last,dl.vals dd.last{border-bottom:0}
+dl.vals dd.hero{font-size:16.5px;font-weight:600;color:var(--blue)}
+dl.vals dt.sec{padding-top:16px;font-weight:600;color:var(--ink);font-size:13px}
+dl.vals dd.sec{padding-top:16px}
+
+/* ---------- misc blocks ---------- */
+svg.draw{display:block;width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:var(--radius)}
+.note{font-size:13px;color:var(--muted);border-top:1px solid var(--line-soft);padding-top:12px;margin:12px 0 0;line-height:1.55}
+.note:first-child{border-top:0;padding-top:0;margin-top:0}
+.note b{color:var(--ink);font-weight:600}
+.warnbox{background:var(--warn-soft);border-left:3px solid var(--warn);padding:12px 14px;border-radius:0 var(--radius) var(--radius) 0;margin-bottom:16px;font-size:13.5px;line-height:1.55;color:#5E3608}
+.warnbox b{display:block;margin-bottom:4px;color:var(--warn)}
+.warnbox ul{margin:0;padding-left:18px}
+.warnbox li{margin:3px 0}
+.err{color:var(--warn);font-size:14.5px;margin:0 0 14px;padding:12px 14px;background:var(--warn-soft);border-left:3px solid var(--warn);border-radius:0 var(--radius) var(--radius) 0}
+
+table.data{width:100%;border-collapse:collapse;font-size:13.5px}
+table.data th{
+  text-align:right;font-size:12px;color:var(--muted);font-weight:600;
+  padding:0 6px 7px;border-bottom:1px solid var(--line);white-space:nowrap;
+}
+table.data th:first-child,table.data td:first-child{text-align:left}
+table.data td{
+  text-align:right;padding:6px;border-bottom:1px solid var(--line-soft);
+  font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+table.data td:first-child{font-family:var(--sans)}
+table.data tr.hl td{background:var(--blue-soft);font-weight:600}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+table.parts{width:100%;border-collapse:collapse;margin-bottom:6px}
+table.parts th{text-align:left;font-size:12px;font-weight:600;color:var(--muted);padding:0 6px 6px;border-bottom:1px solid var(--line-soft)}
+table.parts th.num{text-align:right}
+table.parts td{padding:5px 6px;border-bottom:1px solid var(--line-soft)}
+table.parts input{min-height:40px;padding:8px}
+td.del{width:36px;padding-left:0}
+button.del{appearance:none;border:0;background:none;color:var(--faint);font-size:21px;line-height:1;padding:8px 5px;cursor:pointer}
+button.del:hover{color:var(--warn)}
+
+.bar{margin-bottom:16px}
+.barhead{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:5px;font-variant-numeric:tabular-nums}
+.barhead b{color:var(--ink);font-weight:600}
+svg.barsvg{display:block;width:100%;height:38px;border:1px solid var(--line)}
+.cuts{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.5}
+
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:10px}
+.legend i{display:inline-block;width:12px;height:12px;margin-right:5px;vertical-align:-1px;border:1px solid var(--line)}
+
+footer{border-top:1px solid var(--line);margin-top:30px;padding-top:14px;font-size:12.5px;color:var(--muted);line-height:1.6}
+
+@media print{
+  .toolbar,.actions,.search,footer,.lede,#home{display:none!important}
+  body{background:#fff}
+  .card{border:0;padding:0;margin-bottom:12px}
+  .readout{background:#fff;border-left:2px solid #000}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- app shell v2 ---------- */
+:root{--nav-h:68px;--success:#276749;--shadow:0 8px 24px rgba(21,24,27,.06)}
+html{overflow-x:hidden;background:var(--paper)}
+body{padding-top:env(safe-area-inset-top);overflow-x:hidden}
+.wrap{max-width:920px;padding:0 14px calc(var(--nav-h) + 26px + env(safe-area-inset-bottom))}
+.masthead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand-block{min-width:0}.app-actions{display:flex;gap:8px}.icon-btn,.fav-btn{min-width:44px;min-height:44px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;font:inherit;cursor:pointer}
+.theme-select{min-height:44px;width:auto;padding:8px 34px 8px 10px;font-size:16px}
+.dashboard-title{font-size:22px;margin:4px 0}.dashboard-copy{color:var(--muted);font-size:14px;margin:0 0 16px}
+#menu{display:grid;gap:14px}.group{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;box-shadow:var(--shadow)}
+.group>h2{font-size:14px}.item{min-height:58px;padding-left:2px}.item .ds{padding-right:34px}.fav-btn{position:absolute;right:26px;top:50%;transform:translateY(-50%);z-index:2;border:0;background:transparent;font-size:21px;color:var(--faint)}
+.item::after{right:6px}.item.is-fav .fav-btn{color:#B7791F}.item.is-fav{order:-1}
+.bottom-nav{position:fixed;z-index:50;left:0;right:0;bottom:0;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding:6px max(8px,env(safe-area-inset-left)) env(safe-area-inset-bottom);background:color-mix(in srgb,var(--surface) 94%,transparent);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);backdrop-filter:blur(12px)}
+.nav-btn{appearance:none;border:0;background:none;color:var(--muted);font:600 11px var(--sans);min-height:56px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer}.nav-btn span{font-size:21px;line-height:1}.nav-btn.active{color:var(--blue);background:var(--blue-soft)}
+.page-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 18px}.page-head h1{font-size:24px;margin:0}.page{min-width:0}
+.card{border-radius:10px;box-shadow:var(--shadow)}input[type=number],input[type=text],select,textarea{font-size:16px;min-height:44px;border-radius:7px}textarea{width:100%;padding:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;resize:vertical}
+button.act,button.ghost,button.back{min-height:44px;border-radius:7px}.price-row{display:grid;grid-template-columns:1fr minmax(110px,160px);gap:12px;align-items:end;padding:10px 0;border-bottom:1px solid var(--line-soft)}.price-row:last-child{border:0}.price-row label{color:var(--ink);font-weight:600}.price-meta,.source-badge{font-size:12.5px;color:var(--muted)}.source-badge{display:block;margin-top:6px;color:var(--blue)}
+.cost-grid{display:grid;grid-template-columns:1fr;gap:12px}.cost-section h2{border-bottom:1px solid var(--line-soft);padding-bottom:9px}.cost-breakdown{display:grid;grid-template-columns:1fr auto;gap:8px 14px}.cost-breakdown strong{font-family:var(--mono);text-align:right}.share-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.share{padding:10px;background:var(--paper);border-radius:7px;text-align:center}.share b{display:block;font-family:var(--mono)}
+.saved-item{padding:12px 0;border-bottom:1px solid var(--line-soft)}.saved-item:last-child{border:0}.saved-title{display:flex;justify-content:space-between;gap:10px}.saved-item .actions{margin-top:8px}.saved-item button{min-height:44px}
+.file-label{display:inline-flex;align-items:center;min-height:44px;padding:10px 14px;border:1px solid var(--line);border-radius:7px;cursor:pointer}.file-label input{position:absolute;opacity:0;width:1px;height:1px}.muted{color:var(--muted)}
+[data-theme="dark"]{--paper:#12171b;--surface:#1b2228;--ink:#edf1f4;--muted:#aab4bc;--faint:#84909a;--line:#3a444c;--line-soft:#2b343b;--blue:#91b8ee;--blue-mid:#79a4dc;--blue-soft:#1b3048;--blue-line:#365675;--warn:#ffc078;--warn-soft:#3a2917;--shadow:none;color-scheme:dark}
+@media(prefers-color-scheme:dark){[data-theme="auto"]{--paper:#12171b;--surface:#1b2228;--ink:#edf1f4;--muted:#aab4bc;--faint:#84909a;--line:#3a444c;--line-soft:#2b343b;--blue:#91b8ee;--blue-mid:#79a4dc;--blue-soft:#1b3048;--blue-line:#365675;--warn:#ffc078;--warn-soft:#3a2917;--shadow:none;color-scheme:dark}}
+@media(min-width:700px){#menu{grid-template-columns:repeat(2,minmax(0,1fr))}.cost-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.bottom-nav{left:50%;right:auto;transform:translateX(-50%);width:min(620px,100%);border:1px solid var(--line);border-bottom:0;border-radius:14px 14px 0 0}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:420px){.grid{grid-template-columns:1fr}.f-full{grid-column:1}.theme-select{max-width:128px}.share-grid{grid-template-columns:1fr}.price-row{grid-template-columns:1fr}}
+@media print{.bottom-nav,.app-actions,.no-print,.fav-btn{display:none!important}.wrap{max-width:none;padding:0}.masthead{padding-top:0}.page-head{margin-top:0}body{background:#fff;color:#000}[data-print-hide="true"]{display:none!important}}
+
+/* ---------- preview & materiaalstuklijst ---------- */
+.preview-badge{display:inline-block;margin-top:8px;padding:4px 8px;border:1px solid var(--warn);border-radius:999px;color:var(--warn);font-size:12px;font-weight:700}
+.cost-project{display:grid;grid-template-columns:2fr 1fr;gap:12px}.cost-block{background:var(--surface);border:1px solid var(--line);border-radius:10px;margin-bottom:14px;box-shadow:var(--shadow)}
+.cost-block>summary{cursor:pointer;min-height:56px;padding:15px;display:flex;justify-content:space-between;align-items:center;font-weight:700}.cost-block>summary::marker{color:var(--blue)}.cost-block-body{padding:0 15px 15px}.summary-amount{font:600 14px var(--mono);color:var(--blue)}
+.material-head,.material-totals,.material-groups{display:grid;gap:10px}.material-head{grid-template-columns:1fr auto;align-items:center}.material-totals{grid-template-columns:repeat(3,1fr);margin:12px 0}.metric{padding:11px;background:var(--paper);border-radius:7px}.metric b{display:block;font:600 18px var(--mono)}
+.material-list{display:grid;gap:10px}.material-card{border:1px solid var(--line);border-radius:9px;padding:12px;display:grid;grid-template-columns:54px 1fr auto;gap:10px;align-items:start}.profile-icon{width:52px;height:52px;color:var(--blue)}.material-title{font-weight:700}.material-meta,.material-warning{font-size:13px;color:var(--muted)}.material-warning{color:var(--warn);font-weight:600}.material-values{display:grid;grid-template-columns:repeat(3,auto);gap:4px 14px;margin-top:8px;font-size:13px}.material-values b{font-family:var(--mono)}.row-actions{display:flex;gap:4px}.row-actions button{min-width:44px;min-height:44px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:7px;cursor:pointer}.group-tables{display:grid;grid-template-columns:1fr 1fr;gap:12px}.group-table{font-size:13px}.group-table div{display:flex;justify-content:space-between;border-bottom:1px solid var(--line-soft);padding:5px 0}.same-total{font-size:12.5px;color:var(--muted)}
+.editor-backdrop{position:fixed;z-index:100;inset:0;background:rgba(0,0,0,.42);display:flex;justify-content:flex-end}.material-editor{width:min(620px,100%);height:100%;overflow:auto;background:var(--paper);padding:max(14px,env(safe-area-inset-top)) 14px calc(90px + env(safe-area-inset-bottom));box-shadow:-10px 0 30px rgba(0,0,0,.2)}.editor-head{position:sticky;top:0;z-index:2;background:var(--paper);display:flex;align-items:center;justify-content:space-between;padding:4px 0 12px}.editor-head h2{margin:0;font-size:19px}.stepper{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:12px}.step{font-size:12px;padding:8px 4px;border-bottom:3px solid var(--line);text-align:center}.step.active{border-color:var(--blue);font-weight:700}.profile-search{margin-bottom:10px}.profile-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.profile-choice-wrap{position:relative;min-width:0}.profile-choice-wrap .favorite-star{position:absolute;z-index:1;right:3px;top:3px;min-width:44px;min-height:44px}.profile-choice-wrap .profile-choice{width:100%;height:100%}.picker-caption{font-size:12.5px;color:var(--muted)}.profile-choice{min-height:112px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:8px;font:600 13px var(--sans);cursor:pointer}.profile-choice.selected{border:2px solid var(--blue);background:var(--blue-soft)}.profile-choice .profile-icon{display:block;margin:auto}.profile-choice small{display:block;color:var(--muted);font-weight:400}.tech-diagram{max-width:280px;margin:0 auto 12px;display:block;color:var(--blue);background:var(--surface);border:1px solid var(--line);border-radius:8px}.field-error{min-height:18px;color:var(--warn);font-size:12px}.unit-field{position:relative}.unit-field input{padding-right:44px}.unit-field span{position:absolute;right:10px;bottom:12px;color:var(--muted);font-size:13px}.editor-actions{position:fixed;right:0;bottom:0;width:min(620px,100%);padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}.toast{position:fixed;z-index:120;bottom:calc(var(--nav-h) + 18px);left:50%;transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 14px;border-radius:8px;display:flex;gap:12px;align-items:center}.toast button{min-height:44px}.incomplete{color:var(--warn)!important}.price-review{max-height:45vh;overflow:auto}.favorite-star{float:right;border:0;background:none;color:var(--faint);font-size:20px}.favorite-star.on{color:#B7791F}
+@media(max-width:699px){.cost-project{grid-template-columns:1fr}.profile-picker{grid-template-columns:repeat(2,1fr)}.material-totals{grid-template-columns:1fr}.material-card{grid-template-columns:48px 1fr}.material-card>.row-actions{grid-column:1/-1;justify-content:flex-end}.material-values{grid-template-columns:1fr 1fr}.group-tables{grid-template-columns:1fr}.material-editor{width:100%}}
+@media(max-width:340px){.profile-picker{gap:6px}.profile-choice{padding:5px}.material-card{padding:9px}.material-values{grid-template-columns:1fr}}
+@media print{.editor-backdrop,.toast,.row-actions,.material-head .actions,.cost-block>summary::marker{display:none!important}.cost-block{display:block;box-shadow:none;break-inside:avoid}.cost-block>summary{padding:8px 0}.cost-block-body{display:block!important;padding:0}.material-card{break-inside:avoid}.group-tables{grid-template-columns:1fr 1fr}}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <div class="brand-block"><h1 class="mark">Werk<span>bank</span></h1><p class="sub">Rekentools voor RVS en staal — werkt offline</p><span class="preview-badge">Preview — niet voor definitieve calculaties</span></div>
+  <div class="app-actions"><label for="theme" class="visually-hidden">Thema</label><select id="theme" class="theme-select" aria-label="Kleurthema"><option value="auto">Automatisch</option><option value="light">Licht</option><option value="dark">Donker</option></select></div>
+</header>
+
+<section id="home" class="page">
+  <h1 class="dashboard-title">Werkplaatsdashboard</h1>
+  <p class="dashboard-copy">Kies een categorie of zoek direct in alle rekentools.</p>
+  <div class="search">
+    <label for="q" style="position:absolute;left:-9999px">Zoek een tool</label>
+    <input type="search" id="q" placeholder="Zoeken — bijv. conus, zaag, lassen" autocomplete="off">
+  </div>
+  <div id="menu"></div>
+  <p class="noresult" id="noresult" hidden>Niets gevonden. Probeer een ander woord.</p>
+</section>
+
+<section id="tool" hidden>
+  <div class="toolbar">
+    <button class="back" id="back">&larr; Alle tools</button>
+    <h1 id="tool-title"></h1>
+  </div>
+  <p class="lede" id="tool-lede"></p>
+  <div id="tool-form"></div>
+  <div id="tool-out"></div>
+</section>
+
+<section id="prices" class="page" hidden aria-labelledby="prices-title">
+  <div class="page-head"><div><h1 id="prices-title">Materiaalprijzen</h1><p class="sub">Eigen indicatieve inkoopprijzen per kilogram.</p></div></div>
+  <div id="prices-content"></div>
+</section>
+<section id="cost" class="page" hidden aria-labelledby="cost-title">
+  <div class="page-head"><div><h1 id="cost-title">Kostprijs</h1><p class="sub">Van materiaal en uren naar verkoopprijs.</p></div></div>
+  <div id="cost-content"></div>
+</section>
+<nav class="bottom-nav no-print" aria-label="Hoofdnavigatie">
+ <button class="nav-btn" data-route="home" aria-label="Home"><span aria-hidden="true">⌂</span>Home</button>
+ <button class="nav-btn" data-route="tools" aria-label="Tools"><span aria-hidden="true">▦</span>Tools</button>
+ <button class="nav-btn" data-route="kostprijs" aria-label="Kostprijs"><span aria-hidden="true">€</span>Kostprijs</button>
+ <button class="nav-btn" data-route="prijzen" aria-label="Prijzen"><span aria-hidden="true">≡</span>Prijzen</button>
+</nav>
+
+<footer>
+  Alle uitkomsten, prijzen en calculaties zijn indicatief: rekenwaarden om mee te werken en niet om mee af te tekenen.
+  Controleer maten, materiaalgegevens en leveranciersopgaven voordat je bestelt, zaagt, zet of last.
+</footer>
+
+</div>
+
+<script>
+'use strict';
+
+/* ================= helpers ================= */
+const $ = id => document.getElementById(id);
+const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : NaN; };
+const fmt = (n, d = 1) => isFinite(n) ? n.toLocaleString('nl-NL', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const rad = d => d * Math.PI / 180;
+const deg = r => r * 180 / Math.PI;
+const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
+
+/* ================= appgegevens v2 ================= */
+const LIVE_STORE = { prices: 'werkbank.v2.prices', priceDate: 'werkbank.v2.priceDate' };
+const STORE = { prices: 'werkbank.preview.v3.prices', priceDate: 'werkbank.preview.v3.priceDate', theme: 'werkbank.preview.v3.theme', favorites: 'werkbank.preview.v3.favorites', calculations: 'werkbank.preview.v3.calculations' };
+const DEFAULT_PRICES = { rvs304: 4.50, rvs316: 6.25, rvs430: 3.20, s235: 1.35, s355: 1.55, alu: 3.75, messing: 7.50, koper: 9.25 };
+const PRICE_NAMES = { rvs304: 'RVS 304 / 1.4301', rvs316: 'RVS 316 / 1.4401', rvs430: 'RVS 430 / 1.4016', s235: 'Staal S235', s355: 'Staal S355', alu: 'Aluminium', messing: 'Messing', koper: 'Koper' };
+const storageAdapter = createStorageAdapter(localStorage);
+function safeGet(key, fallback) { return storageAdapter.read(key, fallback).value; }
+function safeSet(key, value) { return storageAdapter.write(key, value).ok; }
+function finiteNonNegative(value) { const n = num(value); return isFinite(n) && n >= 0 ? n : 0; }
+function euro(value) { return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(finiteNonNegative(value)); }
+function getPrices() { const saved = safeGet(STORE.prices, safeGet(LIVE_STORE.prices, {})); const out = {}; Object.keys(DEFAULT_PRICES).forEach(k => out[k] = isFinite(num(saved[k])) && num(saved[k]) >= 0 ? num(saved[k]) : DEFAULT_PRICES[k]); return out; }
+function materialKey(value) { return String(value || '').split('|')[1] || 'rvs304'; }
+function downloadJson(name, data) { const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = name; a.click(); URL.revokeObjectURL(url); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+function todayNl() { return new Date().toLocaleDateString('nl-NL'); }
+function applyTheme(value) { const theme = ['auto','light','dark'].includes(value) ? value : 'auto'; document.documentElement.dataset.theme = theme; $('theme').value = theme; safeSet(STORE.theme, theme); }
+
+
+/* ================= materiaalprijzen ================= */
+function renderPrices(message) {
+  const prices = getPrices();
+  const changed = safeGet(STORE.priceDate, null);
+  $('prices-content').innerHTML =
+    (message ? '<p class="readout" role="status">' + esc(message) + '</p>' : '') +
+    '<div class="card"><h2>Prijzen per kg</h2><p class="note">Dit zijn indicatieve standaardwaarden, geen actuele leveranciersprijzen. Vul je eigen netto inkoopprijzen in.</p>' +
+    Object.keys(DEFAULT_PRICES).map(k => '<div class="price-row"><label for="price-' + k + '">' + esc(PRICE_NAMES[k]) + '<span class="price-meta">Standaard ' + euro(DEFAULT_PRICES[k]) + '/kg</span></label><div><input id="price-' + k + '" type="text" inputmode="decimal" value="' + esc(String(prices[k]).replace('.', ',')) + '" aria-label="Prijs per kg voor ' + esc(PRICE_NAMES[k]) + '"><span class="price-meta">euro per kg</span></div></div>').join('') +
+    '<p class="price-meta">Laatst gewijzigd: ' + esc(changed || 'nog niet handmatig gewijzigd') + '</p>' +
+    '<div class="actions no-print"><button class="act" id="save-prices">Prijzen bewaren</button><button class="ghost" id="reset-prices">Standaardprijzen herstellen</button></div></div>' +
+    '<div class="card no-print"><h2>Overzetten</h2><div class="actions"><button class="ghost" id="export-prices">Export naar JSON</button><label class="file-label">Import uit JSON<input id="import-prices" type="file" accept="application/json,.json"></label></div></div>';
+  $('save-prices').addEventListener('click', () => { const next={}; let valid=true; Object.keys(DEFAULT_PRICES).forEach(k=>{const n=num($('price-'+k).value); if(!isFinite(n)||n<0){valid=false;$('price-'+k).setAttribute('aria-invalid','true');} else next[k]=n;}); if(!valid){renderPrices('Controleer de gemarkeerde prijzen. Gebruik een komma of punt en geen negatieve bedragen.');return;} safeSet(STORE.prices,next); safeSet(STORE.priceDate,todayNl()); renderPrices('Prijzen zijn lokaal bewaard.'); });
+  $('reset-prices').addEventListener('click', () => { if(confirm('Alle materiaalprijzen terugzetten naar de indicatieve standaardwaarden?')){safeSet(STORE.prices,DEFAULT_PRICES);safeSet(STORE.priceDate,todayNl());renderPrices('Standaardprijzen zijn hersteld.');} });
+  $('export-prices').addEventListener('click', () => downloadJson('werkbank-materiaalprijzen.json',{version:2,datum:changed||todayNl(),prijzen}));
+  $('import-prices').addEventListener('change', async e => { const file=e.target.files[0]; if(!file)return; try{const data=JSON.parse(await file.text());const source=data.prijzen||data;const next={};for(const k of Object.keys(DEFAULT_PRICES)){const n=num(source[k]);if(!isFinite(n)||n<0)throw new Error();next[k]=n;}safeSet(STORE.prices,next);safeSet(STORE.priceDate,todayNl());renderPrices('Prijzen zijn geïmporteerd en lokaal bewaard.');}catch(_){renderPrices('Importeren mislukt: kies een geldig Werkbank-prijzenbestand.');} });
+}
+
+/* ================= kostprijscalculator & materiaalregels ================= */
+const MATERIAL_SCHEMA=3;
+const MATERIALS={
+ rvs304:{name:'RVS 304 / 1.4301',density:7900},rvs316:{name:'RVS 316 / 1.4401',density:7980},rvs430:{name:'RVS 430 / 1.4016',density:7700},
+ s235:{name:'Staal S235',density:7850},s355:{name:'Staal S355',density:7850},alu:{name:'Aluminium',density:2700},messing:{name:'Messing',density:8500},koper:{name:'Koper',density:8960}
+};
+const PROFILES={
+ plate:{name:'Plaat',family:'plaat',dims:['length','width','t'],syn:'plaat sheet'},flat:{name:'Strip / platstaf',family:'staf',dims:['b','t','length'],syn:'strip platstaf flat'},round:{name:'Rondstaf',family:'staf',dims:['D','length'],syn:'rondstaf rond massief'},square:{name:'Vierkantstaf',family:'staf',dims:['b','length'],syn:'vierkantstaf massief'},hex:{name:'Zeskantstaf',family:'staf',dims:['sw','length'],syn:'zeskant hex sw sleutelwijdte'},tube:{name:'Ronde buis',family:'buis',dims:['D','t','length'],syn:'ronde buis pijp'},shs:{name:'Vierkante koker',family:'koker',dims:['b','t','length'],syn:'vierkante koker shs'},rhs:{name:'Rechthoekige koker',family:'koker',dims:['b','h','t','length'],syn:'rechthoekige koker rhs'},angle:{name:'Gelijkzijdige hoeklijn',family:'hoeklijn',dims:['a','t','length'],syn:'hoeklijn l gelijkzijdig'},unequalAngle:{name:'Ongelijkzijdige hoeklijn',family:'hoeklijn',dims:['a','b','t','length'],syn:'ongelijkzijdige hoeklijn l'},ipe:{name:'IPE',family:'catalogus',catalog:'IPE',dims:['length'],syn:'ipe i balk'},hea:{name:'HEA',family:'catalogus',catalog:'HEA',dims:['length'],syn:'hea h balk'},heb:{name:'HEB',family:'catalogus',catalog:'HEB',dims:['length'],syn:'heb h balk'},upn:{name:'UNP / UPN',family:'catalogus',catalog:'UPN',dims:['length'],syn:'unp upn u profiel'},upe:{name:'UPE',family:'supplier',dims:['length'],syn:'upe u profiel'},tee:{name:'T-profiel',family:'supplier',dims:['length'],syn:'t profiel'},custom:{name:'Zelf opgegeven profiel',family:'supplier',dims:['kgm','length'],syn:'eigen kg/m leverancier'},item:{name:'Inkoopartikel',family:'artikel',dims:[],syn:'artikel stuk inkoop'}
+};
+const DIM_LABELS={length:['Stuklengte','mm'],width:['Breedte','mm'],t:['Dikte t','mm'],b:['Breedte b','mm'],h:['Hoogte h','mm'],D:['Buitendiameter D','mm'],a:['Been a','mm'],sw:['Sleutelwijdte SW','mm'],kgm:['Leveranciersmassa','kg/m']};
+function strictNumber(value){const s=String(value??'').trim().replace(',','.');return /^(?:\d+(?:\.\d*)?|\.\d+)$/.test(s)?Number(s):NaN;}
+function positiveInt(value){const n=strictNumber(value);return Number.isSafeInteger(n)&&n>0?n:NaN;}
+function cents(value){return Math.round((value+Number.EPSILON)*100);}
+function effectiveCount(line,projectQty){return line.countMode==='project'?positiveInt(line.count):positiveInt(line.count)*positiveInt(projectQty);}
+function profileArea(type,d){switch(type){case'flat':return d.b*d.t;case'round':return Math.PI*d.D*d.D/4;case'square':return d.b*d.b;case'hex':return Math.sqrt(3)*d.sw*d.sw/2;case'tube':return Math.PI*(d.D*d.D-(d.D-2*d.t)**2)/4;case'shs':return d.b*d.b-(d.b-2*d.t)**2;case'rhs':return d.b*d.h-(d.b-2*d.t)*(d.h-2*d.t);case'angle':return 2*d.a*d.t-d.t*d.t;case'unequalAngle':return (d.a+d.b)*d.t-d.t*d.t;default:return NaN;}}
+function validateLine(line,projectQty){const p=PROFILES[line.profile],errors={};if(!p)return{profile:'Kies een profielvorm.'};if(!MATERIALS[line.material])errors.material='Kies een materiaalsoort.';const count=positiveInt(line.count);if(!count)errors.count='Gebruik een positief geheel aantal.';if(!positiveInt(projectQty))errors.count='Projectaantal is ongeldig.';for(const key of p.dims||[]){const n=strictNumber(line.dims?.[key]);if(!Number.isFinite(n)||n<=0)errors[key]='Vul een waarde groter dan nul in.';}const d=Object.fromEntries(Object.entries(line.dims||{}).map(([k,v])=>[k,strictNumber(v)]));if(line.profile==='tube'&&!(d.t<d.D/2))errors.t='Dikte moet kleiner zijn dan D/2.';if(line.profile==='shs'&&!(2*d.t<d.b))errors.t='2 × t moet kleiner zijn dan b.';if(line.profile==='rhs'&&!(2*d.t<Math.min(d.b,d.h)))errors.t='2 × t moet kleiner zijn dan b en h.';if(line.profile==='angle'&&!(d.t<d.a))errors.t='Dikte moet kleiner zijn dan het been.';if(line.profile==='unequalAngle'&&!(d.t<Math.min(d.a,d.b)))errors.t='Dikte moet kleiner zijn dan beide benen.';if(['ipe','hea','heb','upn'].includes(line.profile)&&!line.catalogSize)errors.catalogSize='Kies een aanwezige catalogusmaat.';if(['upe','tee'].includes(line.profile)){const kgm=strictNumber(line.supplierKgm);if(!(kgm>0))errors.supplierKgm='Catalogusdekking ontbreekt; vul leveranciersgewicht in.';if(!String(line.weightSource||'').trim())errors.weightSource='Vul leverancier of bron in.';if(!/^\d{4}-\d{2}-\d{2}$/.test(line.sourceDate||''))errors.sourceDate='Vul een brondatum in.';}if(line.priceMode==='manual'){const price=strictNumber(line.unitPrice);if(!Number.isFinite(price)||price<0)errors.unitPrice='Vul nul of een positief bedrag in.';}if(!['kg','m','m2','piece'].includes(line.priceBasis))errors.priceBasis='Kies één prijsbasis.';const waste=strictNumber(line.waste);if(!Number.isFinite(waste)||waste<0||waste>1000)errors.waste='Gebruik 0 t/m 1000%.';return errors;}
+function catalogMass(line){const p=PROFILES[line.profile];const row=p?.catalog&&SECTIONS[p.catalog]?.d?.[line.catalogSize];return row?row[7]:NaN;}
+function resolvePrice(line,prices=getPrices()){if(line.priceMode==='manual'&&Number.isFinite(strictNumber(line.unitPrice)))return{price:strictNumber(line.unitPrice),source:'Expliciet op regel'};const exact=safeGet('werkbank.preview.v3.exactPrices',{})[line.material+'|'+line.profile+'|'+(line.catalogSize||'')];if(exact&&exact.basis===line.priceBasis&&Number.isFinite(exact.price))return{price:exact.price,source:'Exact catalogusartikel'};const family=safeGet('werkbank.preview.v3.familyPrices',{})[line.material+'|'+PROFILES[line.profile].family];if(family&&family.basis===line.priceBasis&&Number.isFinite(family.price))return{price:family.price,source:'Materiaal en profielfamilie'};if(line.priceBasis==='kg'&&Object.prototype.hasOwnProperty.call(prices,line.material))return{price:prices[line.material],source:'Algemene materiaalprijs'};return{price:null,source:'Prijs ontbreekt'};}
+function calculateMaterialLine(line,projectQty,prices){const errors=validateLine(line,projectQty);if(Object.keys(errors).length)return{errors};const N=effectiveCount(line,projectQty),d=Object.fromEntries(Object.entries(line.dims||{}).map(([k,v])=>[k,strictNumber(v)])),rho=MATERIALS[line.material].density;let weight=0,meters=0,area=0,weightBasis='theoretische geometrie';if(line.profile==='plate'){area=d.length*d.width/1e6*N;weight=area*d.t/1000*rho;}else if(line.profile==='item'){weight=0;}else{meters=(d.length||strictNumber(line.length))*N/1000;let kgm;if(['ipe','hea','heb','upn'].includes(line.profile)){kgm=catalogMass(line);weightBasis='catalogus (staal)';}else if(['custom','upe','tee'].includes(line.profile)){kgm=line.profile==='custom'?d.kgm:strictNumber(line.supplierKgm);weightBasis='leverancier';}else{kgm=profileArea(line.profile,d)*rho*1e-6;}if(Number.isFinite(strictNumber(line.kgmOverride))&&strictNumber(line.kgmOverride)>0){kgm=strictNumber(line.kgmOverride);weightBasis='leverancier (override)';}weight=kgm*meters;}const net={kg:weight,m:meters,m2:area,piece:N}[line.priceBasis];const resolved=resolvePrice(line,prices);const waste=line.profile==='item'?0:strictNumber(line.waste),billable=net*(1+waste/100),lineCents=resolved.price===null?null:cents(billable*resolved.price);return{N,weight,meters,area,net,waste,billable,lineCents,price:resolved.price,priceSource:resolved.source,weightBasis};}
+function calculateMaterialList(lines,projectQty,prices){const rows=lines.map(line=>({line,result:calculateMaterialLine(line,projectQty,prices)}));const valid=rows.filter(x=>!x.result.errors),incomplete=valid.some(x=>x.result.lineCents===null)||rows.some(x=>x.result.errors);return{rows,weight:valid.reduce((s,x)=>s+x.result.weight,0),cents:valid.reduce((s,x)=>s+(x.result.lineCents||0),0),incomplete};}
+function calculateSale(costCents,overhead,margin){const o=strictNumber(overhead),m=strictNumber(margin);if(!Number.isFinite(o)||o<0||!Number.isFinite(m)||m<0||m>=100)return{error:'Opslag moet positief zijn en marge moet kleiner zijn dan 100%.'};const after=Math.round(costCents*(1+o/100));return{afterCents:after,saleCents:Math.round(after/(1-m/100))};}
+function duplicateMaterialLine(line,newId){return JSON.parse(JSON.stringify({...line,id:newId}));}
+function removeMaterialLine(lines,id){const index=lines.findIndex(x=>x.id===id);return index<0?{lines,removed:null,index:-1}:{lines:lines.slice(0,index).concat(lines.slice(index+1)),removed:lines[index],index};}
+function restoreMaterialLine(lines,removed,index){const copy=lines.slice();copy.splice(Math.max(0,Math.min(index,copy.length)),0,removed);return copy;}
+function buildPriceReview(lines,projectQty,prices){let oldTotalCents=0,newTotalCents=0;const rows=lines.map(line=>{const oldResult=calculateMaterialLine(line,projectQty,prices);if(line.priceSnapshot?.source)oldResult.priceSource=line.priceSnapshot.source;oldTotalCents+=oldResult.lineCents||0;const candidate=resolvePrice({...line,priceMode:'list'},prices);if(oldResult.errors||candidate.price===null){newTotalCents+=oldResult.lineCents||0;return{line,status:'unchanged',oldResult,newResult:oldResult,reason:'Geen passende nieuwe prijs'};}const nextLine={...line,priceMode:'manual',unitPrice:candidate.price};const newResult=calculateMaterialLine(nextLine,projectQty,prices);newTotalCents+=newResult.lineCents||0;const differenceCents=(newResult.lineCents||0)-(oldResult.lineCents||0),percentage=oldResult.lineCents?differenceCents/oldResult.lineCents*100:null;return{line,status:differenceCents||candidate.price!==oldResult.price?'changed':'unchanged',oldResult,newResult,candidate,differenceCents,percentage};});return{rows,oldTotalCents,newTotalCents,differenceCents:newTotalCents-oldTotalCents};}
+function applyPriceReview(lines,review,now=new Date().toISOString()){const changes=new Map(review.rows.filter(x=>x.status==='changed').map(x=>[x.line.id,x]));return lines.map(line=>{const x=changes.get(line.id);if(!x)return line;return{...line,priceMode:'manual',unitPrice:x.newResult.price,priceSnapshot:{price:x.newResult.price,basis:line.priceBasis,density:MATERIALS[line.material]?.density,weightBasis:x.newResult.weightBasis,source:x.candidate.source,date:now}};});}
+function createStorageAdapter(storage){return{read(key,fallback){try{const raw=storage.getItem(key);if(raw===null)return{ok:true,value:fallback};return{ok:true,value:JSON.parse(raw)};}catch(error){return{ok:false,value:fallback,error};}},write(key,value){try{storage.setItem(key,JSON.stringify(value));return{ok:true};}catch(error){return{ok:false,error};}}};}
+function calculationPayload(data){return{type:'werkbank-calculatie',version:MATERIAL_SCHEMA,datum:new Date().toISOString(),calculatie:JSON.parse(JSON.stringify(data))};}
+function validateCalculationPayload(obj){if(!obj||obj.type!=='werkbank-calculatie'||![2,MATERIAL_SCHEMA].includes(obj.version)||!obj.calculatie||typeof obj.calculatie!=='object')return{ok:false,error:'schema'};const data=obj.calculatie;if(!Array.isArray(data.materials)||data.materials.length>100||!positiveInt(data.qty))return{ok:false,error:'bereik'};const ids=new Set();for(const line of data.materials){if(!line||typeof line.id!=='string'||!line.id||ids.has(line.id))return{ok:false,error:'dubbele-id'};ids.add(line.id);if(Object.keys(validateLine(line,data.qty)).length)return{ok:false,error:'materiaalregel'};}return{ok:true,data:JSON.parse(JSON.stringify(data))};}
+const COST_DEFAULTS={schemaVersion:MATERIAL_SCHEMA,project:'',klant:'',omschrijving:'',qty:1,materials:[],setupHours:0,productionHours:0,hourlyRate:65,saw:0,cutting:0,bending:0,machining:0,wireKg:0,wirePrice:8,gasLiters:0,gasPrice:0.004,finishing:0,transport:0,otherLabel:'Overige kosten',other:0,overhead:10,margin:20,vat:21};
+let costState=null,deletedLine=null,lastFocus=null;
+function migrateCalculation(raw){if(raw?.schemaVersion>MATERIAL_SCHEMA)throw new Error('Nieuwere schemaversie wordt niet ondersteund.');const v=Object.assign({},COST_DEFAULTS,raw||{});if(Array.isArray(raw?.materials)){v.materials=raw.materials.map(x=>Object.assign({},x,{id:x.id||uid()}));v.schemaVersion=MATERIAL_SCHEMA;return v;}if(raw&&Object.prototype.hasOwnProperty.call(raw,'weight')){const amount=cents((finiteNonNegative(raw.weight)*(1+finiteNonNegative(raw.waste)/100))*finiteNonNegative(raw.materialPrice));v.materials=[{id:'legacy-'+uid(),profile:'custom',material:raw.material||'rvs304',count:1,countMode:'project',dims:{kgm:1,length:1},priceBasis:'piece',priceMode:'manual',unitPrice:amount/100,waste:0,legacy:true,legacyAmountCents:amount,note:'Controle nodig: oorspronkelijke hoeveelheidbetekenis kon niet betrouwbaar worden gereconstrueerd.'}];}v.schemaVersion=MATERIAL_SCHEMA;return v;}
+function readCostInput(){const ids=['project','klant','omschrijving','qty','setupHours','productionHours','hourlyRate','saw','cutting','bending','machining','wireKg','wirePrice','gasLiters','gasPrice','finishing','transport','otherLabel','other','overhead','margin','vat'];ids.forEach(id=>{const el=$('c-'+id);if(el)costState[id]=el.value;});}
+function input(id,label,value,unit=''){return'<div><label for="c-'+id+'">'+esc(label)+'</label><div class="unit-field"><input id="c-'+id+'" type="text" inputmode="'+(unit?'decimal':'text')+'" value="'+esc(value??'')+'">'+(unit?'<span>'+esc(unit)+'</span>':'')+'</div></div>';}
+function profileIcon(type,label=''){const p=type;let shape=p==='tube'?'<circle cx="30" cy="30" r="19"/><circle cx="30" cy="30" r="11"/>':p==='round'?'<circle cx="30" cy="30" r="18" fill="currentColor"/>':p==='shs'?'<rect x="11" y="11" width="38" height="38"/><rect x="19" y="19" width="22" height="22"/>':p==='rhs'?'<rect x="7" y="15" width="46" height="30"/><rect x="15" y="22" width="30" height="16"/>':p==='flat'||p==='plate'?'<rect x="7" y="22" width="46" height="16" fill="currentColor"/>':p==='square'?'<rect x="13" y="13" width="34" height="34" fill="currentColor"/>':p==='hex'?'<path d="M15 10h30l10 20-10 20H15L5 30z" fill="currentColor"/>':p.includes('angle')?'<path d="M12 10h10v28h28v10H12z" fill="currentColor"/>':p==='tee'?'<path d="M8 10h44v10H35v30H25V20H8z" fill="currentColor"/>':p==='upn'||p==='upe'?'<path d="M12 9h10v32h28v10H12zM22 9h28v10H22z" fill="currentColor"/>':p==='ipe'||p==='hea'||p==='heb'?'<path d="M8 8h44v9H35v26h17v9H8v-9h17V17H8z" fill="currentColor"/>':'<path d="M8 42L30 8l22 34z" fill="currentColor"/>';return'<svg class="profile-icon" viewBox="0 0 60 60" role="img" aria-label="'+esc(PROFILES[type]?.name||type)+'"><g fill="none" stroke="currentColor" stroke-width="3" fill-rule="evenodd">'+shape+'</g>'+(label?'<text x="30" y="58" text-anchor="middle" font-size="9" fill="currentColor" stroke="none">'+esc(label)+'</text>':'')+'</svg>';}
+function lineDescription(l){if(l.legacy)return'Overgenomen oude materiaalpost';if(l.catalogSize)return PROFILES[l.profile].catalog+' '+l.catalogSize;return Object.entries(l.dims||{}).map(([k,v])=>(DIM_LABELS[k]?.[0]||k)+' '+esc(v)+' '+(DIM_LABELS[k]?.[1]||'')).join(' · ');}
+function renderCostPage(values,message){costState=migrateCalculation(values||COST_DEFAULTS);$('cost-content').innerHTML=(message?'<p class="readout" role="status">'+esc(message)+'</p>':'')+'<div class="card"><div class="cost-project">'+input('project','Projectnaam',costState.project)+input('qty','Aantal eindproducten',costState.qty,'st.')+'</div><div class="cost-project">'+input('klant','Klant / referentie',costState.klant)+input('omschrijving','Omschrijving',costState.omschrijving)+'</div></div><details class="cost-block" open><summary>Materiaal <span id="material-sub" class="summary-amount"></span></summary><div class="cost-block-body"><div class="material-head"><div><b>Materiaalstuklijst</b><div class="muted">Netto maten; inkooptoeslag is geen zaag- of nestingoptimalisatie.</div></div><div class="actions no-print"><button class="act" id="add-material">Materiaal toevoegen</button><button class="ghost" id="update-prices">Prijzen bijwerken</button></div></div><div id="material-content"></div></div></details>'+costDetails('Arbeid en bewerkingen','labor-fields',input('setupHours','Insteluren',costState.setupHours,'uur')+input('productionHours','Productie-uren totaal',costState.productionHours,'uur')+input('hourlyRate','Uurtarief',costState.hourlyRate,'€/uur')+input('saw','Zaagkosten',costState.saw,'€')+input('cutting','Snijkosten',costState.cutting,'€')+input('bending','Zetkosten',costState.bending,'€')+input('machining','Machinekosten',costState.machining,'€')+input('wireKg','Lasdraad',costState.wireKg,'kg')+input('wirePrice','Lasdraadprijs',costState.wirePrice,'€/kg')+input('gasLiters','Gas',costState.gasLiters,'liter')+input('gasPrice','Gasprijs',costState.gasPrice,'€/liter'))+costDetails('Overige kosten','other-fields',input('finishing','Nabewerking',costState.finishing,'€')+input('transport','Transport',costState.transport,'€')+input('otherLabel','Omschrijving',costState.otherLabel)+input('other','Bedrag',costState.other,'€'))+costDetails('Samenvatting en verkoopprijs','sale-fields',input('overhead','Algemene opslag',costState.overhead,'%')+input('margin','Gewenste winstmarge',costState.margin,'%')+input('vat','Btw',costState.vat,'%'),true)+'<div id="cost-result"></div><div class="card actions no-print"><button class="ghost" id="cost-new">Nieuwe calculatie</button><button class="act" id="cost-save">Calculatie bewaren</button><button class="ghost" id="cost-export">Export JSON</button><label class="file-label">Import JSON<input id="cost-import" type="file" accept="application/json,.json"></label><button class="ghost" id="cost-print">Printen</button></div><div id="saved-costs" class="card no-print"></div>';
+ document.querySelectorAll('#cost-content input').forEach(el=>el.addEventListener('input',()=>{readCostInput();renderMaterials();renderCostTotals();}));$('add-material').onclick=()=>openMaterialEditor();$('update-prices').onclick=reviewPrices;$('cost-new').onclick=()=>renderCostPage();$('cost-save').onclick=saveCalculation;$('cost-export').onclick=exportCalculation;$('cost-print').onclick=()=>print();$('cost-import').onchange=importCalculation;renderMaterials();renderCostTotals();renderSavedCosts();}
+function costDetails(title,id,fields,open=false){return'<details class="cost-block" '+(open?'open':'')+'><summary>'+title+' <span id="'+id+'-sub" class="summary-amount">€ 0,00</span></summary><div class="cost-block-body"><div class="grid">'+fields+'</div></div></details>';}
+function renderMaterials(){if(!costState)return;const calc=calculateMaterialList(costState.materials,positiveInt(costState.qty)||NaN);$('material-sub').textContent=(calc.incomplete?'Onvolledig · ':'')+euro(calc.cents/100);const groups=(key)=>{const m={};calc.rows.forEach(x=>{const k=key(x.line);m[k]=(m[k]||0)+(x.result.lineCents||0);});return m;};const groupHtml=(title,obj)=>'<div><b>'+title+'</b><div class="group-table">'+Object.entries(obj).map(([k,v])=>'<div><span>'+esc(k)+'</span><strong>'+euro(v/100)+'</strong></div>').join('')+'</div></div>';
+ $('material-content').innerHTML='<div class="material-totals"><div class="metric">Netto gewicht<b>'+fmt(calc.weight,3)+' kg</b></div><div class="metric">Materiaalbedrag<b class="'+(calc.incomplete?'incomplete':'')+'">'+(calc.incomplete?'Onvolledig · ':'')+euro(calc.cents/100)+'</b></div><div class="metric">Materiaalregels<b>'+calc.rows.length+'</b></div></div><div class="material-list">'+(calc.rows.length?calc.rows.map(materialCard).join(''):'<p class="muted">Nog geen materiaalregels. Voeg het eerste profiel of artikel toe.</p>')+'</div><div class="group-tables">'+groupHtml('Per profieltype',groups(l=>PROFILES[l.profile]?.name||'Legacy'))+groupHtml('Per materiaalsoort',groups(l=>MATERIALS[l.material]?.name||'Onbekend'))+'</div><p class="same-total">Dit zijn twee groeperingen van hetzelfde materiaalbedrag; tel ze niet bij elkaar op.</p>';document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openMaterialEditor(costState.materials.find(x=>x.id===b.dataset.edit)));document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{const src=costState.materials.find(x=>x.id===b.dataset.copy);costState.materials.push(duplicateMaterialLine(src,uid()));renderMaterials();renderCostTotals();});document.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>removeMaterial(b.dataset.remove));}
+function materialCard(x){const l=x.line,r=x.result;if(r.errors)return'<article class="material-card"><div>'+profileIcon(l.profile)+'</div><div><div class="material-title">'+esc(PROFILES[l.profile]?.name||'Onbekend')+'</div><div class="material-warning">Controle nodig: ongeldige regel</div></div><div class="row-actions no-print"><button data-edit="'+l.id+'" aria-label="Bewerken">✎</button><button data-remove="'+l.id+'" aria-label="Verwijderen">×</button></div></article>';return'<article class="material-card"><div>'+profileIcon(l.profile,['hea','heb'].includes(l.profile)?l.profile.toUpperCase():'')+'</div><div><div class="material-title">'+esc(PROFILES[l.profile].name)+' · '+esc(MATERIALS[l.material]?.name||'')+'</div><div class="material-meta">'+lineDescription(l)+'</div><div class="material-values"><span>Effectief <b>'+r.N+' st.</b></span><span>Netto <b>'+fmt(r.weight,3)+' kg</b></span><span>Regel <b class="'+(r.lineCents===null?'incomplete':'')+'">'+(r.lineCents===null?'Prijs ontbreekt':euro(r.lineCents/100))+'</b></span></div><div class="material-meta">Prijsbasis '+l.priceBasis+' · '+esc(r.priceSource)+' · gewicht: '+esc(r.weightBasis)+'</div>'+(r.waste?'<div class="material-meta">Netto '+fmt(r.net,3)+' + '+fmt(r.waste,1)+'% toeslag = '+fmt(r.billable,3)+' '+l.priceBasis+'</div>':'')+(l.legacy?'<div class="material-warning">'+esc(l.note)+'</div>':'')+(['shs','rhs'].includes(l.profile)&&r.weightBasis==='theoretische geometrie'?'<div class="material-warning">Benadering met scherpe hoeken; kg/m-override mogelijk.</div>':'')+'</div><div class="row-actions no-print"><button data-edit="'+l.id+'" aria-label="Bewerken">✎</button><button data-copy="'+l.id+'" aria-label="Dupliceren">⧉</button><button data-remove="'+l.id+'" aria-label="Verwijderen">×</button></div></article>';}
+
+function newLine(){return{id:uid(),profile:'',material:'s235',dims:{},count:1,countMode:'perProduct',priceBasis:'kg',priceMode:'list',unitPrice:'',waste:0,weightSource:'',sourceDate:new Date().toISOString().slice(0,10)};}
+function openMaterialEditor(source){lastFocus=document.activeElement;const draft=JSON.parse(JSON.stringify(source||newLine()));const initial=JSON.stringify(draft);let step=draft.profile?1:0;const overlay=document.createElement('div');overlay.className='editor-backdrop no-print';overlay.innerHTML='<section class="material-editor" role="dialog" aria-modal="true" aria-labelledby="editor-title"><div class="editor-head"><button class="ghost" id="editor-cancel">← Annuleren</button><h2 id="editor-title">'+(source?'Materiaal bewerken':'Materiaal toevoegen')+'</h2></div><div class="stepper"><div class="step">A Profiel</div><div class="step">B Materiaal & maten</div><div class="step">C Aantal & prijs</div></div><div id="editor-body"></div><div class="editor-actions"><button class="ghost" id="editor-prev">Terug</button><button class="act" id="editor-next">Verder</button><button class="ghost" id="editor-again" hidden>Toevoegen en nog één</button></div></section>';document.body.appendChild(overlay);const close=()=>{overlay.remove();lastFocus?.focus();};$('editor-cancel').onclick=()=>{if(JSON.stringify(draft)!==initial&&!confirm('Onopgeslagen wijzigingen weggooien?'))return;close();};overlay.onclick=e=>{if(e.target===overlay&&(JSON.stringify(draft)===initial||confirm('Onopgeslagen wijzigingen weggooien?')))close();};overlay.onkeydown=e=>{if(e.key==='Escape')$('editor-cancel').click();if(e.key==='Tab'){const f=[...overlay.querySelectorAll('button:not([hidden]),input:not([hidden]),select')];const first=f[0],last=f.at(-1);if(e.shiftKey&&e.target===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&e.target===last){e.preventDefault();first.focus();}}};
+ function draw(){overlay.querySelectorAll('.step').forEach((x,i)=>x.classList.toggle('active',i===step));$('editor-prev').hidden=step===0;$('editor-next').textContent=step===2?(source?'Wijzigingen bewaren':'Toevoegen'):'Verder';$('editor-again').hidden=step!==2||!!source;$('editor-body').innerHTML=step===0?pickerHtml(draft):step===1?dimensionsHtml(draft):pricingHtml(draft);bindDraft(draft,overlay,draw,step);queueMicrotask(()=>overlay.querySelector('input,select,button.profile-choice')?.focus());}
+ function next(again){collectDraft(draft,overlay);if(step===0&&!draft.profile){alert('Kies eerst een profielvorm.');return;}if(step===1){const errs=validateLine({...draft,priceMode:'list',priceBasis:draft.priceBasis||'kg',count:1,waste:0},positiveInt(costState.qty)||1);const dimensionErrors=Object.keys(errs).filter(k=>!['unitPrice','priceBasis','count'].includes(k));if(dimensionErrors.length){showEditorErrors(overlay,errs);return;}}if(step<2){step++;draw();return;}const errs=validateLine(draft,positiveInt(costState.qty));if(Object.keys(errs).length){showEditorErrors(overlay,errs);return;}let recent=safeGet('werkbank.preview.v3.profileRecent',[]);safeSet('werkbank.preview.v3.profileRecent',[draft.profile].concat(recent.filter(x=>x!==draft.profile)).slice(0,5));const idx=costState.materials.findIndex(x=>x.id===draft.id);if(idx>=0)costState.materials[idx]=draft;else costState.materials.push(draft);renderMaterials();renderCostTotals();close();if(again)openMaterialEditor();}
+ $('editor-next').onclick=()=>next(false);$('editor-again').onclick=()=>next(true);$('editor-prev').onclick=()=>{collectDraft(draft,overlay);step--;draw();};draw();}
+function editorDirty(d,s){return JSON.stringify(d)!==JSON.stringify(s||newLine());}
+function pickerHtml(d){const fav=safeGet('werkbank.preview.v3.profileFavorites',[]),recent=safeGet('werkbank.preview.v3.profileRecent',[]);const order=Object.keys(PROFILES).sort((a,b)=>(fav.includes(b)-fav.includes(a))||(recent.indexOf(a)<0?99:recent.indexOf(a))-(recent.indexOf(b)<0?99:recent.indexOf(b)));return'<label for="profile-search">Zoek op profiel, synoniem of catalogusaanduiding</label><input class="profile-search" id="profile-search" type="search" placeholder="Bijv. koker, UPN of hex">'+(recent.length?'<p class="picker-caption">Recent gebruikt: '+recent.slice(0,3).map(k=>esc(PROFILES[k]?.name||'')).join(' · ')+'</p>':'')+'<div class="profile-picker">'+order.map(k=>{const p=PROFILES[k];return'<div class="profile-choice-wrap" data-profile-wrap="'+k+'"><button class="favorite-star '+(fav.includes(k)?'on':'')+'" data-profile-fav="'+k+'" aria-label="'+(fav.includes(k)?'Verwijder uit favorieten':'Voeg toe aan favorieten')+'">☆</button><button class="profile-choice '+(d.profile===k?'selected':'')+'" data-profile="'+k+'">'+profileIcon(k,['hea','heb'].includes(k)?k.toUpperCase():'')+esc(p.name)+'<small>'+esc(p.syn.split(' ').slice(-2).join(' '))+'</small></button></div>';}).join('')+'</div>';}
+function dimensionsHtml(d){const p=PROFILES[d.profile],materials=Object.entries(MATERIALS).map(([k,m])=>'<option value="'+k+'" '+(d.material===k?'selected':'')+'>'+esc(m.name)+'</option>').join('');let fields='<div><label for="e-material">Materiaalsoort</label><select id="e-material">'+materials+'</select></div>';if(p.catalog){const sizes=Object.keys(SECTIONS[p.catalog]?.d||{});fields+='<div><label for="e-catalogSize">Catalogusmaat</label><select id="e-catalogSize" aria-describedby="e-catalogSize-error"><option value="">Kies maat</option>'+sizes.map(x=>'<option '+(d.catalogSize===x?'selected':'')+'>'+x+'</option>').join('')+'</select><div class="field-error" id="e-catalogSize-error" data-error="catalogSize" aria-live="polite"></div></div>'+editorInput('length','Stuklengte',d.dims?.length,'mm')+'<p class="f-full hint">Beperkte staalcatalogus uit EN 10365; catalogusmassa heeft voorrang. Voor een ander materiaal is dit geen beschikbaarheidsclaim.</p>';}else (p.dims||[]).forEach(k=>{const [label,unit]=DIM_LABELS[k];fields+=editorInput(k,label,d.dims?.[k],unit);});if(['upe','tee'].includes(d.profile))fields+=editorInput('supplierKgm','Leveranciersgewicht',d.supplierKgm,'kg/m')+editorInput('weightSource','Leverancier / bron',d.weightSource,'')+editorInput('sourceDate','Brondatum (jjjj-mm-dd)',d.sourceDate,'');if(['shs','rhs'].includes(d.profile))fields+=editorInput('kgmOverride','Optionele kg/m-override',d.kgmOverride,'kg/m');return diagram(d.profile)+'<div class="grid">'+fields+'</div>';}
+function diagram(p){const line=(x1,y1,x2,y2,label,lx,ly)=>'<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" marker-start="url(#arr)" marker-end="url(#arr)"/><text x="'+lx+'" y="'+ly+'">'+label+'</text>';let shape='',dims='';if(p==='plate'){shape='<path d="M55 42h170l20 46H75z"/>';dims=line(55,28,225,28,'b',140,22)+line(250,42,250,88,'t',264,68);}else if(p==='flat'){shape='<rect x="55" y="55" width="170" height="34"/>';dims=line(55,38,225,38,'b',140,32)+line(240,55,240,89,'t',254,75);}else if(p==='round'){shape='<circle cx="150" cy="70" r="43"/>';dims=line(107,70,193,70,'D',150,63);}else if(p==='square'){shape='<rect x="105" y="25" width="90" height="90"/>';dims=line(105,15,195,15,'b',150,11);}else if(p==='hex'){shape='<path d="M110 28h80l25 42-25 42h-80L85 70z"/>';dims=line(85,70,215,70,'SW',150,63);}else if(p==='tube'){shape='<circle cx="150" cy="70" r="45"/><circle cx="150" cy="70" r="31"/>';dims=line(105,70,195,70,'D',150,63)+line(181,38,190,29,'t',201,25);}else if(p==='shs'||p==='rhs'){const x=p==='shs'?102:72,w=p==='shs'?96:156;shape='<rect x="'+x+'" y="28" width="'+w+'" height="84"/><rect x="'+(x+13)+'" y="41" width="'+(w-26)+'" height="58"/>';dims=line(x,18,x+w,18,'b',150,13)+line(x-12,28,x-12,112,'h',x-25,74)+line(x+w-13,41,x+w,28,'t',x+w+11,39);}else if(p==='angle'||p==='unequalAngle'){const w=p==='angle'?105:145;shape='<path d="M92 25h22v65h'+w+'v22H92z"/>';dims=line(78,25,78,112,'a',65,72)+line(92,124,92+w,124,'b',145,139)+line(92,25,114,25,'t',103,18);}else if(p==='tee'){shape='<path d="M72 25h156v24h-65v65h-26V49H72z"/>';dims=line(72,15,228,15,'b',150,11)+line(242,25,242,114,'h',255,73)+line(137,58,163,58,'t',150,72);}else if(['upn','upe'].includes(p)){shape='<path d="M88 25h27v64h113v25H88zM115 25h113v24H115z"/>';dims=line(74,25,74,114,'h',61,73)+line(88,126,228,126,'b',158,141)+line(88,25,115,25,'t',101,18);}else{const thick=p==='heb'?27:p==='hea'?20:15;shape='<path d="M72 24h156v'+thick+'h-'+(78-thick/2)+'v'+(92-2*thick)+'h'+(78-thick/2)+'v'+thick+'H72v-'+thick+'h'+(78-thick/2)+'V'+(24+thick)+'H72z"/>';dims=line(72,14,228,14,'b',150,10)+line(58,24,58,116,'h',45,74)+line(137,55,163,55,'t',150,69);}const label=PROFILES[p]?.name||p;return'<svg class="tech-diagram" viewBox="0 0 300 155" role="img" aria-label="Maatdiagram '+esc(label)+'"><defs><marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M6 0L0 3l6 3z" fill="currentColor"/></marker></defs><g fill="none" stroke="currentColor" stroke-width="2">'+shape+dims+'</g><text x="150" y="151" text-anchor="middle" fill="currentColor" font-size="12">'+esc(label)+' — schematische doorsnede</text></svg>'; }
+function editorInput(id,label,value,unit){return'<div><label for="e-'+id+'">'+esc(label)+'</label><div class="unit-field"><input id="e-'+id+'" aria-describedby="e-'+id+'-error" type="text" inputmode="decimal" value="'+esc(value??'')+'">'+(unit?'<span>'+esc(unit)+'</span>':'')+'</div><div class="field-error" id="e-'+id+'-error" data-error="'+id+'" aria-live="polite"></div></div>';}
+function pricingHtml(d){const allowed=d.profile==='item'?['piece']:d.profile==='plate'?['kg','m2']:['kg','m'];return'<div class="grid">'+editorInput('count','Regelaantal',d.count,'st.')+'<div><label for="e-countMode">Aantalbetekenis</label><select id="e-countMode"><option value="perProduct" '+(d.countMode==='perProduct'?'selected':'')+'>Per eindproduct</option><option value="project" '+(d.countMode==='project'?'selected':'')+'>Voor gehele project</option></select></div><div><label for="e-priceBasis">Actieve prijsbasis</label><select id="e-priceBasis">'+allowed.map(x=>'<option value="'+x+'" '+(d.priceBasis===x?'selected':'')+'>'+({kg:'€ per kg',m:'€ per meter',m2:'€ per m²',piece:'€ per stuk'}[x])+'</option>').join('')+'</select><div class="field-error" data-error="priceBasis"></div></div><div><label for="e-priceMode">Prijsbron</label><select id="e-priceMode"><option value="list" '+(d.priceMode==='list'?'selected':'')+'>Prijslijst / fallback</option><option value="manual" '+(d.priceMode==='manual'?'selected':'')+'>Expliciet op deze regel</option></select></div>'+editorInput('unitPrice','Eenheidsprijs (alleen handmatig)',d.unitPrice,'€')+(d.profile==='item'?'':editorInput('waste','Procentuele inkooptoeslag',d.waste,'%'))+'</div><p class="hint">Eén prijsbasis is actief. Bij wisselen wordt de prijs leeggemaakt om betekenisverwisseling te voorkomen.</p>';}
+function collectDraft(d,root){root.querySelectorAll('[id^="e-"]').forEach(el=>{const k=el.id.slice(2);if(k in (d.dims||{}))d.dims[k]=el.value;else d[k]=el.value;});}
+function bindDraft(d,root,draw,step){root.querySelectorAll('[data-profile]').forEach(b=>b.onclick=()=>{d.profile=b.dataset.profile;d.dims={};d.priceBasis=d.profile==='item'?'piece':d.profile==='plate'?'kg':'kg';draw();});root.querySelectorAll('[data-profile-fav]').forEach(b=>b.onclick=()=>{let fav=safeGet('werkbank.preview.v3.profileFavorites',[]);fav=fav.includes(b.dataset.profileFav)?fav.filter(x=>x!==b.dataset.profileFav):fav.concat(b.dataset.profileFav);safeSet('werkbank.preview.v3.profileFavorites',fav);draw();});const search=$('profile-search');if(search)search.oninput=()=>root.querySelectorAll('[data-profile-wrap]').forEach(w=>{const k=w.dataset.profileWrap,p=PROFILES[k];w.hidden=!(p.name+' '+p.syn).toLowerCase().includes(search.value.toLowerCase());});const basis=$('e-priceBasis');if(basis)basis.onchange=()=>{if(basis.value!==d.priceBasis){d.unitPrice='';d.priceBasis=basis.value;}};}
+function showEditorErrors(root,errs){root.querySelectorAll('[data-error]').forEach(e=>{const msg=errs[e.dataset.error]||'';e.textContent=msg;const field=root.querySelector('#e-'+e.dataset.error);if(field){field.toggleAttribute('aria-invalid',!!msg);}});const first=Object.keys(errs)[0];root.querySelector('#e-'+first)?.focus();}
+function removeMaterial(id){const change=removeMaterialLine(costState.materials,id);if(!change.removed)return;costState.materials=change.lines;deletedLine={line:change.removed,index:change.index};renderMaterials();renderCostTotals();document.querySelector('.toast')?.remove();const t=document.createElement('div');t.className='toast no-print';t.setAttribute('role','status');t.innerHTML='Materiaalregel verwijderd <button class="ghost">Herstellen</button>';t.querySelector('button').onclick=()=>{costState.materials=restoreMaterialLine(costState.materials,deletedLine.line,deletedLine.index);deletedLine=null;t.remove();renderMaterials();renderCostTotals();};document.body.appendChild(t);setTimeout(()=>t.remove(),8000);}
+
+function moneyInput(id){const n=strictNumber(costState[id]);return Number.isFinite(n)&&n>=0?n:NaN;}
+function renderCostTotals(){const q=positiveInt(costState.qty),mat=calculateMaterialList(costState.materials,q,getPrices());const labor=(moneyInput('setupHours')+moneyInput('productionHours'))*moneyInput('hourlyRate');const process=['saw','cutting','bending','machining','finishing','transport','other'].reduce((s,k)=>s+moneyInput(k),0)+moneyInput('wireKg')*moneyInput('wirePrice')+moneyInput('gasLiters')*moneyInput('gasPrice');const invalid=!q||![labor,process].every(Number.isFinite);const directCents=mat.cents+(invalid?0:cents(labor+process)),sale=calculateSale(directCents,costState.overhead,costState.margin),vat=strictNumber(costState.vat);$('labor-fields-sub').textContent=Number.isFinite(labor)?euro(labor):'Controleer invoer';$('other-fields-sub').textContent=Number.isFinite(process)?euro(process):'Controleer invoer';if(invalid||sale.error||!Number.isFinite(vat)||vat<0){$('cost-result').innerHTML='<p class="err">Controleer alle project-, uren-, kosten- en percentagevelden. Gebruik volledige positieve getallen; marge moet kleiner zijn dan 100%.</p>';return;}const inc=Math.round(sale.saleCents*(1+vat/100));$('sale-fields-sub').textContent=(mat.incomplete?'Onvolledig · ':'')+euro(sale.saleCents/100);$('cost-result').innerHTML='<div class="readout"><div class="big '+(mat.incomplete?'incomplete':'')+'">'+(mat.incomplete?'Totaal onvolledig':'€ '+fmt(inc/100,2))+'</div><div class="biglabel">'+(mat.incomplete?'Een of meer materiaalprijzen of regels ontbreken.':'Verkoopprijs inclusief btw, afgerond op centen.')+'</div></div><div class="card"><h2>Projecttotalen</h2><div class="cost-breakdown"><span>Materiaal ('+mat.rows.length+' regels)</span><strong>'+euro(mat.cents/100)+'</strong><span>Arbeid en bewerkingen</span><strong>'+euro(labor)+'</strong><span>Overige kosten</span><strong>'+euro(process)+'</strong><span>Directe kostprijs</span><strong>'+euro(directCents/100)+'</strong><span>Kostprijs na opslag</span><strong>'+euro(sale.afterCents/100)+'</strong><span>Verkoopprijs excl. btw</span><strong>'+euro(sale.saleCents/100)+'</strong><span>Btw</span><strong>'+euro((inc-sale.saleCents)/100)+'</strong><span>Verkoopprijs incl. btw</span><strong>'+euro(inc/100)+'</strong></div></div>';}
+function serializableState(){readCostInput();return JSON.parse(JSON.stringify(costState));}
+function saveCalculation(){const data=serializableState();data.materials.forEach(l=>{const r=calculateMaterialLine(l,data.qty,getPrices());if(!r.errors&&r.price!==null){l.priceMode='manual';l.unitPrice=r.price;l.priceSnapshot={price:r.price,basis:l.priceBasis,density:MATERIALS[l.material]?.density,weightBasis:r.weightBasis,source:r.priceSource,date:new Date().toISOString()};}});const calc=calculateMaterialList(data.materials,positiveInt(data.qty),getPrices());if(calc.rows.some(x=>x.result.errors)){renderCostPage(data,'Bewaren afgebroken: controleer de ongeldige materiaalregels.');return;}let list=safeGet(STORE.calculations,[]);if(!Array.isArray(list))list=[];const oldRaw=localStorage.getItem(STORE.calculations);if(oldRaw&&!safeSet(STORE.calculations+'.backup',JSON.parse(oldRaw))){renderCostPage(data,'Backup kon niet worden gemaakt. Exporteer de calculatie voordat u verdergaat.');return;}list.unshift({id:uid(),datum:new Date().toISOString(),schemaVersion:MATERIAL_SCHEMA,data});if(safeSet(STORE.calculations,list))renderCostPage(data,'Calculatie en prijssnapshots zijn lokaal bewaard.');else renderCostPage(data,'Opslag mislukt of is vol. Exporteer de calculatie; gegevens zijn niet opgeslagen.');}
+function exportCalculation(){const data=serializableState();downloadJson('calculatie-'+(data.project||'werkbank').replace(/[^a-z0-9_-]+/gi,'-')+'.json',calculationPayload(data));}
+async function importCalculation(e){const file=e.target.files[0];if(!file)return;if(file.size>2e6){renderCostPage(costState,'Import geweigerd: bestand is groter dan 2 MB.');return;}try{const obj=JSON.parse(await file.text());const checked=validateCalculationPayload(obj);if(!checked.ok)throw Error(checked.error);const data=migrateCalculation(checked.data);renderCostPage(data,'Calculatie veilig geïmporteerd; bewaar expliciet om lokaal op te slaan.');}catch(_){renderCostPage(costState,'Import geweigerd: ongeldig schema, waarden of materiaalregels.');}}
+function renderSavedCosts(){let list=safeGet(STORE.calculations,[]);if(!Array.isArray(list))list=[];$('saved-costs').innerHTML='<h2>Opgeslagen calculaties</h2>'+(list.length?list.map(x=>'<div class="saved-item"><div class="saved-title"><b>'+esc(x.data?.project||'Naamloze calculatie')+'</b><span class="muted">'+esc(new Date(x.datum).toLocaleDateString('nl-NL'))+'</span></div><div class="actions"><button class="ghost" data-open="'+esc(x.id)+'">Openen</button><button class="ghost" data-delete="'+esc(x.id)+'">Verwijderen</button></div></div>').join(''):'<p class="muted">Nog geen calculaties bewaard.</p>');$('saved-costs').querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{const x=list.find(y=>y.id===b.dataset.open);if(x)renderCostPage(migrateCalculation(x.data));});$('saved-costs').querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>{if(confirm('Deze opgeslagen calculatie verwijderen?')){list=list.filter(x=>x.id!==b.dataset.delete);safeSet(STORE.calculations,list);renderSavedCosts();}});}
+function reviewPrices(){const review=buildPriceReview(costState.materials,costState.qty,getPrices()),changed=review.rows.filter(x=>x.status==='changed');const overlay=document.createElement('div');overlay.className='editor-backdrop no-print';const row=x=>{const name=PROFILES[x.line.profile]?.name||'Materiaalregel';if(x.status!=='changed')return'<tr><td>'+esc(name)+'</td><td colspan="7">Ongewijzigd — '+esc(x.reason||'geen prijsverschil')+'</td></tr>';return'<tr><td>'+esc(name+' '+lineDescription(x.line))+'</td><td>'+euro(x.oldResult.price)+' / '+esc(x.line.priceBasis)+'</td><td>'+euro(x.newResult.price)+' / '+esc(x.line.priceBasis)+'</td><td>'+euro(x.oldResult.lineCents/100)+'</td><td>'+euro(x.newResult.lineCents/100)+'</td><td>'+euro(x.differenceCents/100)+'</td><td>'+(x.percentage===null?'—':fmt(x.percentage,1)+'%')+'</td><td>'+esc(x.oldResult.priceSource)+' → '+esc(x.candidate.source)+'</td></tr>';};overlay.innerHTML='<section class="material-editor" role="dialog" aria-modal="true" aria-labelledby="price-review-title"><div class="editor-head"><h2 id="price-review-title">Prijzen bijwerken</h2><button class="ghost" id="price-review-cancel">Annuleren</button></div><p>Controleer alle verschillen. Er wordt pas iets gewijzigd na expliciete bevestiging.</p><div class="scroll price-review"><table class="data"><thead><tr><th>Regel</th><th>Oude prijs</th><th>Nieuwe prijs</th><th>Oud bedrag</th><th>Nieuw bedrag</th><th>Verschil</th><th>Verschil %</th><th>Herkomst</th></tr></thead><tbody>'+review.rows.map(row).join('')+'</tbody><tfoot><tr><th>Materiaaltotaal</th><th colspan="2"></th><th>'+euro(review.oldTotalCents/100)+'</th><th>'+euro(review.newTotalCents/100)+'</th><th>'+euro(review.differenceCents/100)+'</th><th colspan="2"></th></tr></tfoot></table></div><div class="editor-actions"><button class="ghost" id="price-review-close">Annuleren</button><button class="act" id="price-review-apply" '+(changed.length?'':'disabled')+'>Bevestigen en snapshots opslaan</button></div></section>';document.body.appendChild(overlay);const close=()=>{overlay.remove();$('update-prices')?.focus();};$('price-review-cancel').onclick=close;$('price-review-close').onclick=close;$('price-review-apply').onclick=()=>{costState.materials=applyPriceReview(costState.materials,review);close();renderMaterials();renderCostTotals();};overlay.onkeydown=e=>{if(e.key==='Escape')close();};queueMicrotask(()=>$('price-review-cancel').focus());}
+
+
+
+function readout(big, label, rows) {
+  let h = '';
+  if (big !== null && big !== undefined) {
+    h += '<div class="readout"><div class="big">' + big + '</div>' +
+         (label ? '<div class="biglabel">' + label + '</div>' : '') + '</div>';
+  }
+  if (rows && rows.length) {
+    h += '<div class="card"><dl class="vals">';
+    rows.forEach((r, i) => {
+      if (r === null) return;
+      const last = i === rows.length - 1 ? ' last' : '';
+      const sec = r[3] === 'sec' ? ' sec' : '';
+      h += '<dt class="' + last.trim() + sec + '">' + r[0] + '</dt>' +
+           '<dd class="' + last.trim() + sec + (r[2] ? ' hero' : '') + '">' + r[1] + '</dd>';
+    });
+    h += '</dl></div>';
+  }
+  return h;
+}
+function warnbox(title, list) {
+  if (!list || !list.length) return '';
+  return '<div class="warnbox"><b>' + title + '</b><ul>' + list.map(x => '<li>' + x + '</li>').join('') + '</ul></div>';
+}
+function notecard(html) { return '<div class="card"><p class="note">' + html + '</p></div>'; }
+
+/* ================= materiaal ================= */
+const MATS = [
+  { v: '7.90|rvs304', t: 'RVS 304 / 1.4301', key: 'rvs304' },
+  { v: '8.00|rvs316', t: 'RVS 316 / 1.4401', key: 'rvs316' },
+  { v: '7.70|rvs430', t: 'RVS 430 / 1.4016', key: 'rvs430' },
+  { v: '7.85|s235', t: 'Staal S235', key: 's235' },
+  { v: '7.85|s355', t: 'Staal S355', key: 's355' },
+  { v: '2.70|alu', t: 'Aluminium', key: 'alu' },
+  { v: '8.50|messing', t: 'Messing', key: 'messing' },
+  { v: '8.96|koper', t: 'Koper', key: 'koper' }
+];
+
+/* profieltabellen — EN 10365, h b tw tf A(cm2) Iy(cm4) Wy(cm3) kg/m */
+const SECTIONS = {
+  IPE: {
+    cols: [80, 100, 120, 140, 160, 180, 200, 220, 240, 270, 300, 330, 360, 400, 450, 500, 550, 600],
+    d: {
+      80: [80, 46, 3.8, 5.2, 7.64, 80.1, 20.0, 6.0], 100: [100, 55, 4.1, 5.7, 10.3, 171, 34.2, 8.1],
+      120: [120, 64, 4.4, 6.3, 13.2, 318, 53.0, 10.4], 140: [140, 73, 4.7, 6.9, 16.4, 541, 77.3, 12.9],
+      160: [160, 82, 5.0, 7.4, 20.1, 869, 109, 15.8], 180: [180, 91, 5.3, 8.0, 23.9, 1317, 146, 18.8],
+      200: [200, 100, 5.6, 8.5, 28.5, 1943, 194, 22.4], 220: [220, 110, 5.9, 9.2, 33.4, 2772, 252, 26.2],
+      240: [240, 120, 6.2, 9.8, 39.1, 3892, 324, 30.7], 270: [270, 135, 6.6, 10.2, 45.9, 5790, 429, 36.1],
+      300: [300, 150, 7.1, 10.7, 53.8, 8356, 557, 42.2], 330: [330, 160, 7.5, 11.5, 62.6, 11770, 713, 49.1],
+      360: [360, 170, 8.0, 12.7, 72.7, 16270, 904, 57.1], 400: [400, 180, 8.6, 13.5, 84.5, 23130, 1156, 66.3],
+      450: [450, 190, 9.4, 14.6, 98.8, 33740, 1500, 77.6], 500: [500, 200, 10.2, 16.0, 116, 48200, 1928, 90.7],
+      550: [550, 210, 11.1, 17.2, 134, 67120, 2441, 106], 600: [600, 220, 12.0, 19.0, 156, 92080, 3069, 122]
+    }
+  },
+  HEA: {
+    cols: [100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 400, 450, 500],
+    d: {
+      100: [96, 100, 5, 8, 21.2, 349, 72.8, 16.7], 120: [114, 120, 5, 8, 25.3, 606, 106, 19.9],
+      140: [133, 140, 5.5, 8.5, 31.4, 1033, 155, 24.7], 160: [152, 160, 6, 9, 38.8, 1673, 220, 30.4],
+      180: [171, 180, 6, 9.5, 45.3, 2510, 294, 35.5], 200: [190, 200, 6.5, 10, 53.8, 3692, 389, 42.3],
+      220: [210, 220, 7, 11, 64.3, 5410, 515, 50.5], 240: [230, 240, 7.5, 12, 76.8, 7763, 675, 60.3],
+      260: [250, 260, 7.5, 12.5, 86.8, 10450, 836, 68.2], 280: [270, 280, 8, 13, 97.3, 13670, 1013, 76.4],
+      300: [290, 300, 8.5, 14, 112.5, 18260, 1260, 88.3], 320: [310, 300, 9, 15.5, 124.4, 22930, 1479, 97.6],
+      340: [330, 300, 9.5, 16.5, 133.5, 27690, 1678, 105], 360: [350, 300, 10, 17.5, 142.8, 33090, 1891, 112],
+      400: [390, 300, 11, 19, 159, 45070, 2311, 125], 450: [440, 300, 11.5, 21, 178, 63720, 2896, 140],
+      500: [490, 300, 12, 23, 197.5, 86970, 3550, 155]
+    }
+  },
+  HEB: {
+    cols: [100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 400, 450, 500],
+    d: {
+      100: [100, 100, 6, 10, 26.0, 450, 89.9, 20.4], 120: [120, 120, 6.5, 11, 34.0, 864, 144, 26.7],
+      140: [140, 140, 7, 12, 43.0, 1509, 216, 33.7], 160: [160, 160, 8, 13, 54.3, 2492, 311, 42.6],
+      180: [180, 180, 8.5, 14, 65.3, 3831, 426, 51.2], 200: [200, 200, 9, 15, 78.1, 5696, 570, 61.3],
+      220: [220, 220, 9.5, 16, 91.0, 8091, 736, 71.5], 240: [240, 240, 10, 17, 106, 11260, 938, 83.2],
+      260: [260, 260, 10, 17.5, 118.4, 14920, 1148, 93.0], 280: [280, 280, 10.5, 18, 131.4, 19270, 1376, 103],
+      300: [300, 300, 11, 19, 149.1, 25170, 1678, 117], 320: [320, 300, 11.5, 20.5, 161.3, 30820, 1926, 127],
+      340: [340, 300, 12, 21.5, 170.9, 36660, 2156, 134], 360: [360, 300, 12.5, 22.5, 180.6, 43190, 2400, 142],
+      400: [400, 300, 13.5, 24, 197.8, 57680, 2884, 155], 450: [450, 300, 14, 26, 218, 79890, 3551, 171],
+      500: [500, 300, 14.5, 28, 238.6, 107200, 4287, 187]
+    }
+  },
+  UNP: {
+    cols: [80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 300],
+    d: {
+      80: [80, 45, 6, 8, 11.0, 106, 26.5, 8.64], 100: [100, 50, 6, 8.5, 13.5, 206, 41.2, 10.6],
+      120: [120, 55, 7, 9, 17.0, 364, 60.7, 13.4], 140: [140, 60, 7, 10, 20.4, 605, 86.4, 16.0],
+      160: [160, 65, 7.5, 10.5, 24.0, 925, 116, 18.8], 180: [180, 70, 8, 11, 28.0, 1350, 150, 22.0],
+      200: [200, 75, 8.5, 11.5, 32.2, 1910, 191, 25.3], 220: [220, 80, 9, 12.5, 37.4, 2690, 245, 29.4],
+      240: [240, 85, 9.5, 13, 42.3, 3600, 300, 33.2], 260: [260, 90, 10, 14, 48.3, 4820, 371, 37.9],
+      300: [300, 100, 10, 16, 58.8, 8030, 535, 46.2]
+    }
+  }
+};
+function sectionOptions() {
+  let o = '';
+  for (const fam of Object.keys(SECTIONS)) {
+    o += '<optgroup label="' + fam + '">';
+    for (const h of SECTIONS[fam].cols) o += '<option value="' + fam + '|' + h + '">' + fam + ' ' + h + '</option>';
+    o += '</optgroup>';
+  }
+  return o;
+}
+
+/* metrisch schroefdraad: [spoed, tapboor, doorboor-middel] */
+const THREADS = {
+  M3: [0.5, 2.5, 3.4], M4: [0.7, 3.3, 4.5], M5: [0.8, 4.2, 5.5], M6: [1.0, 5.0, 6.6],
+  M8: [1.25, 6.8, 9.0], M10: [1.5, 8.5, 11.0], M12: [1.75, 10.2, 13.5], M14: [2.0, 12.0, 15.5],
+  M16: [2.0, 14.0, 17.5], M18: [2.5, 15.5, 20.0], M20: [2.5, 17.5, 22.0], M22: [2.5, 19.5, 24.0],
+  M24: [3.0, 21.0, 26.0], M27: [3.0, 24.0, 30.0], M30: [3.5, 26.5, 33.0], M36: [4.0, 32.0, 39.0]
+};
+
+/* ================= mini formulier-bouwer ================= */
+function fieldHtml(f) {
+  const cls = f.span ? ' f-full' : '';
+  if (f.type === 'note') return '<p class="f-hint">' + f.text + '</p>';
+  let inner;
+  if (f.type === 'select') {
+    const opts = typeof f.options === 'string' ? f.options
+      : f.options.map(o => '<option value="' + o.v + '"' + (o.v == f.value ? ' selected' : '') + '>' + o.t + '</option>').join('');
+    inner = '<select id="f-' + f.id + '"' + (f.reload ? ' data-reload="1"' : '') + '>' + opts + '</select>';
+  } else if (f.type === 'text') {
+    inner = '<input type="text" id="f-' + f.id + '" value="' + (f.value === undefined ? '' : esc(f.value)) + '"' +
+      (f.ph ? ' placeholder="' + esc(f.ph) + '"' : '') + '>';
+  } else {
+    inner = '<input type="number" id="f-' + f.id + '" value="' + (f.value === undefined ? '' : f.value) + '"' +
+      ' step="' + (f.step || 'any') + '"' + (f.min !== undefined ? ' min="' + f.min + '"' : '') +
+      (f.ph ? ' placeholder="' + esc(f.ph) + '"' : '') + ' inputmode="decimal">';
+  }
+  return '<div class="' + cls.trim() + '"><label for="f-' + f.id + '">' + f.label + '</label>' + inner + '</div>';
+}
+function buildForm(fields, heading) {
+  return '<div class="card">' + (heading ? '<h2>' + heading + '</h2>' : '') +
+    '<div class="grid">' + fields.map(fieldHtml).join('') + '</div></div>';
+}
+function readFields(fields) {
+  const v = {};
+  for (const f of fields) {
+    if (f.type === 'note') continue;
+    const el = $('f-' + f.id);
+    if (!el) continue;
+    v[f.id] = (f.type === 'select' || f.type === 'text') ? el.value : num(el.value);
+    if (f.type === 'select') v[f.id + '_txt'] = el.selectedOptions[0] ? el.selectedOptions[0].text : '';
+  }
+  return v;
+}
+
+/* ================= registry & router ================= */
+const TOOLS = [];
+function reg(t) { TOOLS.push(t); }
+let favorites = safeGet(STORE.favorites, []);
+if (!Array.isArray(favorites)) favorites = [];
+
+function renderMenu() {
+  const groups = [];
+  for (const t of TOOLS) {
+    let g = groups.find(x => x.name === t.group);
+    if (!g) { g = { name: t.group, items: [] }; groups.push(g); }
+    g.items.push(t);
+  }
+  $('menu').innerHTML = groups.map(g =>
+    '<div class="group" data-group="' + esc(g.name) + '"><h2>' + esc(g.name) + '</h2>' +
+    g.items.map(t => {
+      const fav = favorites.includes(t.id);
+      return '<div role="button" tabindex="0" class="item' + (fav ? ' is-fav' : '') + '" data-id="' + t.id + '" data-search="' + esc((t.name + ' ' + t.desc + ' ' + (t.kw || '')).toLowerCase()) + '">' +
+      '<span class="nm">' + esc(t.name) + '</span><span class="ds">' + esc(t.desc) + '</span>' +
+      '<button type="button" class="fav-btn" data-fav="' + t.id + '" aria-label="' + (fav ? 'Verwijder ' : 'Voeg ') + esc(t.name) + (fav ? ' uit favorieten' : ' toe aan favorieten') + '" aria-pressed="' + fav + '">' + (fav ? '★' : '☆') + '</button></div>';
+    }).join('') + '</div>'
+  ).join('');
+  $('menu').querySelectorAll('.item').forEach(b => { b.addEventListener('click', e => { if (!e.target.closest('.fav-btn')) openTool(b.dataset.id); }); b.addEventListener('keydown', e => { if (e.target.closest('.fav-btn')) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openTool(b.dataset.id); } }); });
+  $('menu').querySelectorAll('.fav-btn').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); const id=b.dataset.fav; favorites = favorites.includes(id) ? favorites.filter(x=>x!==id) : favorites.concat(id); safeSet(STORE.favorites, favorites); renderMenu(); }));
+}
+
+$('q').addEventListener('input', () => {
+  const q = $('q').value.trim().toLowerCase(); let any = false;
+  $('menu').querySelectorAll('.group').forEach(g => { let vis = 0; g.querySelectorAll('.item').forEach(it => { const hit = !q || it.dataset.search.includes(q); it.hidden = !hit; if (hit) vis++; }); g.hidden = vis === 0; if (vis) any = true; });
+  $('noresult').hidden = any;
+});
+
+let current = null;
+function hidePages() { ['home','tool','prices','cost'].forEach(id => $(id).hidden = true); }
+function setNav(route) { document.querySelectorAll('.nav-btn').forEach(b => { const active = b.dataset.route === route; b.classList.toggle('active', active); b.setAttribute('aria-current', active ? 'page' : 'false'); }); }
+function showHome(navRoute = 'home') { current=null; hidePages(); $('home').hidden=false; $('tool-out').innerHTML=''; $('tool-form').innerHTML=''; setNav(navRoute); window.scrollTo({top:0}); }
+function openTool(id) { const t=TOOLS.find(x=>x.id===id); if(!t)return; if(t.page){ history.pushState(null,'','#'+id); openPage(id); return; } current=t; hidePages(); $('tool').hidden=false; $('tool-title').textContent=t.name; $('tool-lede').textContent=t.lede||t.desc; mountTool(t); setNav('tools'); window.scrollTo({top:0}); if(location.hash!=='#'+id) history.pushState(null,'','#'+id); }
+function closeTool() { history.pushState(null,'','#home'); routeHash(); }
+$('back').addEventListener('click', closeTool);
+function openPage(page) { hidePages(); if(page==='prijzen'){ $('prices').hidden=false; renderPrices(); } else if(page==='kostprijs'){ $('cost').hidden=false; renderCostPage(); } else { showHome(); } setNav(page); window.scrollTo({top:0}); }
+function routeHash() { const hash=location.hash.slice(1); if(hash==='prijzen'||hash==='kostprijs') openPage(hash); else if(hash==='tools') showHome('tools'); else if(TOOLS.some(t=>t.id===hash)) openTool(hash); else showHome('home'); }
+document.querySelectorAll('.nav-btn').forEach(b => b.addEventListener('click', () => { const route=b.dataset.route; history.pushState(null,'','#'+route); routeHash(); }));
+window.addEventListener('hashchange', routeHash);
+
+
+function mountTool(t) {
+  if (t.custom) { t.custom($('tool-form'), $('tool-out')); return; }
+  const fields = typeof t.fields === 'function' ? t.fields(t._v || {}) : t.fields;
+  $('tool-form').innerHTML = buildForm(fields, t.formTitle || 'Invoer');
+  const run = () => {
+    const v = readFields(fields);
+    if (t.id === 'gewicht' && t._v && t._v.priceManual) v.priceManual = true;
+    t._v = v;
+    try {
+      const res = t.calc(v);
+      $('tool-out').innerHTML = typeof res === 'string' ? res : renderResult(res);
+      if (t.after) t.after(v);
+    } catch (e) {
+      $('tool-out').innerHTML = '<p class="err">Controleer de ingevulde maten.</p>';
+    }
+  };
+  fields.forEach(f => {
+    if (f.type === 'note') return;
+    const el = $('f-' + f.id);
+    if (!el) return;
+    if (f.reload) el.addEventListener('change', () => { t._v = readFields(fields); if (t.id === 'gewicht' && f.id === 'mat') t._v.priceManual = false; mountTool(t); });
+    else el.addEventListener(f.type === 'select' ? 'change' : 'input', () => { if (t.id === 'gewicht' && f.id === 'price') { const currentValues = readFields(fields); currentValues.priceManual = true; t._v = currentValues; } run(); });
+  });
+  run();
+}
+function renderResult(r) {
+  if (r.error) return '<p class="err">' + r.error + '</p>';
+  let h = '';
+  if (r.warnings && r.warnings.length) h += warnbox(r.warnTitle || 'Let op', r.warnings);
+  h += readout(r.big, r.label, r.rows);
+  if (r.html) h += r.html;
+  if (r.note) h += notecard(r.note);
+  if (r.print) h += '<div class="card"><div class="actions"><button class="ghost" onclick="window.print()">Printen</button></div></div>';
+  return h;
+}
+
+/* ================= vormen voor gewicht ================= */
+function sectionOptionsSel(sel) {
+  let o = '';
+  for (const fam of Object.keys(SECTIONS)) {
+    o += '<optgroup label="' + fam + '">';
+    for (const h of SECTIONS[fam].cols) {
+      const val = fam + '|' + h;
+      o += '<option value="' + val + '"' + (val === sel ? ' selected' : '') + '>' + fam + ' ' + h + '</option>';
+    }
+    o += '</optgroup>';
+  }
+  return o;
+}
+
+const SHAPES = {
+  plaat:   { t: 'Plaat / strip',            f: [['b', 'Breedte (mm)', 100], ['t', 'Dikte (mm)', 3]],                                      a: d => d.b * d.t },
+  rond:    { t: 'Rondstaf',                 f: [['d', 'Diameter (mm)', 20]],                                                              a: d => Math.PI / 4 * d.d * d.d },
+  vk:      { t: 'Vierkantstaf',             f: [['a', 'Zijde (mm)', 20]],                                                                 a: d => d.a * d.a },
+  zk:      { t: 'Zeskantstaf',              f: [['sw', 'Sleutelwijdte (mm)', 20]],                                                        a: d => 0.8660254 * d.sw * d.sw },
+  buis:    { t: 'Buis rond',                f: [['D', 'Buitendiameter (mm)', 48.3], ['t', 'Wanddikte (mm)', 2]],                          a: d => Math.PI / 4 * (d.D * d.D - Math.pow(d.D - 2 * d.t, 2)) },
+  kokervk: { t: 'Koker vierkant',           f: [['a', 'Zijde (mm)', 40], ['t', 'Wanddikte (mm)', 3]],                                     a: d => 4 * d.t * d.a - 4 * d.t * d.t },
+  kokerrh: { t: 'Koker rechthoek',          f: [['b', 'Breedte (mm)', 60], ['h', 'Hoogte (mm)', 40], ['t', 'Wanddikte (mm)', 3]],         a: d => 2 * d.t * (d.b + d.h) - 4 * d.t * d.t },
+  hoekgl:  { t: 'Hoeklijn gelijkzijdig',    f: [['a', 'Been (mm)', 40], ['t', 'Dikte (mm)', 4]],                                          a: d => d.t * (2 * d.a - d.t) },
+  hoekol:  { t: 'Hoeklijn ongelijkzijdig',  f: [['a', 'Been A (mm)', 60], ['b', 'Been B (mm)', 40], ['t', 'Dikte (mm)', 5]],              a: d => d.t * (d.a + d.b - d.t) },
+  profiel: { t: 'Profiel uit tabel',        f: [],                                                                                        a: null }
+};
+
+/* ================= 1. gewicht & prijs ================= */
+reg({
+  id: 'gewicht', group: 'Materiaal', name: 'Gewicht en prijs',
+  desc: 'Kilo per meter en totaalgewicht voor plaat, staf, buis, koker, hoeklijn en profiel.',
+  kw: 'kilo massa soortelijk staal rvs inkoop',
+  lede: 'Rekent het gewicht per meter en het totaalgewicht uit, met een materiaalprijs erbij als je die invult.',
+  fields: v => {
+    const shape = v.shape || 'plaat';
+    const out = [
+      { id: 'mat', label: 'Materiaal', type: 'select', reload: true, value: v.mat || '7.90|rvs304', options: MATS.map(m => ({ v: m.v, t: m.t })) },
+      { id: 'shape', label: 'Vorm', type: 'select', value: shape, reload: true, options: Object.keys(SHAPES).map(k => ({ v: k, t: SHAPES[k].t })) }
+    ];
+    if (shape === 'profiel') {
+      out.push({ id: 'prof', label: 'Profiel', type: 'select', span: true, options: sectionOptionsSel(v.prof || 'IPE|160') });
+    } else {
+      SHAPES[shape].f.forEach(x => out.push({ id: x[0], label: x[1], value: v[x[0]] !== undefined && isFinite(v[x[0]]) ? v[x[0]] : x[2], step: '0.1', min: 0 }));
+    }
+    out.push({ id: 'len', label: 'Lengte (mm)', value: isFinite(v.len) ? v.len : 1000, step: '1', min: 0 });
+    out.push({ id: 'qty', label: 'Aantal', value: isFinite(v.qty) ? v.qty : 1, step: '1', min: 0 });
+    const listedPrice = getPrices()[materialKey(v.mat || '7.90|rvs304')];
+    out.push({ id: 'price', label: 'Prijs per kg (€)', span: true, value: v.priceManual && isFinite(v.price) ? v.price : listedPrice, step: '0.01', min: 0, ph: 'bijv. 4,50' });
+    return out;
+  },
+  calc: v => {
+    const rho = num(v.mat);
+    let kgm, label, area = NaN, note;
+    if (v.shape === 'profiel') {
+      const p = String(v.prof).split('|');
+      const row = SECTIONS[p[0]].d[p[1]];
+      kgm = row[7] * (rho / 7.85);
+      area = row[4] * 100;
+      label = p[0] + ' ' + p[1];
+      note = 'Tabelgewicht volgens EN 10365, omgerekend naar ' + rho.toLocaleString('nl-NL') + ' kg/dm³. ' +
+        'Warmgewalste profielen in RVS bestaan nauwelijks; die worden meestal uit plaat gelast en wijken in gewicht af.';
+    } else {
+      const d = {};
+      for (const f of SHAPES[v.shape].f) { d[f[0]] = v[f[0]]; if (!isFinite(d[f[0]]) || d[f[0]] < 0) return { error: 'Vul alle maten in.' }; }
+      area = SHAPES[v.shape].a(d);
+      if (!(area > 0)) return { error: 'Deze maatcombinatie geeft geen doorsnede. Controleer de wanddikte.' };
+      kgm = area * rho * 1e-3;
+      label = SHAPES[v.shape].t;
+      if (v.shape === 'kokervk' || v.shape === 'kokerrh') note = 'Gerekend met scherpe hoeken. Een gewalste koker heeft afgeronde hoeken en weegt daardoor een fractie minder.';
+      else if (v.shape.startsWith('hoek')) note = 'Gerekend zonder de walsradius in de oksel; het echte gewicht ligt iets hoger.';
+      else note = 'Soortelijk gewicht ' + rho.toLocaleString('nl-NL') + ' kg/dm³. Diktetoleranties van de leverancier schelen al gauw enkele procenten.';
+    }
+    if (!isFinite(v.len) || v.len < 0 || !isFinite(v.qty) || v.qty < 0) return { error: 'Vul lengte en aantal in.' };
+    const per = kgm * v.len / 1000, tot = per * v.qty;
+    const rows = [
+      ['Doorsnede', fmt(area, 0) + ' mm²'],
+      ['Gewicht per meter', fmt(kgm, 2) + ' kg/m'],
+      ['Per stuk (' + fmt(v.len, 0) + ' mm)', fmt(per, 2) + ' kg'],
+      ['Aantal', fmt(v.qty, 0) + ' ×'],
+      ['Totaalgewicht', fmt(tot, 2) + ' kg', true]
+    ];
+    if (isFinite(v.price) && v.price > 0) {
+      rows.push(['Prijs per meter', '€ ' + fmt(kgm * v.price, 2)]);
+      rows.push(['Materiaalprijs totaal', '€ ' + fmt(tot * v.price, 2), true]);
+      rows.push(['Prijsbron', v.priceManual ? 'Handmatig ingevoerd' : 'Materiaalprijslijst']);
+    }
+    return { big: fmt(tot, 2) + ' kg', label: label + ' — ' + fmt(v.qty, 0) + ' × ' + fmt(v.len, 0) + ' mm', rows: rows, note: note };
+  }
+});
+
+/* ================= 2. profielenboek ================= */
+reg({
+  id: 'profielen', group: 'Materiaal', name: 'Profielenboek',
+  desc: 'Maten en eigenschappen van IPE, HEA, HEB en UNP naast elkaar.',
+  kw: 'tabel sectie ipe hea heb unp traagheidsmoment weerstandsmoment',
+  lede: 'De gangbare EU-profielen met hun maten, oppervlak, traagheids- en weerstandsmoment. Tik een regel aan om hem te markeren.',
+  custom: (form, out) => {
+    form.innerHTML = buildForm([
+      { id: 'fam', label: 'Familie', type: 'select', options: Object.keys(SECTIONS).map(k => ({ v: k, t: k })) },
+      { id: 'mat', label: 'Materiaal', type: 'select', value: '7.85|s235', options: MATS.map(m => ({ v: m.v, t: m.t })) }
+    ], 'Kies');
+    const draw = () => {
+      const fam = $('f-fam').value, rho = num($('f-mat').value);
+      const S = SECTIONS[fam];
+      let h = '<div class="card"><h2>' + fam + '</h2><div class="scroll"><table class="data"><thead><tr>' +
+        '<th>Profiel</th><th>h</th><th>b</th><th>tw</th><th>tf</th><th>A cm²</th><th>Iy cm⁴</th><th>Wy cm³</th><th>kg/m</th>' +
+        '</tr></thead><tbody>';
+      for (const c of S.cols) {
+        const r = S.d[c];
+        h += '<tr onclick="this.classList.toggle(\'hl\')"><td>' + fam + ' ' + c + '</td>' +
+          '<td>' + fmt(r[0], 0) + '</td><td>' + fmt(r[1], 0) + '</td><td>' + fmt(r[2], 1) + '</td><td>' + fmt(r[3], 1) + '</td>' +
+          '<td>' + fmt(r[4], 1) + '</td><td>' + fmt(r[5], 0) + '</td><td>' + fmt(r[6], 0) + '</td>' +
+          '<td>' + fmt(r[7] * (rho / 7.85), 1) + '</td></tr>';
+      }
+      h += '</tbody></table></div>' +
+        '<p class="note"><b>h</b> hoogte, <b>b</b> flensbreedte, <b>tw</b> lijfdikte, <b>tf</b> flensdikte, ' +
+        '<b>Iy</b> traagheidsmoment en <b>Wy</b> weerstandsmoment om de sterke as. Maten in mm. ' +
+        'Gewichten zijn omgerekend naar het gekozen materiaal; Iy en Wy zijn alleen van de vorm afhankelijk en veranderen niet mee.</p></div>';
+      out.innerHTML = h;
+    };
+    $('f-fam').addEventListener('change', draw);
+    $('f-mat').addEventListener('change', draw);
+    draw();
+  }
+});
+
+/* ================= 3. tankinhoud ================= */
+reg({
+  id: 'tank', group: 'Materiaal', name: 'Tank- en bakinhoud',
+  desc: 'Liters in een staande of liggende cilinder of een rechthoekige bak, ook half gevuld.',
+  kw: 'volume liter inhoud vat ketel bak reservoir',
+  lede: 'Inhoud in liters, met de gevulde inhoud erbij als je een vulhoogte opgeeft. Gerekend op binnenmaten.',
+  fields: v => {
+    const k = v.kind || 'staand';
+    const f = [{ id: 'kind', label: 'Vorm', type: 'select', span: true, value: k, reload: true, options: [
+      { v: 'staand', t: 'Staande cilinder' }, { v: 'liggend', t: 'Liggende cilinder' }, { v: 'bak', t: 'Rechthoekige bak' }] }];
+    if (k === 'bak') {
+      f.push({ id: 'l', label: 'Lengte binnen (mm)', value: isFinite(v.l) ? v.l : 1200, step: '1', min: 0 });
+      f.push({ id: 'b', label: 'Breedte binnen (mm)', value: isFinite(v.b) ? v.b : 800, step: '1', min: 0 });
+      f.push({ id: 'h', label: 'Hoogte binnen (mm)', value: isFinite(v.h) ? v.h : 600, step: '1', min: 0 });
+    } else {
+      f.push({ id: 'D', label: 'Binnendiameter (mm)', value: isFinite(v.D) ? v.D : 800, step: '1', min: 0 });
+      f.push({ id: 'L', label: k === 'staand' ? 'Hoogte binnen (mm)' : 'Lengte binnen (mm)', value: isFinite(v.L) ? v.L : 1500, step: '1', min: 0 });
+    }
+    f.push({ id: 'fill', label: 'Vulhoogte (mm) — optioneel', span: true, value: isFinite(v.fill) ? v.fill : '', step: '1', min: 0, ph: 'leeg = vol' });
+    return f;
+  },
+  calc: v => {
+    let total, filled = NaN, maxFill;
+    if (v.kind === 'bak') {
+      if (![v.l, v.b, v.h].every(x => isFinite(x) && x > 0)) return { error: 'Vul lengte, breedte en hoogte in.' };
+      total = v.l * v.b * v.h * 1e-6;
+      maxFill = v.h;
+      if (isFinite(v.fill) && v.fill > 0) filled = v.l * v.b * Math.min(v.fill, v.h) * 1e-6;
+    } else if (v.kind === 'staand') {
+      if (![v.D, v.L].every(x => isFinite(x) && x > 0)) return { error: 'Vul diameter en hoogte in.' };
+      const A = Math.PI / 4 * v.D * v.D;
+      total = A * v.L * 1e-6;
+      maxFill = v.L;
+      if (isFinite(v.fill) && v.fill > 0) filled = A * Math.min(v.fill, v.L) * 1e-6;
+    } else {
+      if (![v.D, v.L].every(x => isFinite(x) && x > 0)) return { error: 'Vul diameter en lengte in.' };
+      const r = v.D / 2;
+      total = Math.PI * r * r * v.L * 1e-6;
+      maxFill = v.D;
+      if (isFinite(v.fill) && v.fill > 0) {
+        const hh = Math.min(v.fill, v.D);
+        const A = r * r * Math.acos((r - hh) / r) - (r - hh) * Math.sqrt(Math.max(2 * r * hh - hh * hh, 0));
+        filled = A * v.L * 1e-6;
+      }
+    }
+    const rows = [['Totale inhoud', fmt(total, 1) + ' liter', true]];
+    if (isFinite(filled)) {
+      rows.push(['Vulhoogte', fmt(Math.min(v.fill, maxFill), 0) + ' mm']);
+      rows.push(['Gevuld', fmt(filled, 1) + ' liter', true]);
+      rows.push(['Vullingsgraad', fmt(filled / total * 100, 1) + ' %']);
+      rows.push(['Nog bij te vullen', fmt(total - filled, 1) + ' liter']);
+    }
+    rows.push(['Inhoud in m³', fmt(total / 1000, 3) + ' m³']);
+    rows.push(['Gewicht water', fmt((isFinite(filled) ? filled : total), 0) + ' kg']);
+    return {
+      big: fmt(isFinite(filled) ? filled : total, 0) + ' liter',
+      label: isFinite(filled) ? 'gevulde inhoud' : 'totale inhoud',
+      rows: rows,
+      note: 'Gerekend op binnenmaten en op een platte bodem. Bolle of konische bodems, mangaten en leidingaansluitingen zitten er niet in. ' +
+        'Voor een andere vloeistof vermenigvuldig je het gewicht met het soortelijk gewicht daarvan.'
+    };
+  }
+});
+
+/* ================= 4. zaagoptimalisatie ================= */
+function partsTable(box, seed) {
+  box.innerHTML = '<table class="parts"><thead><tr><th>Omschrijving</th><th class="num">Maat</th>' +
+    (seed.two ? '<th class="num">Maat 2</th>' : '') + '<th class="num">Aantal</th><th></th></tr></thead><tbody></tbody></table>';
+  const tb = box.querySelector('tbody');
+  const add = (d, a, b, q) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td><input type="text" class="p-d" value="' + esc(d || '') + '" placeholder="stuk"></td>' +
+      '<td><input type="number" class="p-a" value="' + (a || '') + '" min="1" step="1" inputmode="decimal"></td>' +
+      (seed.two ? '<td><input type="number" class="p-b" value="' + (b || '') + '" min="1" step="1" inputmode="decimal"></td>' : '') +
+      '<td><input type="number" class="p-q" value="' + (q || '') + '" min="1" step="1" inputmode="numeric"></td>' +
+      '<td class="del"><button class="del" type="button" aria-label="Regel verwijderen">&times;</button></td>';
+    tr.querySelector('button.del').addEventListener('click', () => { tr.remove(); if (!tb.children.length) add(); });
+    tb.appendChild(tr);
+  };
+  seed.rows.forEach(r => add(r[0], r[1], r[2], r[3]));
+  return { add: add, tbody: tb };
+}
+function readParts(tb, two) {
+  const list = [];
+  for (const tr of tb.children) {
+    const d = tr.querySelector('.p-d').value.trim() || 'stuk';
+    const a = num(tr.querySelector('.p-a').value);
+    const b = two ? num(tr.querySelector('.p-b').value) : 0;
+    const q = Math.round(num(tr.querySelector('.p-q').value));
+    if (!isFinite(a) || a <= 0 || !isFinite(q) || q <= 0) continue;
+    if (two && (!isFinite(b) || b <= 0)) continue;
+    for (let i = 0; i < q; i++) list.push({ d: d, a: a, b: b });
+  }
+  return list;
+}
+
+reg({
+  id: 'zaaglijst', group: 'Zagen en nesten', name: 'Zaaglijst uit staaf',
+  desc: 'Verdeelt je stuklijst over zo min mogelijk stangen, met zaagsnede en kopsnede.',
+  kw: 'zagen optimaliseren staaf stang rest afval nesten 1d',
+  lede: 'Verdeelt je stuklijst over zo min mogelijk stangen. Elke stang komt als staafje in beeld, met de restlengte gearceerd.',
+  custom: (form, out) => {
+    form.innerHTML = buildForm([
+      { id: 'stock', label: 'Stanglengte (mm)', value: 6000, step: '1', min: 1 },
+      { id: 'kerf', label: 'Zaagsnede (mm)', value: 3, step: '0.5', min: 0 },
+      { id: 'trim', label: 'Kopsnede (mm)', value: 10, step: '1', min: 0 },
+      { id: 'keep', label: 'Rest bewaren vanaf (mm)', value: 300, step: '10', min: 0 },
+      { type: 'note', text: 'Kopsnede is wat je aan het begin van elke stang recht afzaagt. Restanten boven de bewaargrens worden apart benoemd.' }
+    ], 'Stang en zaag') +
+      '<div class="card"><h2>Stuklijst</h2><div id="pt"></div>' +
+      '<div class="actions"><button class="ghost" id="addrow">Regel toevoegen</button>' +
+      '<button class="act" id="go">Zaaglijst maken</button></div></div>';
+    const pt = partsTable($('pt'), { rows: [['Stijl', 1850, 0, 4], ['Regel', 940, 0, 6], ['Schoor', 420, 0, 8]] });
+    $('addrow').addEventListener('click', () => pt.add());
+
+    $('go').addEventListener('click', () => {
+      const stock = num($('f-stock').value), kerf = num($('f-kerf').value),
+        trim = num($('f-trim').value), keep = num($('f-keep').value);
+      const parts = readParts(pt.tbody, false);
+      if (!isFinite(stock) || stock <= 0) { out.innerHTML = '<p class="err">Vul een stanglengte in.</p>'; return; }
+      if (!parts.length) { out.innerHTML = '<p class="err">Vul minstens één regel met maat en aantal in.</p>'; return; }
+      const usable = stock - trim;
+      const tooLong = parts.find(p => p.a + kerf > usable);
+      if (tooLong) { out.innerHTML = '<p class="err">Een stuk van ' + fmt(tooLong.a, 0) + ' mm past niet op een stang van ' + fmt(stock, 0) + ' mm.</p>'; return; }
+
+      const sorted = parts.slice().sort((x, y) => y.a - x.a);
+      const bars = [];
+      for (const p of sorted) {
+        let bar = bars.find(b => b.rest >= p.a + kerf);
+        if (!bar) { bar = { items: [], rest: usable }; bars.push(bar); }
+        bar.items.push(p); bar.rest -= (p.a + kerf);
+      }
+      const net = parts.reduce((s, p) => s + p.a, 0);
+      const bought = bars.length * stock;
+      const reusable = bars.filter(b => b.rest >= keep).reduce((s, b) => s + b.rest, 0);
+
+      let h = readout(bars.length + ' stang' + (bars.length === 1 ? '' : 'en') + ' van ' + fmt(stock, 0) + ' mm',
+        'voor ' + parts.length + ' stuk' + (parts.length === 1 ? '' : 'ken'), [
+          ['Netto stuklengte', fmt(net / 1000, 2) + ' m'],
+          ['Ingekocht', fmt(bought / 1000, 2) + ' m'],
+          ['Verlies', fmt((bought - net) / 1000, 2) + ' m'],
+          ['Bruikbare restanten', fmt(reusable / 1000, 2) + ' m'],
+          ['Rendement', fmt(net / bought * 100, 1) + ' %', true]
+        ]);
+
+      h += '<div class="card"><h2>Verdeling per stang</h2>';
+      bars.forEach((bar, i) => {
+        const used = bar.items.reduce((s, p) => s + p.a, 0);
+        const off = usable - used - bar.items.length * kerf;
+        const W = 1000, H = 34;
+        let x = trim / stock * W, segs = '';
+        if (trim > 0) segs += '<rect x="0" y="0" width="' + x.toFixed(2) + '" height="' + H + '" fill="#E8EAE7"/>';
+        bar.items.forEach(p => {
+          const w = p.a / stock * W;
+          segs += '<rect x="' + x.toFixed(2) + '" y="0" width="' + w.toFixed(2) + '" height="' + H + '" fill="#1B3A6B"/>';
+          x += w;
+          segs += '<rect x="' + x.toFixed(2) + '" y="0" width="' + Math.max(kerf / stock * W, 0.7).toFixed(2) + '" height="' + H + '" fill="#fff"/>';
+          x += kerf / stock * W;
+        });
+        const rw = Math.max(W - x, 0);
+        if (rw > 0.4) segs += '<rect x="' + x.toFixed(2) + '" y="0" width="' + rw.toFixed(2) + '" height="' + H + '" fill="url(#hatch' + i + ')"/>';
+        h += '<div class="bar"><div class="barhead"><b>Stang ' + (i + 1) + '</b><span>rest ' + fmt(off, 0) + ' mm' +
+          (off >= keep ? ' — bewaren' : '') + '</span></div>' +
+          '<svg class="barsvg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="Stang ' + (i + 1) + '">' +
+          '<defs><pattern id="hatch' + i + '" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">' +
+          '<rect width="7" height="7" fill="#F1F2F0"/><line x1="0" y1="0" x2="0" y2="7" stroke="#9AA3AB" stroke-width="1.4"/></pattern></defs>' +
+          '<rect width="' + W + '" height="' + H + '" fill="#fff"/>' + segs + '</svg>' +
+          '<div class="cuts">' + esc(bar.items.map(p => p.d + ' ' + fmt(p.a, 0)).join('  ·  ')) + '</div></div>';
+      });
+      h += '<div class="legend"><span><i style="background:#1B3A6B"></i>stuk</span>' +
+        '<span><i style="background:#E8EAE7"></i>kopsnede</span>' +
+        '<span><i style="background:#F1F2F0"></i>restlengte</span></div></div>';
+      h += '<div class="card"><p class="note">De zaagsnede van ' + fmt(kerf, 1) + ' mm is per stuk gerekend, ook na het laatste stuk, ' +
+        'zodat de rest een maat is die je echt overhoudt.</p>' +
+        '<div class="actions"><button class="ghost" onclick="window.print()">Zaaglijst printen</button></div></div>';
+      out.innerHTML = h;
+    });
+    $('go').click();
+  }
+});
+
+/* ================= 5. plaatnesting ================= */
+reg({
+  id: 'nesting', group: 'Zagen en nesten', name: 'Plaatnesting',
+  desc: 'Legt rechthoekige delen op zo min mogelijk platen, met of zonder draaien.',
+  kw: 'nesten plaat 2d snijden knippen indelen rendement',
+  lede: 'Legt rechthoekige delen in banen op de plaat. Bedoeld om snel te zien hoeveel plaat je nodig hebt, niet als snijprogramma.',
+  custom: (form, out) => {
+    form.innerHTML = buildForm([
+      { id: 'pw', label: 'Plaatbreedte (mm)', value: 2000, step: '1', min: 1 },
+      { id: 'ph', label: 'Plaatlengte (mm)', value: 1000, step: '1', min: 1 },
+      { id: 'kerf', label: 'Snijspleet / marge (mm)', value: 4, step: '0.5', min: 0 },
+      { id: 'edge', label: 'Randafstand (mm)', value: 10, step: '1', min: 0 },
+      { id: 'rot', label: 'Delen mogen draaien', type: 'select', span: true, value: '1', options: [{ v: '1', t: 'Ja, 90° draaien mag' }, { v: '0', t: 'Nee, walsrichting vast' }] }
+    ], 'Plaat') +
+      '<div class="card"><h2>Delen</h2><div id="pt"></div>' +
+      '<div class="actions"><button class="ghost" id="addrow">Regel toevoegen</button>' +
+      '<button class="act" id="go">Nesting maken</button></div></div>';
+    const pt = partsTable($('pt'), { two: true, rows: [['Zijplaat', 600, 400, 4], ['Bodem', 900, 300, 2], ['Strip', 250, 120, 9]] });
+    $('addrow').addEventListener('click', () => pt.add());
+
+    $('go').addEventListener('click', () => {
+      const PW = num($('f-pw').value), PH = num($('f-ph').value), kerf = num($('f-kerf').value),
+        edge = num($('f-edge').value), rot = $('f-rot').value === '1';
+      const parts = readParts(pt.tbody, true);
+      if (!isFinite(PW) || !isFinite(PH) || PW <= 0 || PH <= 0) { out.innerHTML = '<p class="err">Vul de plaatmaten in.</p>'; return; }
+      if (!parts.length) { out.innerHTML = '<p class="err">Vul minstens één deel in met beide maten en een aantal.</p>'; return; }
+      const uw = PW - 2 * edge, uh = PH - 2 * edge;
+
+      const fits = p => (p.a <= uw && p.b <= uh) || (rot && p.b <= uw && p.a <= uh);
+      const bad = parts.find(p => !fits(p));
+      if (bad) { out.innerHTML = '<p class="err">Een deel van ' + fmt(bad.a, 0) + ' × ' + fmt(bad.b, 0) + ' mm past niet op de plaat.</p>'; return; }
+
+      // oriënteer elk deel met de lange zijde horizontaal indien toegestaan, sorteer op hoogte
+      const items = parts.map(p => {
+        let w = p.a, hgt = p.b;
+        if (rot && hgt > w && hgt <= uw && w <= uh) { const t = w; w = hgt; hgt = t; }
+        if (w > uw) { const t = w; w = hgt; hgt = t; }
+        return { d: p.d, w: w, h: hgt };
+      }).sort((x, y) => y.h - x.h || y.w - x.w);
+
+      // shelf-nesting: banen opvullen
+      const plates = [];
+      const newPlate = () => { const p = { shelves: [], used: 0 }; plates.push(p); return p; };
+      for (const it of items) {
+        let placed = false;
+        for (const pl of plates) {
+          for (const sh of pl.shelves) {
+            if (it.h <= sh.h && sh.x + it.w <= uw) { sh.items.push({ ...it, x: sh.x }); sh.x += it.w + kerf; placed = true; break; }
+          }
+          if (placed) break;
+          if (pl.used + it.h <= uh) {
+            const sh = { y: pl.used, h: it.h, x: 0, items: [] };
+            sh.items.push({ ...it, x: 0 }); sh.x = it.w + kerf;
+            pl.shelves.push(sh); pl.used += it.h + kerf; placed = true; break;
+          }
+        }
+        if (!placed) {
+          const pl = newPlate();
+          const sh = { y: 0, h: it.h, x: it.w + kerf, items: [{ ...it, x: 0 }] };
+          pl.shelves.push(sh); pl.used = it.h + kerf;
+        }
+      }
+
+      const areaParts = items.reduce((s, i) => s + i.w * i.h, 0);
+      const areaPlates = plates.length * PW * PH;
+
+      let h = readout(plates.length + ' plaat' + (plates.length === 1 ? '' : 'en') + ' van ' + fmt(PW, 0) + ' × ' + fmt(PH, 0),
+        'voor ' + items.length + ' del' + (items.length === 1 ? '' : 'en'), [
+          ['Netto oppervlak delen', fmt(areaParts / 1e6, 2) + ' m²'],
+          ['Ingekocht oppervlak', fmt(areaPlates / 1e6, 2) + ' m²'],
+          ['Restmateriaal', fmt((areaPlates - areaParts) / 1e6, 2) + ' m²'],
+          ['Rendement', fmt(areaParts / areaPlates * 100, 1) + ' %', true]
+        ]);
+
+      h += '<div class="card"><h2>Indeling per plaat</h2>';
+      plates.forEach((pl, i) => {
+        const S = 1000, sc = S / PW, HH = PH * sc;
+        let g = '<rect x="0" y="0" width="' + S + '" height="' + HH.toFixed(1) + '" fill="#F6F7F5" stroke="#D5D8D4"/>' +
+          '<rect x="' + (edge * sc).toFixed(1) + '" y="' + (edge * sc).toFixed(1) + '" width="' + (uw * sc).toFixed(1) +
+          '" height="' + (uh * sc).toFixed(1) + '" fill="#fff" stroke="#E6E8E5" stroke-dasharray="6 5"/>';
+        pl.shelves.forEach(sh => sh.items.forEach(it => {
+          const X = (edge + it.x) * sc, Y = (edge + sh.y) * sc, W = it.w * sc, H2 = it.h * sc;
+          g += '<rect x="' + X.toFixed(1) + '" y="' + Y.toFixed(1) + '" width="' + W.toFixed(1) + '" height="' + H2.toFixed(1) +
+            '" fill="#E9EEF6" stroke="#1B3A6B" stroke-width="2"/>';
+          if (W > 90 && H2 > 34) {
+            g += '<text x="' + (X + W / 2).toFixed(1) + '" y="' + (Y + H2 / 2 + 6).toFixed(1) +
+              '" font-size="17" font-family="ui-monospace,monospace" fill="#1B3A6B" text-anchor="middle">' +
+              fmt(it.w, 0) + '×' + fmt(it.h, 0) + '</text>';
+          }
+        }));
+        const cnt = pl.shelves.reduce((s, sh) => s + sh.items.length, 0);
+        h += '<div class="bar"><div class="barhead"><b>Plaat ' + (i + 1) + '</b><span>' + cnt + ' del' + (cnt === 1 ? '' : 'en') + '</span></div>' +
+          '<svg class="draw" viewBox="0 0 ' + S + ' ' + HH.toFixed(1) + '" role="img" aria-label="Plaat ' + (i + 1) + '">' + g + '</svg></div>';
+      });
+      h += '</div>';
+      h += '<div class="card"><p class="note"><b>Banenindeling</b>, dus rechte doorlopende sneden per baan. ' +
+        'Dat sluit aan bij knippen op een schaar of zagen, en ligt bewust net onder wat een echte nestsoftware met een laser haalt. ' +
+        (rot ? 'Draaien is toegestaan; let bij RVS met slijprichting op dat je dat niet wilt.' : 'Draaien staat uit, dus de walsrichting blijft voor elk deel gelijk.') +
+        '</p><div class="actions"><button class="ghost" onclick="window.print()">Indeling printen</button></div></div>';
+      out.innerHTML = h;
+    });
+    $('go').click();
+  }
+});
+
+/* ================= 6. kanten ================= */
+reg({
+  id: 'kanten', group: 'Plaatwerk', name: 'Kanten en K-factor',
+  desc: 'Uitslaglengte, aftrekmaat en perskracht voor één zetting.',
+  kw: 'buigen zetten kantbank k-factor aftrekmaat perskracht tonnage v-opening',
+  lede: 'Uitslaglengte, bochttoeslag en benodigde perskracht. RVS veert terug, dus overbuigen blijft handwerk.',
+  fields: v => [
+    { id: 'mat', label: 'Materiaal', type: 'select', value: v.mat || '600', options: [
+      { v: '600', t: 'RVS 304 / 316' }, { v: '400', t: 'Staal S235' }, { v: '510', t: 'Staal S355' }, { v: '200', t: 'Aluminium' }] },
+    { id: 't', label: 'Plaatdikte (mm)', value: isFinite(v.t) ? v.t : 3, step: '0.1', min: 0.1 },
+    { id: 'ang', label: 'Zethoek (°)', value: isFinite(v.ang) ? v.ang : 90, step: '1', min: 1 },
+    { id: 'V', label: 'V-opening (mm)', value: isFinite(v.V) ? v.V : 24, step: '1', min: 1 },
+    { id: 'a', label: 'Been A buitenmaat (mm)', value: isFinite(v.a) ? v.a : 100, step: '1', min: 0 },
+    { id: 'b', label: 'Been B buitenmaat (mm)', value: isFinite(v.b) ? v.b : 60, step: '1', min: 0 },
+    { id: 'ri', label: 'Binnenradius (mm)', value: isFinite(v.ri) ? v.ri : '', step: '0.1', ph: 'leeg = uit V' },
+    { id: 'k', label: 'K-factor', value: isFinite(v.k) ? v.k : '', step: '0.01', ph: 'leeg = schatting' },
+    { id: 'w', label: 'Zetlengte (mm)', span: true, value: isFinite(v.w) ? v.w : 1000, step: '1', min: 1 },
+    { type: 'note', text: 'Zethoek is de hoek waarover je buigt: 90 voor een haakse kant. Beide beenmaten zijn buitenmaten.' }
+  ],
+  calc: v => {
+    const Rm = num(v.mat);
+    if (![v.t, v.ang, v.V, v.a, v.b, v.w].every(isFinite) || v.t <= 0 || v.V <= 0 || v.ang <= 0 || v.ang >= 180)
+      return { error: 'Vul dikte, zethoek, V-opening en beide beenmaten in.' };
+    const riAuto = 0.16 * v.V;
+    const ri = (isFinite(v.ri) && v.ri > 0) ? v.ri : riAuto;
+    const ratio = ri / v.t;
+    const kAuto = ratio < 1 ? 0.33 : (ratio < 3 ? 0.40 : 0.45);
+    const K = (isFinite(v.k) && v.k > 0) ? Math.min(v.k, 0.5) : kAuto;
+
+    const BA = rad(v.ang) * (ri + K * v.t);
+    const OSSB = Math.tan(rad(v.ang / 2)) * (ri + v.t);
+    const BD = 2 * OSSB - BA;
+    const flat = v.a + v.b - BD;
+    const fpm = 1.42 * Rm * v.t * v.t / v.V;
+    const force = fpm * v.w / 1000;
+    const minFlange = v.V / 2 + v.t;
+
+    const warns = [];
+    if (v.V < 6 * v.t) warns.push('De V-opening is krap voor deze dikte. Gangbaar is 6 tot 10 × de plaatdikte, dus ' + fmt(6 * v.t, 0) + ' tot ' + fmt(10 * v.t, 0) + ' mm.');
+    if (v.V > 12 * v.t) warns.push('De V-opening is ruim; de radius wordt groot en de hoek lastig te beheersen.');
+    if (Math.min(v.a, v.b) < minFlange) warns.push('Been ' + (v.a < v.b ? 'A' : 'B') + ' is korter dan de kleinste flens van ' + fmt(minFlange, 1) + ' mm — het stuk glijdt dan de V in.');
+    if (Rm >= 600) {
+      warns.push('RVS veert fors terug. Reken op een paar graden overbuigen en stel af op een proefstukje uit dezelfde plaat.');
+      warns.push('Zet RVS bij voorkeur dwars op de walsrichting en leg folie of een beschermband in de matrijs tegen krassen.');
+    }
+
+    const S = 440, P = 58;
+    const sc = Math.min((S - 2 * P) / Math.max(v.a, 1), (S - 2 * P) / Math.max(v.b, 1));
+    const as = v.a * sc, bs = v.b * sc, ts = Math.max(v.t * sc, 4);
+    const ox = P, oy = S - P;
+    const draw = '<div class="card"><h2>Doorsnede</h2>' +
+      '<svg class="draw" viewBox="0 0 ' + S + ' ' + S + '" role="img" aria-label="Doorsnede van de zetting">' +
+      '<path d="M ' + ox + ' ' + oy + ' h ' + as.toFixed(1) + ' v ' + (-ts).toFixed(1) + ' h ' + (-(as - ts)).toFixed(1) +
+      ' v ' + (-(bs - ts)).toFixed(1) + ' h ' + (-ts).toFixed(1) + ' Z" fill="#E9EEF6" stroke="#1B3A6B" stroke-width="2" stroke-linejoin="round"/>' +
+      '<line x1="' + ox + '" y1="' + (oy + 24) + '" x2="' + (ox + as).toFixed(1) + '" y2="' + (oy + 24) + '" stroke="#5C646C"/>' +
+      '<text x="' + (ox + as / 2).toFixed(1) + '" y="' + (oy + 42) + '" font-size="14" font-family="ui-monospace,monospace" fill="#5C646C" text-anchor="middle">A ' + fmt(v.a, 0) + '</text>' +
+      '<line x1="' + (ox - 24) + '" y1="' + oy + '" x2="' + (ox - 24) + '" y2="' + (oy - bs).toFixed(1) + '" stroke="#5C646C"/>' +
+      '<text x="' + (ox - 32) + '" y="' + (oy - bs / 2).toFixed(1) + '" font-size="14" font-family="ui-monospace,monospace" fill="#5C646C" text-anchor="end">B ' + fmt(v.b, 0) + '</text>' +
+      '<text x="' + (ox + as * 0.5).toFixed(1) + '" y="' + (oy - bs * 0.45).toFixed(1) + '" font-size="15" font-family="ui-monospace,monospace" fill="#1B3A6B">' + fmt(v.ang, 0) + '°</text>' +
+      '</svg><p class="note">Zaag of knip de plaat op ' + fmt(flat, 1) + ' mm en leg de buiglijn op ' + fmt(v.a - OSSB, 1) +
+      ' mm vanaf de kant van been A.</p></div>';
+
+    return {
+      big: fmt(flat, 1) + ' mm', label: 'uitslaglengte voor ' + fmt(v.a, 0) + ' + ' + fmt(v.b, 0) + ' mm buitenmaat',
+      warnings: warns, html: draw,
+      rows: [
+        ['Aftrekmaat', fmt(BD, 2) + ' mm', true],
+        ['Bochttoeslag', fmt(BA, 2) + ' mm'],
+        ['Buitenmaat-overstek', fmt(OSSB, 2) + ' mm'],
+        ['Binnenradius', fmt(ri, 2) + ' mm' + ((isFinite(v.ri) && v.ri > 0) ? '' : ' (uit V)')],
+        ['K-factor', fmt(K, 2) + ((isFinite(v.k) && v.k > 0) ? '' : ' (schatting)')],
+        ['Perskracht', fmt(force, 0) + ' kN', true, 'sec'],
+        ['Per meter', fmt(fpm, 0) + ' kN/m'],
+        ['In ton', fmt(force / 9.81, 1) + ' ton'],
+        ['Kleinste flens', fmt(minFlange, 1) + ' mm']
+      ],
+      note: 'Perskracht geldt voor vrij buigen bij een treksterkte van ' + fmt(Rm, 0) +
+        ' N/mm². Strijkbuigen of kalibreren vraagt een veelvoud daarvan.'
+    };
+  }
+});
+
+/* ================= 7. conus ================= */
+reg({
+  id: 'conus', group: 'Plaatwerk', name: 'Conus uitslaan',
+  desc: 'Uitslagstralen en openingshoek van een kegel of afgeknotte kegel.',
+  kw: 'kegel trechter uitslag conisch ontwikkelen',
+  lede: 'Uitslag van een conus, gerekend op de neutrale lijn. Zet het middelpunt af, trek beide stralen en zet de openingshoek uit.',
+  fields: v => [
+    { id: 'D', label: 'Grote diameter buiten (mm)', value: isFinite(v.D) ? v.D : 400, step: '1', min: 1 },
+    { id: 'd', label: 'Kleine diameter buiten (mm)', value: isFinite(v.d) ? v.d : 200, step: '1', min: 0 },
+    { id: 'h', label: 'Hoogte (mm)', value: isFinite(v.h) ? v.h : 300, step: '1', min: 1 },
+    { id: 't', label: 'Plaatdikte (mm)', value: isFinite(v.t) ? v.t : 3, step: '0.1', min: 0 },
+    { type: 'note', text: 'Kleine diameter op 0 geeft een volle kegel. Buitenmaten invullen; de neutrale lijn wordt zelf berekend.' }
+  ],
+  calc: v => {
+    if (![v.D, v.d, v.h, v.t].every(isFinite) || v.D <= 0 || v.h <= 0 || v.d < 0 || v.t < 0) return { error: 'Vul alle maten in.' };
+    if (v.d >= v.D) return { error: 'De kleine diameter moet kleiner zijn dan de grote.' };
+    const D = v.D - v.t, d = Math.max(v.d - v.t, 0);
+    const slant = Math.hypot((D - d) / 2, v.h);
+    const R = slant * D / (D - d), r = R - slant;
+    const th = 180 * D / R;
+    const half = deg(Math.atan(((D - d) / 2) / v.h));
+
+    const S = 620, cx = S / 2, cy = S * 0.94;
+    const sc = Math.min((S * 0.45) / R, (S * 0.86) / R);
+    const Rs = R * sc, rs = r * sc;
+    const a0 = -90 - th / 2, a1 = -90 + th / 2;
+    const pt = (rr, dd) => [cx + rr * Math.cos(rad(dd)), cy + rr * Math.sin(rad(dd))];
+    const p1 = pt(Rs, a0), p2 = pt(Rs, a1), p3 = pt(rs, a1), p4 = pt(rs, a0);
+    const lg = th > 180 ? 1 : 0;
+    let path = 'M ' + p1[0].toFixed(1) + ' ' + p1[1].toFixed(1) + ' A ' + Rs.toFixed(1) + ' ' + Rs.toFixed(1) + ' 0 ' + lg + ' 1 ' + p2[0].toFixed(1) + ' ' + p2[1].toFixed(1) +
+      ' L ' + p3[0].toFixed(1) + ' ' + p3[1].toFixed(1);
+    if (rs > 0.5) path += ' A ' + rs.toFixed(1) + ' ' + rs.toFixed(1) + ' 0 ' + lg + ' 0 ' + p4[0].toFixed(1) + ' ' + p4[1].toFixed(1);
+    path += ' Z';
+
+    const html = '<div class="card"><h2>Uitslag</h2>' +
+      '<svg class="draw" viewBox="0 0 ' + S + ' ' + S + '" role="img" aria-label="Uitslag van de conus">' +
+      '<path d="' + path + '" fill="#E9EEF6" stroke="#1B3A6B" stroke-width="2"/>' +
+      '<line x1="' + cx + '" y1="' + cy + '" x2="' + p1[0].toFixed(1) + '" y2="' + p1[1].toFixed(1) + '" stroke="#B9C7DC" stroke-dasharray="5 4"/>' +
+      '<line x1="' + cx + '" y1="' + cy + '" x2="' + p2[0].toFixed(1) + '" y2="' + p2[1].toFixed(1) + '" stroke="#B9C7DC" stroke-dasharray="5 4"/>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="3.5" fill="#1B3A6B"/>' +
+      '<text x="' + cx + '" y="' + (cy - 16) + '" font-size="16" font-family="ui-monospace,monospace" fill="#1B3A6B" text-anchor="middle">' + fmt(th, 1) + '°</text>' +
+      '</svg><p class="note">Bij een grote straal is een touwtje vanaf een spijker nauwkeuriger dan een passer. ' +
+      'Reken op een plaat van ruim ' + fmt(2 * R * Math.sin(rad(Math.min(th, 180) / 2)), 0) + ' × ' + fmt(R, 0) + ' mm.</p></div>';
+
+    return {
+      big: fmt(th, 2) + '°', label: 'openingshoek van de uitslag', html: html,
+      rows: [
+        ['Grote uitslagstraal R', fmt(R, 1) + ' mm', true],
+        ['Kleine uitslagstraal r', fmt(r, 1) + ' mm', true],
+        ['Openingshoek', fmt(th, 2) + ' °', true],
+        ['Weg te snijden hoek', fmt(360 - th, 2) + ' °'],
+        ['Schuine zijde', fmt(slant, 1) + ' mm'],
+        ['Booglengte buitenrand', fmt(Math.PI * D, 1) + ' mm'],
+        ['Halve tophoek', fmt(half, 2) + ' °'],
+        ['Neutrale diameters', fmt(D, 1) + ' / ' + fmt(d, 1) + ' mm']
+      ],
+      note: '<b>Gerekend op de neutrale lijn</b>, dus met ' + fmt(v.t, 1) + ' mm van de buitendiameters af. ' +
+        'Bij walsen van RVS veert het materiaal terug: maak een proefstuk. Lasnaadopening komt hier nog bij.'
+    };
+  }
+});
+
+/* ================= 8. cilinder walsen ================= */
+reg({
+  id: 'cilinder', group: 'Plaatwerk', name: 'Cilinder en walsen',
+  desc: 'Uitslaglengte van een ronde of gebogen plaat, ook in segmenten.',
+  kw: 'rollen walsen ring band mantel omtrek segment bocht',
+  lede: 'Uitslaglengte van een cilinder of een gebogen deel daarvan, op de neutrale lijn. Ook te verdelen over meerdere segmenten.',
+  fields: v => [
+    { id: 'ref', label: 'Diametermaat', type: 'select', span: true, value: v.ref || 'buiten', options: [
+      { v: 'buiten', t: 'Buitendiameter' }, { v: 'binnen', t: 'Binnendiameter' }, { v: 'midden', t: 'Hartdiameter' }] },
+    { id: 'D', label: 'Diameter (mm)', value: isFinite(v.D) ? v.D : 500, step: '1', min: 1 },
+    { id: 't', label: 'Plaatdikte (mm)', value: isFinite(v.t) ? v.t : 4, step: '0.1', min: 0 },
+    { id: 'ang', label: 'Booghoek (°)', value: isFinite(v.ang) ? v.ang : 360, step: '1', min: 1 },
+    { id: 'seg', label: 'Aantal segmenten', value: isFinite(v.seg) ? v.seg : 1, step: '1', min: 1 },
+    { id: 'gap', label: 'Lasnaadopening per naad (mm)', span: true, value: isFinite(v.gap) ? v.gap : 0, step: '0.5', min: 0 },
+    { type: 'note', text: '360° geeft een dichte cilinder. Een kleinere hoek geeft een schaal of een segment van een ring.' }
+  ],
+  calc: v => {
+    if (![v.D, v.t, v.ang, v.seg].every(isFinite) || v.D <= 0 || v.ang <= 0 || v.seg < 1) return { error: 'Vul diameter, dikte en booghoek in.' };
+    let Dm;
+    if (v.ref === 'buiten') Dm = v.D - v.t;
+    else if (v.ref === 'binnen') Dm = v.D + v.t;
+    else Dm = v.D;
+    if (Dm <= 0) return { error: 'De plaatdikte is te groot voor deze diameter.' };
+    const seg = Math.max(1, Math.round(v.seg));
+    const full = Math.PI * Dm * (v.ang / 360);
+    const naden = v.ang >= 360 ? seg : seg - 1;
+    const gapTot = (isFinite(v.gap) ? v.gap : 0) * naden;
+    const perSeg = (full - gapTot) / seg;
+    const Do = v.ref === 'buiten' ? v.D : (v.ref === 'binnen' ? v.D + 2 * v.t : v.D + v.t);
+    return {
+      big: fmt(perSeg, 1) + ' mm', label: seg === 1 ? 'uitslaglengte' : 'uitslaglengte per segment',
+      rows: [
+        ['Neutrale diameter', fmt(Dm, 1) + ' mm'],
+        ['Totale uitslaglengte', fmt(full, 1) + ' mm', true],
+        ['Aantal segmenten', seg + ' ×'],
+        ['Aantal lasnaden', naden + ' ×'],
+        ['Aftrek lasnaden', fmt(gapTot, 1) + ' mm'],
+        ['Lengte per segment', fmt(perSeg, 1) + ' mm', true],
+        ['Buitenomtrek', fmt(Math.PI * Do, 1) + ' mm'],
+        ['Buitendiameter', fmt(Do, 1) + ' mm']
+      ],
+      note: 'De neutrale lijn ligt bij walsen praktisch op halve plaatdikte, zolang de diameter ruim boven de tien keer de dikte blijft. ' +
+        'Bij krap walsen schuift de neutrale lijn naar binnen en wordt de uitslag iets korter: maak dan eerst een proefstrook. ' +
+        'De aanloop- en uitlooprand van de wals blijft recht, dus houd rekening met voorbuigen of overlengte.'
+    };
+  }
+});
+
+/* ================= 9. pijpaftakking ================= */
+reg({
+  id: 'aftakking', group: 'Plaatwerk', name: 'Pijpaftakking 90°',
+  desc: 'Sjabloon en stationstabel voor een haakse aftakking op een buis.',
+  kw: 'buis pijp t-stuk doorsnijding zadel uitslag ordinaten',
+  lede: 'Haakse aftakking, hart op hart. Geeft de inkeping per station voor de aftakbuis, met sjabloonkromme.',
+  fields: v => [
+    { id: 'D', label: 'Hoofdbuis buiten (mm)', value: isFinite(v.D) ? v.D : 168.3, step: '0.1', min: 1 },
+    { id: 'd', label: 'Aftakbuis buiten (mm)', value: isFinite(v.d) ? v.d : 88.9, step: '0.1', min: 1 },
+    { id: 't', label: 'Wanddikte aftak (mm)', value: isFinite(v.t) ? v.t : 3.2, step: '0.1', min: 0 },
+    { id: 'n', label: 'Aantal stations', type: 'select', value: v.n || '24', options: [{ v: '12', t: '12' }, { v: '16', t: '16' }, { v: '24', t: '24' }] }
+  ],
+  calc: v => {
+    const n = parseInt(v.n, 10);
+    if (![v.D, v.d, v.t].every(isFinite) || v.D <= 0 || v.d <= 0 || v.t < 0) return { error: 'Vul alle maten in.' };
+    if (v.d > v.D) return { error: 'De aftakbuis mag niet dikker zijn dan de hoofdbuis.' };
+    const R = v.D / 2, r = (v.d - v.t) / 2;
+    if (r >= R) return { error: 'Deze combinatie snijdt niet netjes; de aftak is te groot ten opzichte van de hoofdbuis.' };
+    const circ = 2 * Math.PI * r, step = 360 / n;
+    const rows = [];
+    let maxCut = 0;
+    for (let i = 0; i <= n; i++) {
+      const phi = i * step;
+      const s = r * Math.sin(rad(phi));
+      const cut = R - Math.sqrt(Math.max(R * R - s * s, 0));
+      maxCut = Math.max(maxCut, cut);
+      rows.push({ i: i, phi: phi, x: circ * i / n, cut: cut });
+    }
+
+    const W = 900, H = 300, P = 44;
+    const sx = (W - 2 * P) / circ, sy = (H - 2 * P) / Math.max(maxCut, 1);
+    let d = '', ticks = '';
+    rows.forEach((p, i) => {
+      const X = P + p.x * sx, Y = P + p.cut * sy;
+      d += (i ? ' L ' : 'M ') + X.toFixed(1) + ' ' + Y.toFixed(1);
+      if (i % Math.max(1, Math.round(n / 12)) === 0) {
+        ticks += '<line x1="' + X.toFixed(1) + '" y1="' + (P - 8) + '" x2="' + X.toFixed(1) + '" y2="' + (H - P + 8) + '" stroke="#E6E8E5"/>' +
+          '<text x="' + X.toFixed(1) + '" y="' + (H - P + 26) + '" font-size="13" fill="#5C646C" font-family="ui-monospace,monospace" text-anchor="middle">' + p.i + '</text>';
+      }
+    });
+    let tbl = '<div class="card"><h2>Maten per station</h2><div class="scroll"><table class="data"><thead><tr>' +
+      '<th>Station</th><th>Hoek</th><th>Omtrek mm</th><th>Inkeping mm</th></tr></thead><tbody>';
+    rows.forEach(p => { tbl += '<tr><td>' + p.i + '</td><td>' + fmt(p.phi, 0) + '°</td><td>' + fmt(p.x, 1) + '</td><td>' + fmt(p.cut, 1) + '</td></tr>'; });
+    tbl += '</tbody></table></div></div>';
+
+    const html = '<div class="card"><h2>Sjabloon aftakbuis</h2>' +
+      '<svg class="draw" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Uitslag van de aftakbuis">' + ticks +
+      '<line x1="' + P + '" y1="' + P + '" x2="' + (W - P) + '" y2="' + P + '" stroke="#1B3A6B" stroke-dasharray="6 4"/>' +
+      '<path d="' + d + '" fill="none" stroke="#1B3A6B" stroke-width="2.5"/>' +
+      '<text x="' + P + '" y="' + (P - 14) + '" font-size="14" fill="#1B3A6B" font-family="ui-monospace,monospace">langste punt</text>' +
+      '</svg><p class="note">Wikkel een strook papier om de aftakbuis, zet ' + n + ' stations af op ' + fmt(circ / n, 1) +
+      ' mm en meet per station de inkeping vanaf het langste punt. Station 0 ligt in de richting van de hoofdbuis-as.</p></div>' + tbl;
+
+    return {
+      big: fmt(maxCut, 1) + ' mm', label: 'diepste inkeping vanaf het langste punt', html: html,
+      rows: [
+        ['Omtrek aftak (neutraal)', fmt(circ, 1) + ' mm', true],
+        ['Stationsafstand', fmt(circ / n, 1) + ' mm'],
+        ['Aantal stations', n + ' ×'],
+        ['Neutrale straal aftak', fmt(r, 2) + ' mm'],
+        ['Buitenstraal hoofdbuis', fmt(R, 2) + ' mm']
+      ],
+      note: 'Voor een doorgelaste verbinding komen de lasopening en de afschuining hier nog bij. ' +
+        'Het gat in de hoofdbuis is breder dan de aftak zelf; teken dat af met de aftakbuis als mal.'
+    };
+  }
+});
+
+/* ================= 10. pijpverstek ================= */
+reg({
+  id: 'verstek', group: 'Plaatwerk', name: 'Pijp in verstek',
+  desc: 'Segmentbocht uit rechte buis: zaaghoek en inkeping per station.',
+  kw: 'bocht segment mitre verstek buis lassen elleboog',
+  lede: 'Een bocht uit rechte buis, opgebouwd uit segmenten. Geeft de zaaghoek en de inkeping per station.',
+  fields: v => [
+    { id: 'd', label: 'Buisdiameter buiten (mm)', value: isFinite(v.d) ? v.d : 88.9, step: '0.1', min: 1 },
+    { id: 't', label: 'Wanddikte (mm)', value: isFinite(v.t) ? v.t : 3.2, step: '0.1', min: 0 },
+    { id: 'bend', label: 'Bochthoek (°)', value: isFinite(v.bend) ? v.bend : 90, step: '1', min: 1 },
+    { id: 'seg', label: 'Aantal segmenten', value: isFinite(v.seg) ? v.seg : 3, step: '1', min: 2 },
+    { id: 'R', label: 'Bochtstraal op hart (mm)', span: true, value: isFinite(v.R) ? v.R : 150, step: '1', min: 0 },
+    { id: 'n', label: 'Aantal stations', type: 'select', span: true, value: v.n || '16', options: [{ v: '12', t: '12' }, { v: '16', t: '16' }, { v: '24', t: '24' }] }
+  ],
+  calc: v => {
+    const n = parseInt(v.n, 10), seg = Math.round(v.seg);
+    if (![v.d, v.t, v.bend, v.R].every(isFinite) || v.d <= 0 || v.bend <= 0 || seg < 2) return { error: 'Vul de buismaat, bochthoek en minstens 2 segmenten in.' };
+    const r = (v.d - v.t) / 2;
+    const joints = seg - 1;
+    const turn = v.bend / joints;
+    const half = turn / 2;
+    if (half >= 89) return { error: 'Deze combinatie geeft een te scherpe knik. Gebruik meer segmenten.' };
+    const circ = 2 * Math.PI * r;
+    const maxCut = 2 * r * Math.tan(rad(half));
+
+    const rows = [];
+    for (let i = 0; i <= n; i++) {
+      const phi = i * 360 / n;
+      const cut = r * (1 + Math.cos(rad(phi))) * Math.tan(rad(half));
+      rows.push({ i: i, phi: phi, x: circ * i / n, cut: cut });
+    }
+    const mid = v.R * rad(turn);
+    const endLen = v.R * rad(turn / 2);
+
+    const W = 900, H = 280, P = 42;
+    const sx = (W - 2 * P) / circ, sy = (H - 2 * P) / Math.max(maxCut, 1);
+    let d = '', ticks = '';
+    rows.forEach((p, i) => {
+      const X = P + p.x * sx, Y = H - P - p.cut * sy;
+      d += (i ? ' L ' : 'M ') + X.toFixed(1) + ' ' + Y.toFixed(1);
+      if (i % Math.max(1, Math.round(n / 8)) === 0) {
+        ticks += '<line x1="' + X.toFixed(1) + '" y1="' + (P - 6) + '" x2="' + X.toFixed(1) + '" y2="' + (H - P + 8) + '" stroke="#E6E8E5"/>' +
+          '<text x="' + X.toFixed(1) + '" y="' + (H - P + 26) + '" font-size="13" fill="#5C646C" font-family="ui-monospace,monospace" text-anchor="middle">' + p.i + '</text>';
+      }
+    });
+
+    let tbl = '<div class="card"><h2>Maten per station</h2><div class="scroll"><table class="data"><thead><tr>' +
+      '<th>Station</th><th>Hoek</th><th>Omtrek mm</th><th>Aftek mm</th></tr></thead><tbody>';
+    rows.forEach(p => { tbl += '<tr><td>' + p.i + '</td><td>' + fmt(p.phi, 0) + '°</td><td>' + fmt(p.x, 1) + '</td><td>' + fmt(p.cut, 1) + '</td></tr>'; });
+    tbl += '</tbody></table></div></div>';
+
+    const html = '<div class="card"><h2>Zaagsjabloon</h2>' +
+      '<svg class="draw" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Zaagsjabloon voor het verstek">' + ticks +
+      '<line x1="' + P + '" y1="' + (H - P) + '" x2="' + (W - P) + '" y2="' + (H - P) + '" stroke="#1B3A6B" stroke-dasharray="6 4"/>' +
+      '<path d="' + d + '" fill="none" stroke="#1B3A6B" stroke-width="2.5"/>' +
+      '<text x="' + P + '" y="' + (P - 12) + '" font-size="14" fill="#1B3A6B" font-family="ui-monospace,monospace">buitenbocht</text>' +
+      '</svg><p class="note">Station 0 ligt aan de buitenkant van de bocht, waar je het meest wegzaagt. ' +
+      'De aftekmaat meet je vanaf de basislijn, die op de binnenbocht ligt.</p></div>' + tbl;
+
+    return {
+      big: fmt(half, 2) + '°', label: 'zaaghoek per uiteinde, gemeten vanaf haaks',
+      warnings: half > 22.5 ? ['Een knik van ' + fmt(turn, 1) + '° per naad is fors. Met meer segmenten wordt de bocht vloeiender en de las makkelijker.'] : [],
+      html: html,
+      rows: [
+        ['Segmenten', seg + ' ×'],
+        ['Lasnaden', joints + ' ×'],
+        ['Knik per naad', fmt(turn, 2) + ' °'],
+        ['Zaaghoek per eind', fmt(half, 2) + ' °', true],
+        ['Diepste aftek', fmt(maxCut, 1) + ' mm', true],
+        ['Omtrek (neutraal)', fmt(circ, 1) + ' mm'],
+        ['Stationsafstand', fmt(circ / n, 1) + ' mm'],
+        ['Hartlengte tussensegment', fmt(mid, 1) + ' mm', false, 'sec'],
+        ['Hartlengte eindsegment', fmt(endLen, 1) + ' mm']
+      ],
+      note: 'De tussensegmenten zijn aan beide einden onder ' + fmt(half, 2) + '° gezaagd, de twee buitenste maar aan één kant. ' +
+        'Hartlengtes zijn gemeten op de bochtstraal en zijn exclusief lasnaadopening.'
+    };
+  }
+});
+
+/* ================= 11. pijpoffset ================= */
+reg({
+  id: 'offset', group: 'Pijp en maatwerk', name: 'Pijpoffset',
+  desc: 'Verspringing overbruggen met twee bochten, ook schuin weggedraaid.',
+  kw: 'offset bocht 45 graden verspringing rolling leiding buis',
+  lede: 'Berekent de tussenlengte tussen twee bochten. Vul ook een zijwaartse verspringing in voor een gedraaide offset.',
+  fields: v => [
+    { id: 'set', label: 'Verspringing omhoog (mm)', value: isFinite(v.set) ? v.set : 400, step: '1', min: 0 },
+    { id: 'roll', label: 'Verspringing opzij (mm)', value: isFinite(v.roll) ? v.roll : 0, step: '1', min: 0 },
+    { id: 'ang', label: 'Bochthoek', type: 'select', value: v.ang || '45', options: [
+      { v: '11.25', t: '11¼°' }, { v: '22.5', t: '22½°' }, { v: '30', t: '30°' },
+      { v: '45', t: '45°' }, { v: '60', t: '60°' }, { v: '90', t: '90°' }] },
+    { id: 'take', label: 'Inbouwmaat per bocht (mm)', value: isFinite(v.take) ? v.take : 0, step: '0.1', min: 0, ph: '0 = hart tot hart' },
+    { type: 'note', text: 'Inbouwmaat is de afstand van het hart van de bocht tot het laseind. Laat op 0 staan om hart-op-hart te rekenen.' }
+  ],
+  calc: v => {
+    const a = num(v.ang);
+    if (![v.set, v.roll].every(isFinite) || (v.set <= 0 && v.roll <= 0)) return { error: 'Vul minstens één verspringing in.' };
+    const TO = Math.hypot(v.set, v.roll);
+    const travel = TO / Math.sin(rad(a));
+    const run = TO / Math.tan(rad(a));
+    const rollAng = v.set > 0 ? deg(Math.atan(v.roll / v.set)) : 90;
+    const take = isFinite(v.take) ? v.take : 0;
+    const cut = travel - 2 * take;
+    const rows = [
+      ['Ware verspringing', fmt(TO, 1) + ' mm', true],
+      ['Tussenlengte hart-hart', fmt(travel, 1) + ' mm', true],
+      ['Horizontale loop', fmt(run, 1) + ' mm'],
+      ['Bochthoek', fmt(a, 2) + ' °']
+    ];
+    if (v.roll > 0) {
+      rows.push(['Draaihoek', fmt(rollAng, 2) + ' °', false, 'sec']);
+      rows.push(['Omhoog', fmt(v.set, 1) + ' mm']);
+      rows.push(['Opzij', fmt(v.roll, 1) + ' mm']);
+    }
+    if (take > 0) {
+      rows.push(['Inbouwmaat per bocht', fmt(take, 1) + ' mm', false, 'sec']);
+      rows.push(['Zaaglengte tussenstuk', fmt(cut, 1) + ' mm', true]);
+    }
+    const warns = [];
+    if (take > 0 && cut <= 0) warns.push('De bochten raken elkaar: met deze inbouwmaat is er geen tussenstuk nodig, of de hoek moet kleiner.');
+
+    const S = 620, H = 380, P = 60;
+    const sc = Math.min((S - 2 * P) / Math.max(run, 1), (H - 2 * P) / Math.max(TO, 1));
+    const x0 = P, y0 = H - P, x1 = x0 + run * sc, y1 = y0 - TO * sc;
+    const html = '<div class="card"><h2>Zijaanzicht</h2>' +
+      '<svg class="draw" viewBox="0 0 ' + S + ' ' + H + '" role="img" aria-label="Zijaanzicht van de offset">' +
+      '<line x1="' + (x0 - 45) + '" y1="' + y0 + '" x2="' + x0 + '" y2="' + y0 + '" stroke="#1B3A6B" stroke-width="6"/>' +
+      '<line x1="' + x0 + '" y1="' + y0 + '" x2="' + x1.toFixed(1) + '" y2="' + y1.toFixed(1) + '" stroke="#1B3A6B" stroke-width="6"/>' +
+      '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + (x1 + 45).toFixed(1) + '" y2="' + y1.toFixed(1) + '" stroke="#1B3A6B" stroke-width="6"/>' +
+      '<line x1="' + x0 + '" y1="' + y0 + '" x2="' + x1.toFixed(1) + '" y2="' + y0 + '" stroke="#B9C7DC" stroke-dasharray="6 5"/>' +
+      '<line x1="' + x1.toFixed(1) + '" y1="' + y0 + '" x2="' + x1.toFixed(1) + '" y2="' + y1.toFixed(1) + '" stroke="#B9C7DC" stroke-dasharray="6 5"/>' +
+      '<text x="' + ((x0 + x1) / 2).toFixed(1) + '" y="' + (y0 + 26) + '" font-size="15" font-family="ui-monospace,monospace" fill="#5C646C" text-anchor="middle">' + fmt(run, 0) + '</text>' +
+      '<text x="' + (x1 + 12).toFixed(1) + '" y="' + ((y0 + y1) / 2).toFixed(1) + '" font-size="15" font-family="ui-monospace,monospace" fill="#5C646C">' + fmt(TO, 0) + '</text>' +
+      '<text x="' + ((x0 + x1) / 2 - 20).toFixed(1) + '" y="' + ((y0 + y1) / 2 - 12).toFixed(1) + '" font-size="15" font-family="ui-monospace,monospace" fill="#1B3A6B" text-anchor="end">' + fmt(travel, 0) + '</text>' +
+      '</svg><p class="note">De schuine maat is de lengte hart tot hart tussen beide bochten.' +
+      (v.roll > 0 ? ' Draai de leiding daarna ' + fmt(rollAng, 1) + '° om zijn as om de zijwaartse verspringing te halen.' : '') + '</p></div>';
+
+    return { big: fmt(take > 0 ? cut : travel, 1) + ' mm', label: take > 0 ? 'zaaglengte tussenstuk' : 'tussenlengte hart tot hart',
+      rows: rows, warnings: warns, html: html,
+      note: 'Bij een gedraaide offset is de ware verspringing de schuine maat door de hoek van de ruimte heen, niet de som van omhoog en opzij.' };
+  }
+});
+
+/* ================= 12. steekcirkel ================= */
+reg({
+  id: 'steekcirkel', group: 'Pijp en maatwerk', name: 'Steekcirkel en flensgaten',
+  desc: 'Gatposities op een steekcirkel, met koordafstand en coördinaten.',
+  kw: 'flens gatenpatroon bcd deelcirkel boren verdelen steek',
+  lede: 'Verdeelt gaten gelijkmatig over een steekcirkel en geeft de koordafstand plus de coördinaten per gat.',
+  fields: v => [
+    { id: 'bcd', label: 'Steekcirkel ⌀ (mm)', value: isFinite(v.bcd) ? v.bcd : 180, step: '0.1', min: 1 },
+    { id: 'n', label: 'Aantal gaten', value: isFinite(v.n) ? v.n : 8, step: '1', min: 2 },
+    { id: 'hole', label: 'Gatdiameter (mm)', value: isFinite(v.hole) ? v.hole : 18, step: '0.1', min: 0 },
+    { id: 'od', label: 'Buitendiameter (mm)', value: isFinite(v.od) ? v.od : 240, step: '0.1', min: 0 },
+    { id: 'start', label: 'Starthoek (°)', span: true, value: isFinite(v.start) ? v.start : 0, step: '1' },
+    { type: 'note', text: 'Starthoek 0 legt het eerste gat rechts op de horizontale as. Zet op 90 om boven te beginnen, of op 22,5 om te verspringen.' }
+  ],
+  calc: v => {
+    const n = Math.round(v.n);
+    if (!isFinite(v.bcd) || v.bcd <= 0 || !isFinite(n) || n < 2) return { error: 'Vul de steekcirkel en minstens 2 gaten in.' };
+    const R = v.bcd / 2, step = 360 / n;
+    const chord = v.bcd * Math.sin(rad(180 / n));
+    const rows = [];
+    for (let i = 0; i < n; i++) {
+      const ang = v.start + i * step;
+      rows.push({ i: i + 1, ang: ang, x: R * Math.cos(rad(ang)), y: R * Math.sin(rad(ang)) });
+    }
+    const warns = [];
+    if (isFinite(v.od) && v.od > 0 && isFinite(v.hole) && v.hole > 0) {
+      const edge = (v.od - v.bcd) / 2 - v.hole / 2;
+      if (edge < v.hole * 0.7) warns.push('De randafstand is maar ' + fmt(edge, 1) + ' mm. Houd minstens ongeveer 0,7 × de gatdiameter aan om uitscheuren te voorkomen.');
+    }
+    if (chord < (isFinite(v.hole) ? v.hole : 0) * 1.5) warns.push('De gaten liggen dicht op elkaar: koordafstand ' + fmt(chord, 1) + ' mm bij een gat van ' + fmt(v.hole, 1) + ' mm.');
+
+    const S = 560, c = S / 2;
+    const outer = isFinite(v.od) && v.od > 0 ? v.od : v.bcd * 1.3;
+    const sc = (S * 0.40) / (outer / 2);
+    let g = '';
+    if (isFinite(v.od) && v.od > 0) g += '<circle cx="' + c + '" cy="' + c + '" r="' + (v.od / 2 * sc).toFixed(1) + '" fill="#F6F7F5" stroke="#D5D8D4" stroke-width="2"/>';
+    g += '<circle cx="' + c + '" cy="' + c + '" r="' + (R * sc).toFixed(1) + '" fill="none" stroke="#B9C7DC" stroke-dasharray="8 6"/>';
+    rows.forEach(p => {
+      const X = c + p.x * sc, Y = c - p.y * sc;
+      g += '<circle cx="' + X.toFixed(1) + '" cy="' + Y.toFixed(1) + '" r="' + Math.max((isFinite(v.hole) ? v.hole : 10) / 2 * sc, 5).toFixed(1) +
+        '" fill="#E9EEF6" stroke="#1B3A6B" stroke-width="2"/>' +
+        '<text x="' + X.toFixed(1) + '" y="' + (Y + 5).toFixed(1) + '" font-size="14" font-family="ui-monospace,monospace" fill="#1B3A6B" text-anchor="middle">' + p.i + '</text>';
+    });
+    g += '<line x1="' + (c - 16) + '" y1="' + c + '" x2="' + (c + 16) + '" y2="' + c + '" stroke="#5C646C"/>' +
+      '<line x1="' + c + '" y1="' + (c - 16) + '" x2="' + c + '" y2="' + (c + 16) + '" stroke="#5C646C"/>';
+
+    let tbl = '<div class="card"><h2>Coördinaten vanaf het hart</h2><div class="scroll"><table class="data"><thead><tr>' +
+      '<th>Gat</th><th>Hoek</th><th>X mm</th><th>Y mm</th></tr></thead><tbody>';
+    rows.forEach(p => { tbl += '<tr><td>' + p.i + '</td><td>' + fmt(p.ang, 1) + '°</td><td>' + fmt(p.x, 2) + '</td><td>' + fmt(p.y, 2) + '</td></tr>'; });
+    tbl += '</tbody></table></div><p class="note">X naar rechts, Y naar boven, gemeten vanaf het hart van de flens.</p></div>';
+
+    return {
+      big: fmt(chord, 2) + ' mm', label: 'koordafstand tussen twee gaten', warnings: warns,
+      html: '<div class="card"><h2>Gatenpatroon</h2><svg class="draw" viewBox="0 0 ' + S + ' ' + S + '" role="img" aria-label="Gatenpatroon">' + g + '</svg></div>' + tbl,
+      rows: [
+        ['Steekcirkel', fmt(v.bcd, 1) + ' mm'],
+        ['Aantal gaten', n + ' ×'],
+        ['Hoek per gat', fmt(step, 3) + ' °'],
+        ['Koordafstand', fmt(chord, 2) + ' mm', true],
+        ['Boogafstand', fmt(Math.PI * v.bcd / n, 2) + ' mm']
+      ],
+      note: 'Aftekenen met de koordafstand stapelt fouten op. Zet liever het hart af en meet elk gat los uit met de coördinaten, ' +
+        'of prik het patroon door met een boormal.'
+    };
+  }
+});
+
+/* ================= 13. trap ================= */
+reg({
+  id: 'trap', group: 'Pijp en maatwerk', name: 'Trap en bordes',
+  desc: 'Optrede, aantrede, hellingshoek en boomlengte van een rechte steektrap.',
+  kw: 'trede stair stringer bordes leuning helling hoek',
+  lede: 'Rechte steektrap: verdeelt de hoogte over gelijke optredes en geeft de hellingshoek en de lengte van de bomen.',
+  fields: v => [
+    { id: 'H', label: 'Hoogte vloer tot vloer (mm)', value: isFinite(v.H) ? v.H : 2700, step: '1', min: 1 },
+    { id: 'n', label: 'Aantal optredes', value: isFinite(v.n) ? v.n : 14, step: '1', min: 2 },
+    { id: 'aan', label: 'Aantrede (mm)', value: isFinite(v.aan) ? v.aan : 240, step: '1', min: 1 },
+    { id: 'w', label: 'Breedte (mm)', value: isFinite(v.w) ? v.w : 900, step: '1', min: 0 },
+    { type: 'note', text: 'Optredes zijn de hoogtestappen; het aantal treden is er altijd één minder als de trap bovenaan gelijk uitkomt met de vloer.' }
+  ],
+  calc: v => {
+    const n = Math.round(v.n);
+    if (!isFinite(v.H) || v.H <= 0 || n < 2 || !isFinite(v.aan) || v.aan <= 0) return { error: 'Vul hoogte, aantal optredes en aantrede in.' };
+    const opt = v.H / n;
+    const treden = n - 1;
+    const going = treden * v.aan;
+    const ang = deg(Math.atan(opt / v.aan));
+    const boom = Math.hypot(v.H, going);
+    const loop = 2 * opt + v.aan;
+    const warns = [];
+    if (loop < 570 || loop > 640) warns.push('De loopmaat (2 × optrede + aantrede) is ' + fmt(loop, 0) + ' mm. Comfortabel loopt een trap tussen 570 en 640 mm; pas het aantal optredes of de aantrede aan.');
+    if (ang > 45) warns.push('De helling is ' + fmt(ang, 1) + '°. Boven de 45° praat je over een steile industrietrap; voor een gewone trap is 30 tot 42° gebruikelijk.');
+    if (opt > 210) warns.push('Een optrede van ' + fmt(opt, 0) + ' mm is hoog. Voeg een optrede toe om hem te verlagen.');
+
+    const S = 640, Hs = 420, P = 46;
+    const sc = Math.min((S - 2 * P) / Math.max(going, 1), (Hs - 2 * P) / Math.max(v.H, 1));
+    let path = 'M ' + P + ' ' + (Hs - P);
+    for (let i = 0; i < n; i++) {
+      path += ' v ' + (-opt * sc).toFixed(2);
+      if (i < treden) path += ' h ' + (v.aan * sc).toFixed(2);
+    }
+    const html = '<div class="card"><h2>Zijaanzicht</h2>' +
+      '<svg class="draw" viewBox="0 0 ' + S + ' ' + Hs + '" role="img" aria-label="Zijaanzicht van de trap">' +
+      '<line x1="' + P + '" y1="' + (Hs - P) + '" x2="' + (P + going * sc).toFixed(1) + '" y2="' + (Hs - P - v.H * sc).toFixed(1) + '" stroke="#B9C7DC" stroke-width="2" stroke-dasharray="7 5"/>' +
+      '<path d="' + path + '" fill="none" stroke="#1B3A6B" stroke-width="2.5" stroke-linejoin="round"/>' +
+      '<line x1="' + (P - 22) + '" y1="' + (Hs - P) + '" x2="' + (P - 22) + '" y2="' + (Hs - P - v.H * sc).toFixed(1) + '" stroke="#5C646C"/>' +
+      '<text x="' + (P - 28) + '" y="' + (Hs - P - v.H * sc / 2).toFixed(1) + '" font-size="14" font-family="ui-monospace,monospace" fill="#5C646C" text-anchor="end">' + fmt(v.H, 0) + '</text>' +
+      '<text x="' + (P + going * sc / 2).toFixed(1) + '" y="' + (Hs - P + 26) + '" font-size="14" font-family="ui-monospace,monospace" fill="#5C646C" text-anchor="middle">' + fmt(going, 0) + '</text>' +
+      '<text x="' + (P + 28) + '" y="' + (Hs - P - 12) + '" font-size="15" font-family="ui-monospace,monospace" fill="#1B3A6B">' + fmt(ang, 1) + '°</text>' +
+      '</svg></div>';
+
+    return {
+      big: fmt(opt, 1) + ' mm', label: 'optrede, ' + n + ' × over ' + fmt(v.H, 0) + ' mm', warnings: warns, html: html,
+      rows: [
+        ['Optrede', fmt(opt, 1) + ' mm', true],
+        ['Aantrede', fmt(v.aan, 0) + ' mm'],
+        ['Aantal treden', treden + ' ×'],
+        ['Horizontale lengte', fmt(going, 0) + ' mm', true],
+        ['Hellingshoek', fmt(ang, 2) + ' °', true],
+        ['Boomlengte hart-hart', fmt(boom, 0) + ' mm'],
+        ['Loopmaat 2o + a', fmt(loop, 0) + ' mm'],
+        ['Tredeoppervlak', fmt(v.aan * v.w / 1e6 * treden, 2) + ' m²']
+      ],
+      note: 'Boomlengte is de schuine hartlengte tussen begin- en eindpunt, exclusief overstek, aanlassen en bordesaansluiting. ' +
+        'Welke maten precies mogen hangt af van het gebruik van de trap: woning, kantoor en industrie kennen elk andere eisen.'
+    };
+  }
+});
+
+/* ================= 14. lasinstellingen ================= */
+reg({
+  id: 'lassen', group: 'Lassen en werkplaats', name: 'Lasinstellingen',
+  desc: 'Startwaarden voor stroom, spanning en gas, plus de warmte-inbreng.',
+  kw: 'mig mag tig elektrode booglassen amperage gas warmte inbreng heat input',
+  lede: 'Startwaarden om mee af te stellen, geen eindinstelling. Reken ook de warmte-inbreng uit, wat bij RVS het verschil maakt.',
+  fields: v => [
+    { id: 'proc', label: 'Proces', type: 'select', value: v.proc || 'mig', options: [
+      { v: 'mig', t: 'MIG / MAG massieve draad' }, { v: 'fcaw', t: 'Gevulde draad' },
+      { v: 'tig', t: 'TIG' }, { v: 'mma', t: 'Elektrode (MMA)' }] },
+    { id: 'mat', label: 'Materiaal', type: 'select', value: v.mat || 'rvs', options: [
+      { v: 'rvs', t: 'RVS 304 / 316' }, { v: 'staal', t: 'Staal' }, { v: 'alu', t: 'Aluminium' }] },
+    { id: 't', label: 'Plaatdikte (mm)', value: isFinite(v.t) ? v.t : 3, step: '0.1', min: 0.1 },
+    { id: 'speed', label: 'Lassnelheid (mm/min)', value: isFinite(v.speed) ? v.speed : 300, step: '10', min: 1 },
+    { id: 'I', label: 'Stroom (A)', value: isFinite(v.I) ? v.I : '', step: '1', min: 0, ph: 'leeg = advies' },
+    { id: 'U', label: 'Spanning (V)', value: isFinite(v.U) ? v.U : '', step: '0.1', min: 0, ph: 'leeg = advies' },
+    { type: 'note', text: 'Laat stroom en spanning leeg om met de advieswaarden te rekenen, of vul je eigen instelling in om de warmte-inbreng te controleren.' }
+  ],
+  calc: v => {
+    if (!isFinite(v.t) || v.t <= 0) return { error: 'Vul een plaatdikte in.' };
+    const m = v.mat, p = v.proc;
+    let wire = '', Ic, U, gas, flow, eta, extra = '';
+    if (p === 'mig') {
+      wire = v.t <= 1.5 ? '0,8 mm' : (v.t <= 4 ? '1,0 mm' : '1,2 mm');
+      Ic = (m === 'rvs' ? 35 : m === 'alu' ? 45 : 40) * v.t;
+      U = 14 + 0.05 * Ic; eta = 0.8;
+      gas = m === 'rvs' ? 'Argon + 2% CO₂ (M12)' : m === 'alu' ? 'Argon 100%' : 'Argon 82 / CO₂ 18 (M21)';
+      flow = m === 'alu' ? 16 : m === 'rvs' ? 14 : 12;
+      extra = 'Vrije draaduitsteek 10 tot 15 mm. ' + (m === 'alu' ? 'Gebruik een spoelpistool of teflon liner en duw altijd.' : 'Duwen geeft een vlakkere naad, trekken meer inbranding.');
+    } else if (p === 'fcaw') {
+      wire = v.t <= 5 ? '1,2 mm' : '1,6 mm';
+      Ic = 45 * v.t; U = 16 + 0.05 * Ic; eta = 0.8;
+      gas = 'Argon 82 / CO₂ 18 (M21), of gasloos bij zelfbeschermende draad';
+      flow = 15; extra = 'Vrije draaduitsteek 15 tot 25 mm. Slak er elke laag netjes af.';
+    } else if (p === 'tig') {
+      wire = 'Toevoegdraad ' + (v.t <= 2 ? '1,6 mm' : v.t <= 5 ? '2,4 mm' : '3,2 mm') +
+        ', elektrode ' + (v.t <= 2 ? '1,6 mm' : v.t <= 5 ? '2,4 mm' : '3,2 mm');
+      Ic = (m === 'rvs' ? 30 : m === 'alu' ? 40 : 35) * v.t;
+      U = 12 + 0.01 * Ic; eta = 0.6;
+      gas = m === 'alu' ? 'Argon 100%, wisselstroom' : 'Argon 100%, gelijkstroom min op de toorts';
+      flow = m === 'alu' ? 10 : 8;
+      extra = m === 'rvs' ? 'Bij pijp en eenzijdig lassen: formeergas aan de achterkant, anders verbrandt de wortel.' : 'Slijp de elektrode langs de lengte, niet dwars.';
+    } else {
+      const dEl = v.t <= 2 ? 2.0 : v.t <= 3 ? 2.5 : v.t <= 6 ? 3.25 : 4.0;
+      wire = 'Elektrode ' + fmt(dEl, 2).replace(',00', '') + ' mm';
+      Ic = 40 * dEl; U = 20 + 0.04 * Ic; eta = 0.8;
+      gas = 'Geen — beklede elektrode'; flow = 0;
+      extra = 'Houd de boog kort, ongeveer de kerndiameter. Bewaar RVS-elektroden droog, anders krijg je poreusheid.';
+    }
+    const I = isFinite(v.I) && v.I > 0 ? v.I : Ic;
+    const Uu = isFinite(v.U) && v.U > 0 ? v.U : U;
+    const speed = isFinite(v.speed) && v.speed > 0 ? v.speed : 300;
+    const Q = (Uu * I * 60) / (speed * 1000) * eta;
+
+    const warns = [];
+    if (m === 'rvs' && Q > 1.5) warns.push('Warmte-inbreng ' + fmt(Q, 2) + ' kJ/mm is hoog voor austenitisch RVS. Boven ongeveer 1,5 kJ/mm loop je kans op vervorming en aantasting van de corrosievastheid. Las sneller, koeler of in dunnere lagen.');
+    if (m === 'rvs') warns.push('Houd de tussenlaagtemperatuur onder ongeveer 150 °C en meet dat ook. Laat afkoelen in plaats van doorlassen.');
+    if (m === 'rvs') warns.push('Gebruik voor RVS eigen borstels, schijven en werktafel. IJzerdeeltjes van staal roesten later door in het oppervlak.');
+    if (v.t < 1.5 && p === 'mma') warns.push('Onder 1,5 mm is elektrode lastig: je brandt er snel doorheen. TIG is hier de logische keuze.');
+
+    return {
+      big: fmt(I, 0) + ' A', label: 'advies startstroom bij ' + fmt(v.t, 1) + ' mm', warnings: warns,
+      rows: [
+        ['Draad of elektrode', wire],
+        ['Stroom', fmt(Ic * 0.85, 0) + ' – ' + fmt(Ic * 1.15, 0) + ' A', true],
+        ['Spanning', fmt(U, 1) + ' V'],
+        ['Gas', gas],
+        ['Gasdebiet', flow ? fmt(flow, 0) + ' l/min' : '—'],
+        ['Warmte-inbreng', fmt(Q, 2) + ' kJ/mm', true, 'sec'],
+        ['Gerekend met', fmt(Uu, 1) + ' V × ' + fmt(I, 0) + ' A'],
+        ['Lassnelheid', fmt(speed, 0) + ' mm/min'],
+        ['Rendement proces', fmt(eta, 2)]
+      ],
+      note: extra + ' Warmte-inbreng is berekend als spanning × stroom × 60, gedeeld door de lassnelheid in mm/min, maal het procesrendement.'
+    };
+  }
+});
+
+/* ================= 15. lasdraad en gas ================= */
+reg({
+  id: 'verbruik', group: 'Lassen en werkplaats', name: 'Draad- en gasverbruik',
+  desc: 'Hoeveel lasmateriaal en gas een naad kost, voor calculatie of inkoop.',
+  kw: 'verbruik draad gas calculatie offerte hoeklas naad kosten',
+  lede: 'Schat het neergesmolten gewicht, de benodigde draad en het gasverbruik van een naad. Handig voor een calculatie.',
+  fields: v => {
+    const k = v.kind || 'hoek';
+    const f = [
+      { id: 'kind', label: 'Type naad', type: 'select', value: k, reload: true, options: [{ v: 'hoek', t: 'Hoeklas' }, { v: 'v', t: 'Stompe las, V-naad' }] },
+      { id: 'proc', label: 'Proces', type: 'select', value: v.proc || 'mig', options: [
+        { v: 'mig', t: 'MIG / MAG' }, { v: 'fcaw', t: 'Gevulde draad' }, { v: 'tig', t: 'TIG' }, { v: 'mma', t: 'Elektrode' }] }
+    ];
+    if (k === 'hoek') {
+      f.push({ id: 'a', label: 'a-maat (mm)', value: isFinite(v.a) ? v.a : 4, step: '0.5', min: 0.5 });
+    } else {
+      f.push({ id: 't', label: 'Plaatdikte (mm)', value: isFinite(v.t) ? v.t : 8, step: '0.1', min: 0.5 });
+      f.push({ id: 'open', label: 'Naadhoek (°)', value: isFinite(v.open) ? v.open : 60, step: '1', min: 1 });
+      f.push({ id: 'gap', label: 'Lasopening (mm)', value: isFinite(v.gap) ? v.gap : 2, step: '0.5', min: 0 });
+      f.push({ id: 'cap', label: 'Overhoogte (mm)', value: isFinite(v.cap) ? v.cap : 1.5, step: '0.5', min: 0 });
+    }
+    f.push({ id: 'L', label: 'Naadlengte (mm)', value: isFinite(v.L) ? v.L : 1000, step: '1', min: 1 });
+    f.push({ id: 'qty', label: 'Aantal naden', value: isFinite(v.qty) ? v.qty : 1, step: '1', min: 1 });
+    f.push({ id: 'price', label: 'Draadprijs per kg (€) — optioneel', span: true, value: isFinite(v.price) ? v.price : '', step: '0.01', min: 0 });
+    return f;
+  },
+  calc: v => {
+    const EFF = { mig: 0.90, fcaw: 0.83, tig: 0.90, mma: 0.60 };
+    const RATE = { mig: 2.5, fcaw: 3.5, tig: 0.5, mma: 1.2 };
+    const FLOW = { mig: 13, fcaw: 15, tig: 8, mma: 0 };
+    let A, omschr;
+    if (v.kind === 'hoek') {
+      if (!isFinite(v.a) || v.a <= 0) return { error: 'Vul de a-maat in.' };
+      A = v.a * v.a * 1.1;
+      omschr = 'hoeklas a' + fmt(v.a, 1);
+    } else {
+      if (![v.t, v.open, v.gap, v.cap].every(isFinite) || v.t <= 0) return { error: 'Vul de naadmaten in.' };
+      const halfW = v.t * Math.tan(rad(v.open / 2));
+      const width = 2 * halfW + v.gap;
+      A = v.gap * v.t + v.t * halfW + (2 / 3) * width * v.cap;
+      omschr = 'V-naad ' + fmt(v.t, 0) + ' mm';
+    }
+    if (!isFinite(v.L) || v.L <= 0 || !isFinite(v.qty) || v.qty < 1) return { error: 'Vul naadlengte en aantal in.' };
+    const totL = v.L * v.qty;
+    const dep = A * totL * 7.9 * 1e-6;
+    const eff = EFF[v.proc], rate = RATE[v.proc], flow = FLOW[v.proc];
+    const wire = dep / eff;
+    const hours = dep / rate;
+    const gas = flow * hours * 60;
+    const rows = [
+      ['Naaddoorsnede', fmt(A, 1) + ' mm²'],
+      ['Totale naadlengte', fmt(totL / 1000, 2) + ' m'],
+      ['Neergesmolten metaal', fmt(dep, 2) + ' kg', true],
+      ['Benodigde draad of elektrode', fmt(wire, 2) + ' kg', true],
+      ['Rendement proces', fmt(eff * 100, 0) + ' %'],
+      ['Boogtijd', fmt(hours, 2) + ' uur', true, 'sec'],
+      ['Bij smeltsnelheid', fmt(rate, 1) + ' kg/uur'],
+      ['Gasverbruik', flow ? fmt(gas, 0) + ' liter' : '—']
+    ];
+    if (isFinite(v.price) && v.price > 0) rows.push(['Draadkosten', '€ ' + fmt(wire * v.price, 2), true]);
+    return {
+      big: fmt(wire, 2) + ' kg', label: 'draad voor ' + omschr + ' over ' + fmt(totL / 1000, 1) + ' m',
+      rows: rows,
+      note: 'Boogtijd is alleen de tijd dat de boog brandt. Reken voor een echte calculatie met een boogtijdfactor van ruwweg 25 tot 40 procent: ' +
+        'opspannen, keren, slak bikken en nabewerken kosten het meeste tijd. Bij RVS komt beitsen of borstelen daar nog bij.'
+    };
+  }
+});
+
+/* ================= 16. draad en boren ================= */
+reg({
+  id: 'draad', group: 'Lassen en werkplaats', name: 'Tapboren en draadmaten',
+  desc: 'Spoed, tapboor en doorboor voor metrisch draad, met tapdiepte.',
+  kw: 'tappen boren schroefdraad metrisch m8 m10 kernboor doorboren',
+  lede: 'Metrisch grof draad: spoed, tapboor en doorboor. Vul een tapdiepte in om te zien of je genoeg vlees hebt.',
+  custom: (form, out) => {
+    form.innerHTML = buildForm([
+      { id: 'mat', label: 'Materiaal om in te tappen', type: 'select', value: 'rvs', options: [
+        { v: 'rvs', t: 'RVS' }, { v: 'staal', t: 'Staal' }, { v: 'alu', t: 'Aluminium' }] },
+      { id: 'th', label: 'Markeer maat', type: 'select', value: 'M10', options: Object.keys(THREADS).map(k => ({ v: k, t: k })) }
+    ], 'Weergave');
+    const draw = () => {
+      const sel = $('f-th').value, mat = $('f-mat').value;
+      const mult = mat === 'rvs' ? 1.5 : mat === 'alu' ? 2.0 : 1.25;
+      let h = '<div class="card"><h2>Metrisch grof draad</h2><div class="scroll"><table class="data"><thead><tr>' +
+        '<th>Draad</th><th>Spoed mm</th><th>Tapboor mm</th><th>Doorboor mm</th><th>Tapdiepte mm</th>' +
+        '</tr></thead><tbody>';
+      for (const k of Object.keys(THREADS)) {
+        const r = THREADS[k];
+        const dia = num(k.slice(1));
+        h += '<tr' + (k === sel ? ' class="hl"' : '') + '><td>' + k + '</td><td>' + fmt(r[0], 2) + '</td><td>' + fmt(r[1], 1) +
+          '</td><td>' + fmt(r[2], 1) + '</td><td>' + fmt(dia * mult, 0) + '</td></tr>';
+      }
+      h += '</tbody></table></div><p class="note">Tapboor geldt voor ongeveer 65 tot 70 procent draaddiepte, wat voor bijna al het werk sterk genoeg is en veel makkelijker tapt. ' +
+        'De tapdiepte is een vuistregel van ' + fmt(mult, 2) + ' × de diameter voor ' + (mat === 'rvs' ? 'RVS' : mat === 'alu' ? 'aluminium' : 'staal') + '.</p>' +
+        '<p class="note"><b>Tappen in RVS</b> vraagt een scherpe tap, lage snelheid en echte tapolie. RVS hardt onder de snede aan: ' +
+        'druk door en blijf niet wrijven, en breek de spaan regelmatig. Een machinetap met spiraalgroef voert de spaan naar boven af bij blinde gaten, ' +
+        'een tap met snijschuinte duwt hem vooruit bij doorlopende gaten.</p></div>';
+      out.innerHTML = h;
+    };
+    $('f-th').addEventListener('change', draw);
+    $('f-mat').addEventListener('change', draw);
+    draw();
+  }
+});
+
+/* ================= 17. balk-indicatie ================= */
+reg({
+  id: 'balk', group: 'Lassen en werkplaats', name: 'Balk — eerste indicatie',
+  desc: 'Spanning en doorbuiging van een vrij opgelegde balk, als oriëntatie.',
+  kw: 'balk ligger doorbuiging spanning constructie sterkte bordes',
+  lede: 'Een eerste gevoel bij een profielkeuze: spanning en doorbuiging van een vrij opgelegde balk. Geen constructieberekening.',
+  fields: v => [
+    { id: 'src', label: 'Profiel', type: 'select', span: true, value: v.src || 'IPE|160', options: sectionOptionsSel(v.src || 'IPE|160') },
+    { id: 'mat', label: 'Materiaal', type: 'select', value: v.mat || '235|210000', options: [
+      { v: '235|210000', t: 'Staal S235' }, { v: '355|210000', t: 'Staal S355' }, { v: '210|200000', t: 'RVS 304 / 316' }] },
+    { id: 'L', label: 'Overspanning (mm)', value: isFinite(v.L) ? v.L : 3000, step: '10', min: 1 },
+    { id: 'q', label: 'Verdeelde last (kN/m)', value: isFinite(v.q) ? v.q : 5, step: '0.1', min: 0 },
+    { id: 'F', label: 'Puntlast in het midden (kN)', value: isFinite(v.F) ? v.F : 0, step: '0.1', min: 0 },
+    { id: 'lim', label: 'Doorbuigingseis', type: 'select', span: true, value: v.lim || '250', options: [
+      { v: '200', t: 'L / 200 — ruim' }, { v: '250', t: 'L / 250 — gangbaar' }, { v: '300', t: 'L / 300 — strak' }, { v: '500', t: 'L / 500 — zeer strak' }] },
+    { type: 'note', text: 'Vrij opgelegd op twee steunpunten, belast om de sterke as. Het eigen gewicht van het profiel zit er niet in.' }
+  ],
+  calc: v => {
+    const p = String(v.src).split('|');
+    const row = SECTIONS[p[0]].d[p[1]];
+    const Wy = row[6] * 1000;      // mm³
+    const Iy = row[5] * 1e4;       // mm⁴
+    const kgm = row[7];
+    const mp = String(v.mat).split('|');
+    const fy = num(mp[0]), E = num(mp[1]);
+    if (!isFinite(v.L) || v.L <= 0) return { error: 'Vul een overspanning in.' };
+    const q = isFinite(v.q) ? v.q : 0, F = isFinite(v.F) ? v.F : 0;
+    if (q <= 0 && F <= 0) return { error: 'Vul een verdeelde last of een puntlast in.' };
+    const L = v.L;
+    const Mq = q * Math.pow(L / 1000, 2) / 8;      // kNm
+    const Mf = F * (L / 1000) / 4;
+    const M = Mq + Mf;
+    const sigma = M * 1e6 / Wy;
+    const sTo = fy / 1.5;
+    const dq = 5 * q * Math.pow(L, 4) / (384 * E * Iy);
+    const df = F * 1000 * Math.pow(L, 3) / (48 * E * Iy);
+    const dTot = dq + df;
+    const dLim = L / num(v.lim);
+    const uS = sigma / sTo * 100, uD = dTot / dLim * 100;
+
+    const warns = [];
+    if (uS > 100) warns.push('De spanning ligt ' + fmt(uS - 100, 0) + ' procent boven de aangehouden toelaatbare waarde. Kies een zwaarder profiel of een kleinere overspanning.');
+    else if (uS > 85) warns.push('De spanning zit op ' + fmt(uS, 0) + ' procent en dus dicht tegen de grens. Weinig marge voor extra last.');
+    if (uD > 100) warns.push('De doorbuiging is ' + fmt(dTot, 1) + ' mm en overschrijdt de eis van ' + fmt(dLim, 1) + ' mm.');
+    warns.push('Dit is een oriëntatie, geen toetsing. Kip, knik, plaatselijke plooi, opleggingen, trillingen en de juiste belastingcombinaties zitten er niet in. Laat een dragende constructie altijd door een constructeur narekenen.');
+
+    const barW = 1000, barH = 120;
+    const scl = Math.min(uS, 200) / 200, scd = Math.min(uD, 200) / 200;
+    const bar = (y, w, lbl, val) =>
+      '<rect x="150" y="' + y + '" width="700" height="26" fill="#F1F2F0" stroke="#E6E8E5"/>' +
+      '<rect x="150" y="' + y + '" width="' + (700 * w).toFixed(1) + '" height="26" fill="' + (w > 0.5 ? '#8A4B10' : '#1B3A6B') + '"/>' +
+      '<line x1="500" y1="' + (y - 6) + '" x2="500" y2="' + (y + 32) + '" stroke="#15181B" stroke-width="2"/>' +
+      '<text x="140" y="' + (y + 19) + '" font-size="19" fill="#5C646C" text-anchor="end" font-family="system-ui">' + lbl + '</text>' +
+      '<text x="860" y="' + (y + 19) + '" font-size="19" fill="#15181B" font-family="ui-monospace,monospace">' + val + '</text>';
+    const html = '<div class="card"><h2>Benutting</h2>' +
+      '<svg class="draw" viewBox="0 0 ' + barW + ' ' + barH + '" role="img" aria-label="Benutting van spanning en doorbuiging">' +
+      bar(20, scl, 'spanning', fmt(uS, 0) + '%') + bar(74, scd, 'doorbuiging', fmt(uD, 0) + '%') +
+      '</svg><p class="note">De zwarte streep is honderd procent van de aangehouden grens.</p></div>';
+
+    return {
+      big: fmt(Math.max(uS, uD), 0) + '%', label: 'hoogste benutting — ' + p[0] + ' ' + p[1] + ' over ' + fmt(L / 1000, 2) + ' m',
+      warnings: warns, warnTitle: 'Lees dit eerst', html: html,
+      rows: [
+        ['Profiel', p[0] + ' ' + p[1] + ' (' + fmt(kgm, 1) + ' kg/m)'],
+        ['Weerstandsmoment Wy', fmt(row[6], 0) + ' cm³'],
+        ['Traagheidsmoment Iy', fmt(row[5], 0) + ' cm⁴'],
+        ['Maximaal moment', fmt(M, 2) + ' kNm', true, 'sec'],
+        ['Buigspanning', fmt(sigma, 0) + ' N/mm²', true],
+        ['Aangehouden toelaatbaar', fmt(sTo, 0) + ' N/mm²'],
+        ['Benutting spanning', fmt(uS, 0) + ' %', true],
+        ['Doorbuiging', fmt(dTot, 1) + ' mm', true, 'sec'],
+        ['Eis L/' + v.lim, fmt(dLim, 1) + ' mm'],
+        ['Benutting doorbuiging', fmt(uD, 0) + ' %', true]
+      ],
+      note: 'Toelaatbare spanning is de vloeigrens van ' + fmt(fy, 0) + ' N/mm² gedeeld door 1,5. ' +
+        'Dat is een klassieke werkspanningsbenadering en geen toetsing volgens de Eurocode.'
+    };
+  }
+});
+
+/* ================= 18. kostprijs ================= */
+reg({ id: 'kostprijs', group: 'Calculatie', name: 'Kostprijscalculator', page: true,
+  desc: 'Bereken directe kosten, opslag, winstmarge, btw en prijzen per stuk.',
+  kw: 'offerte verkoopprijs materiaal arbeid marge btw klant project' });
+
+/* ================= start ================= */
+renderMenu();
+applyTheme(safeGet(STORE.theme, 'auto'));
+$('theme').addEventListener('change', e => applyTheme(e.target.value));
+routeHash();
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+'use strict';
+const fs=require('fs'),assert=require('assert');
+const html=fs.readFileSync('werkbank-preview.html','utf8');
+const staticHtml=html.replace(/<script>[\s\S]*?<\/script>/,'');
+const ids=[...staticHtml.matchAll(/\sid="([^"]+)"/g)].map(x=>x[1]);
+assert.equal(new Set(ids).size,ids.length,'dubbele statische HTML-id');
+for(const id of [...staticHtml.matchAll(/<label[^>]+for="([^"]+)"/g)].map(x=>x[1]))assert(ids.includes(id),`label zonder veld: ${id}`);
+assert(html.includes('Preview — niet voor definitieve calculaties'));
+assert(html.includes("calculations: 'werkbank.preview.v3.calculations'"));
+for(const profile of ['plate','flat','round','square','hex','tube','shs','rhs','angle','unequalAngle','ipe','hea','heb','upn','upe','tee'])assert(html.includes(`p==='${profile}'`)||html.includes(`['upn','upe'].includes(p)`)||html.includes(`p.includes('angle')`)||html.includes("['ipe','hea','heb']"),`diagram ontbreekt: ${profile}`);
+const toolIds=[...html.matchAll(/reg\(\{\s*id:\s*'([^']+)'/g)].map(x=>x[1]);
+assert.deepEqual(toolIds,['gewicht','profielen','tank','zaaglijst','nesting','kanten','conus','cilinder','aftakking','verstek','offset','steekcirkel','trap','lassen','verbruik','draad','balk','kostprijs']);
+console.log('statische previewcontroles geslaagd');
