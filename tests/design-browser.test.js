@@ -1,7 +1,7 @@
 'use strict';
 const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs');
 (async()=>{
- const server=require('http').createServer((req,res)=>{res.setHeader('Content-Type','text/html; charset=utf-8');res.end(fs.readFileSync('werkbank-design-preview.html'));});await new Promise(r=>server.listen(8878,'127.0.0.1',r));
+ const server=require('http').createServer((req,res)=>{res.setHeader('Content-Type','text/html; charset=utf-8');res.end(fs.readFileSync(process.env.WERKBANK_PAGE||'werkbank-design-preview.html'));});await new Promise(r=>server.listen(8878,'127.0.0.1',r));
  const browser=await chromium.launch({executablePath:process.env.WERKBANK_CHROMIUM||undefined,headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--disable-gpu']});
  const failures=[];
  for(const width of [320,390,430,1280])for(const theme of ['dark','light']){
@@ -17,7 +17,7 @@ const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs')
   await page.fill('#e-length','1000');await page.fill('#e-count','4');await check('editor');
   if(await page.locator('#editor-save').isDisabled())console.log(await page.evaluate(()=>({draft:activeMaterialEditor.state.draft,errors:validateLine(activeMaterialEditor.state.draft,1)})));
   await page.click('#editor-save');await page.waitForSelector('.editor-backdrop',{state:'detached'});await check('materials');
-  await page.click('#cost-save');await page.click('#cost-save');assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('werkbank.design.v1.calculations')).length),1);
+  await page.click('#cost-save');await page.click('#cost-save');assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem(STORE.calculations)).length),1);
   await page.click('[data-edit]');await page.fill('#e-unitPrice','5,25');await page.click('#editor-save');assert.match(await page.locator('.line-price strong').innerText(),/21,00/);
   await page.click('#cost-save');await page.reload();await page.click('#project-back');await page.click('[data-recent]');if(!await page.locator('.line-price strong').count())console.log(await page.evaluate(()=>({dirty:currentDirty(),state:costState,clean:cleanProject,errors:document.querySelector('#runtime-error').textContent})));assert.match(await page.locator('.line-price strong').innerText(),/21,00/);
   await page.click('#tab-labor');await page.fill('#c-productionHours','2');await page.fill('#c-hourlyRate','50');await page.click('#tab-overview');await check('overview');

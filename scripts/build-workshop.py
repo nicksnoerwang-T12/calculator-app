@@ -1,5 +1,5 @@
 from pathlib import Path
-p=Path('werkbank-v2.html').read_text()
+p=Path('design/base-catalogus.html').read_text()
 assert '<section id="home" class="page">' in p, 'Productie-layout gewijzigd: controleer builder'
 assert 'werkbank.v2.' in p, 'Productieopslag ontbreekt'
 p=p.replace('werkbank.v2.','werkbank.design.v1.').replace('Werkbank — leverancierscatalogus 1','Ontwerp-preview · Workshop 02')

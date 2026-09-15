@@ -30,11 +30,11 @@ const assets=[...staticHtml.matchAll(/<(?:script|img|link)\b[^>]*(?:src|href)="(
 assert.deepEqual(assets,[],'geen ontbrekende lokale of online runtimeafhankelijkheden');
 const sha=f=>crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
 assert.equal(sha('werkbank-preview.html'),'e322309ab0c3b4198718f71469bff3f56980e2b7464cceb15b10554fb19c2e12');
-assert.equal(sha('werkbank-v2.html'),'53e43bb5f63cc0e3c970f334c0da3e6fabcc36b9c8963b5a9be43ce1f1f9a3e0');
+assert.equal(sha('design/base-catalogus.html'),'53e43bb5f63cc0e3c970f334c0da3e6fabcc36b9c8963b5a9be43ce1f1f9a3e0');
 assert.equal(sha('werkbank.html'),'d964307b9a66667df0c15ab4c9d41a625e4c7b0d3170c15cbafea51cb16a7ce2');
 console.log('publicatiepagina: catalogus, snapshots, selectie, offline en opslagisolatie geslaagd');
 
 
 const expected=fs.readFileSync('werkbank-catalogus-test.html','utf8').replace('Werkbank — catalogustest voor iPhone','Werkbank — rekentools en kostprijscalculator').replace('Catalogustest voor iPhone — geïsoleerde opslag','Werkbank — leverancierscatalogus 1').replaceAll('werkbank.catalogus-test.v1.','werkbank.v2.');
-assert.equal(html.trimEnd(),expected.trimEnd(),'geteste applicatie behouden, alleen titel en opslag aangepast');
+assert.equal(fs.readFileSync('design/base-catalogus.html','utf8').trimEnd(),expected.trimEnd(),'geteste applicatie behouden, alleen titel en opslag aangepast');
 assert(html.includes("calculations: 'werkbank.v2.calculations'"));

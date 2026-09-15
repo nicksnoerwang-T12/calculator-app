@@ -1,7 +1,7 @@
 'use strict';
 const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs');
 (async()=>{
-const server=require('http').createServer((req,res)=>{res.setHeader('Content-Type','text/html; charset=utf-8');res.end(fs.readFileSync('werkbank-design-preview.html'));});await new Promise(r=>server.listen(8879,'127.0.0.1',r));
+const server=require('http').createServer((req,res)=>{res.setHeader('Content-Type','text/html; charset=utf-8');res.end(fs.readFileSync(process.env.WERKBANK_PAGE||'werkbank-design-preview.html'));});await new Promise(r=>server.listen(8879,'127.0.0.1',r));
 const browser=await chromium.launch({executablePath:process.env.WERKBANK_CHROMIUM||undefined,headless:true,args:['--no-sandbox','--disable-gpu']});const page=await browser.newPage({viewport:{width:390,height:844}});page.setDefaultTimeout(6000);const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('dialog',dialog=>dialog.accept());
 await page.goto('http://127.0.0.1:8879');await page.click('#design-new');await page.click('#add-material');await page.locator('.profile-card').filter({has:page.locator('input[value="rectTube"]')}).click();await page.locator('#catalog-choices label').filter({hasText:'50 × 30 × 2 mm'}).first().click();await page.fill('#e-length','1000');await page.fill('#e-count','4');await page.click('#editor-save');await page.click('#cost-save');
 // A later catalog price must never replace a saved line on edit.
