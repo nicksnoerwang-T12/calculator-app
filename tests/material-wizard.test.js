@@ -29,32 +29,36 @@ class GeneratedDocument {
 const document=new GeneratedDocument(),window={addEventListener(){}};
 const context={console,Math,Number,Object,Array,String,Date,JSON,Intl,Set,Map,isFinite,parseFloat,SECTIONS:null,window,document,
  queueMicrotask:fn=>fn(),$:()=>({focus(){}}),safeGet:(_k,f)=>f,safeSet:()=>true,getPrices:()=>({s235:2}),finiteNonNegative:v=>Number(v)||0,uid:()=> 'new',
- diagram:p=>`<svg data-diagram="${p}"></svg>`,profileIcon:p=>`<svg data-icon="${p}"></svg>`,lineDescription:()=>'',costState:{qty:1,materials:[]}};
+ profileIcon:p=>`<svg data-icon="${p}"></svg>`,lineDescription:()=>'',costState:{qty:1,materials:[]}};
 vm.createContext(context);
-vm.runInContext(escSource+'\n'+catalog+'\n'+model+'\n'+editor+'\n'+documentListener+`\nthis.api={MATERIAL_PROFILE_TYPES,PROFILES,newLine,createMaterialEditorState,handleProfileSelection,pickerHtml,editorFormHtml};this.activate=x=>activeMaterialEditor=x;`,context);
+vm.runInContext(escSource+'\n'+catalog+'\n'+model+'\n'+editor+'\n'+documentListener+`\nthis.api={MATERIAL_PROFILE_TYPES,PROFILES,newLine,createMaterialEditorState,handleProfileSelection,pickerHtml,editorFormHtml,technicalProfileDiagram};this.activate=x=>activeMaterialEditor=x;`,context);
 const api=context.api;
 assert.deepEqual(Array.from(api.MATERIAL_PROFILE_TYPES),['plate','strip','roundBar','squareBar','hexBar','roundTube','squareTube','rectTube','equalAngle','unequalAngle','IPE','HEA','HEB','UNP','UPE','tee','customKgM','purchasedItem']);
 assert.strictEqual(window.selectMaterialProfile,context.selectMaterialProfile,'selectMaterialProfile is expliciet op window beschikbaar');
 assert.equal(document.listeners.change.length,1,'precies één stabiele document-change-listener');
 assert.equal(api.handleProfileSelection('ipe',api.createMaterialEditorState()),false,'niet-canonieke profielwaarde wordt geweigerd');
 
-for(const profile of ['rectTube','plate','IPE']){
+for(const profile of api.MATERIAL_PROFILE_TYPES){
  const root=new GeneratedDomRoot(document),state=api.createMaterialEditorState(),touched=new Set(['old']);let editorOpens=0;
  const draw=()=>{root.innerHTML=state.materialEditorView==='picker'?api.pickerHtml(state.draft):api.editorFormHtml(state.draft);if(state.materialEditorView==='editor')editorOpens++;};
  context.activate({state,touched,draw});draw();
  const input=root.querySelector(`input[name="material-profile"][value="${profile}"]`);
  assert(input,`${profile}: echt radio-input staat in gegenereerde picker-DOM`);assert.equal(input.type,'radio');
- input.checked=true;input.dispatchEvent({bubbles:true});
+ input.checked=true;let runtimeError=null;try{input.dispatchEvent({bubbles:true});}catch(error){runtimeError=error;}
+ assert.equal(runtimeError,null,`${profile}: volledige change/select/render-route geeft geen runtimefout`);
  assert.equal(state.draft.profile,profile,`${profile}: document-listener slaat keuze op`);
  assert(!root.querySelector('#profile-picker'),`${profile}: picker verdwijnt`);
  assert(root.querySelector('#change-profile'),`${profile}: volledige editor verschijnt`);
- const required=profile==='rectTube'?['e-material','e-b','e-h','e-t','e-count','e-waste','e-unitPrice']:profile==='plate'?['e-material','e-length','e-width','e-t','e-count','e-waste','e-unitPrice']:['e-material','e-catalogSize','e-length','e-count','e-waste','e-unitPrice'];
+ assert(root.innerHTML.includes(`class="tech-diagram" data-profile-diagram="${profile}"`),`${profile}: technisch diagram uit echte generator ontbreekt`);
+ const required=['e-count','e-unitPrice'].concat(profile==='purchasedItem'?['e-description']:['e-material','e-waste'],api.PROFILES[profile].dims.map(key=>`e-${key}`),api.PROFILES[profile].catalog?['e-catalogSize']:[]);
  for(const id of required)assert(root.querySelector(`#${id}`),`${profile}: editor mist ${id}`);
+ if(profile==='rectTube')for(const dimension of ['b','h','t'])assert(root.innerHTML.includes(`>${dimension}</text>`),`rectTube-diagram mist maat ${dimension}`);
  assert.equal(editorOpens,1,`${profile}: één change-event opent precies één editor`);
  assert.equal(touched.size,0,`${profile}: oude interactiestaat gewist`);
 }
+assert(api.technicalProfileDiagram('niet-bestaand').includes('data-profile-diagram="unknown"'),'onbekend profiel krijgt een veilig herkenbaar diagram');
 assert(!editor.includes("addEventListener('click',event=>{const button=event.target.closest('button[data-profile-type]')"),'oude profielkaart-clicklistener is verwijderd');
 assert(!html.includes('data-profile-type'),'oude gedelegeerde buttonlogica is verwijderd');
 assert(!html.includes('installMaterialProfileDelegation'),'oude profieldelegatie bestaat niet meer');
 assert(!html.includes('goMaterialStep')&&!html.includes('MATERIAL_STEPS'),'oude wizardcode verwijderd');
-console.log('materiaal-editor-5 native radio DOM-integratietests geslaagd');
+console.log('materiaal-editor-5.1 volledige radio/select/render-diagramtests geslaagd');

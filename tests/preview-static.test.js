@@ -5,7 +5,7 @@ const staticHtml=html.replace(/<script>[\s\S]*?<\/script>/,'');
 const ids=[...staticHtml.matchAll(/\sid="([^"]+)"/g)].map(x=>x[1]);
 assert.equal(new Set(ids).size,ids.length,'dubbele statische HTML-id');
 for(const id of [...staticHtml.matchAll(/<label[^>]+for="([^"]+)"/g)].map(x=>x[1]))assert(ids.includes(id),`label zonder veld: ${id}`);
-assert(html.includes('Preview materiaal-editor 5 — native selectie'));
+assert(html.includes('Preview materiaal-editor 5.1 — diagramfix'));
 assert(html.includes('id="runtime-error"')&&html.includes('window.onerror')&&html.includes("unhandledrejection"),'zichtbaar foutpaneel en beide globale foutkanalen aanwezig');
 assert(html.indexOf("document.addEventListener('change'")<html.indexOf('const MATERIAL_SCHEMA='),'stabiele profieldelegatie wordt vóór app-initialisatie geïnstalleerd');
 assert(html.includes('position:absolute;opacity:0')&&!html.includes('.profile-radio{display:none'),'radio is visueel, maar niet functioneel verborgen');
@@ -19,7 +19,7 @@ assert(html.includes('lastFocus?.focus()'),'sluiten herstelt focus naar de opene
 assert(html.includes('overflow-x:hidden'),'mobiele editor voorkomt horizontale overflow');
 
 assert(html.includes("calculations: 'werkbank.preview.v3.calculations'"));
-for(const profile of ['plate','strip','roundBar','squareBar','hexBar','roundTube','squareTube','rectTube','equalAngle','unequalAngle','IPE','HEA','HEB','UNP','UPE','tee'])assert(html.includes(`p==='${profile}'`)||html.includes(`['UNP','UPE'].includes(p)`)||html.includes(`p.includes('equalAngle')`)||html.includes("['IPE','HEA','HEB']"),`diagram ontbreekt: ${profile}`);
+for(const profile of ['plate','strip','roundBar','squareBar','hexBar','roundTube','squareTube','rectTube','equalAngle','unequalAngle','IPE','HEA','HEB','UNP','UPE','tee','customKgM','purchasedItem'])assert(html.includes(`p==='${profile}'`)||html.includes(`['squareTube','rectTube'].includes(p)`)||html.includes(`['equalAngle','unequalAngle'].includes(p)`)||html.includes(`['UNP','UPE'].includes(p)`)||html.includes("['IPE','HEA','HEB'].includes(p)"),`diagram ontbreekt: ${profile}`);
 const toolIds=[...html.matchAll(/reg\(\{\s*id:\s*'([^']+)'/g)].map(x=>x[1]);
 assert.deepEqual(toolIds,['gewicht','profielen','tank','zaaglijst','nesting','kanten','conus','cilinder','aftakking','verstek','offset','steekcirkel','trap','lassen','verbruik','draad','balk','kostprijs']);
 console.log('statische previewcontroles geslaagd');
