@@ -5,7 +5,7 @@ const staticHtml=html.replace(/<script>[\s\S]*?<\/script>/,'');
 const ids=[...staticHtml.matchAll(/\sid="([^"]+)"/g)].map(x=>x[1]);
 assert.equal(new Set(ids).size,ids.length,'dubbele statische HTML-id');
 for(const id of [...staticHtml.matchAll(/<label[^>]+for="([^"]+)"/g)].map(x=>x[1]))assert(ids.includes(id),`label zonder veld: ${id}`);
-assert(html.includes('Preview materiaal-editor 3 — niet voor definitieve calculaties'));
+assert(html.includes('Preview materiaal-editor 4 — klikfix'));
 assert(!/\sautofocus(?:\s|=|>)/i.test(html),'materiaalpreview mag geen autofocus-attribuut bevatten');
 const pickerSource=html.slice(html.indexOf('function pickerHtml'),html.indexOf('function dimensionsHtml'));
 assert(pickerSource.indexOf('profile-picker')<pickerSource.indexOf('profile-search-wrap'),'profielkaarten moeten vóór zoeken staan');
