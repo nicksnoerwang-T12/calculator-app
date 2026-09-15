@@ -42,14 +42,14 @@ assert.equal(api.effectiveCount({...base,count:4,countMode:'project'},3),4);
 assert.deepEqual(clone(api.calculateSale(10000,10,20)),{afterCents:11000,saleCents:13750});
 
 // Alle vrije profielgeometrieën.
-const areas={flat:120,round:Math.PI*100,square:400,hex:Math.sqrt(3)*200,tube:Math.PI*(1600-1156)/4,shs:444,rhs:444,angle:304,unequalAngle:304};
-const dims={flat:{b:30,t:4},round:{D:20},square:{b:20},hex:{sw:20},tube:{D:40,t:3},shs:{b:40,t:3},rhs:{b:50,h:30,t:3},angle:{a:40,t:4},unequalAngle:{a:50,b:30,t:4}};
+const areas={flat:120,round:Math.PI*100,square:400,hex:Math.sqrt(3)*200,tube:Math.PI*(1600-1156)/4,shs:444,rectTube:444,angle:304,unequalAngle:304};
+const dims={flat:{b:30,t:4},round:{D:20},square:{b:20},hex:{sw:20},tube:{D:40,t:3},shs:{b:40,t:3},rectTube:{b:50,h:30,t:3},angle:{a:40,t:4},unequalAngle:{a:50,b:30,t:4}};
 for(const [profile,area] of Object.entries(areas)) assert(Math.abs(api.profileArea(profile,dims[profile])-area)<1e-9,profile);
 
 // Validatie, prijsbasissen en prijsfallback.
 assert(Number.isNaN(api.strictNumber('12abc'))); assert.equal(api.strictNumber('12,5'),12.5); assert.equal(api.strictNumber('12.5'),12.5);
 assert(api.validateLine({...base,profile:'tube',dims:{D:40,t:21,length:1000}},1).t);
-assert(api.validateLine({...base,profile:'rhs',dims:{b:40,h:30,t:16,length:1000}},1).t);
+assert(api.validateLine({...base,profile:'rectTube',dims:{b:40,h:30,t:16,length:1000}},1).t);
 assert(api.validateLine({...base,profile:'angle',dims:{a:4,t:4,length:1000}},1).t);
 storageData={'werkbank.preview.v3.exactPrices':{'s235|ipe|160':{basis:'kg',price:5}},'werkbank.preview.v3.familyPrices':{'s235|staf':{basis:'kg',price:4}}};
 const cat={...base,profile:'ipe',catalogSize:'160',count:1,dims:{length:1000}};
@@ -57,14 +57,14 @@ assert.equal(api.calculateMaterialLine({...cat,priceMode:'list'},1,{s235:2}).pri
 assert.equal(api.calculateMaterialLine({...base,profile:'flat',priceMode:'list',dims:{b:20,t:2,length:1000}},1,{s235:2}).price,4);
 assert.equal(api.calculateMaterialLine({...base,profile:'plate',priceMode:'list',dims:{length:100,width:100,t:2}},1,{s235:2}).price,2);
 assert.equal(api.calculateMaterialLine({...base,profile:'plate',priceMode:'list',priceBasis:'m2',dims:{length:100,width:100,t:2}},1,{}).lineCents,null);
-assert.equal(api.calculateMaterialLine({...base,profile:'item',priceBasis:'piece',unitPrice:0,waste:99},1,{}).lineCents,0);
+assert.equal(api.calculateMaterialLine({...base,profile:'item',description:'Bout',priceBasis:'piece',unitPrice:0,waste:99},1,{}).lineCents,0);
 assert.equal(api.calculateMaterialLine({...base,profile:'plate',priceBasis:'m2',unitPrice:10,dims:{length:1000,width:1000,t:1}},1,{}).lineCents,2000);
 assert.equal(api.calculateMaterialLine({...base,profile:'flat',priceBasis:'m',unitPrice:10,dims:{b:1,t:1,length:1000}},1,{}).lineCents,2000);
 
 // Reproducties materiaalpreview: geldige profielen mogen niet door een ander/leeg veld blokkeren.
 const validExamples=[
  ['shs',{b:'50',t:'3',length:'1000'}],
- ['rhs',{b:'50',h:'30',t:'2',length:'1000'}],
+ ['rectTube',{b:'50',h:'30',t:'2',length:'1000'}],
  ['plate',{length:'1000',width:'50',t:'3'}],
  ['angle',{a:'50',t:'5',length:'1000'}]
 ];
@@ -73,7 +73,7 @@ for(const [profile,profileDims] of validExamples){
  assert.deepEqual(clone(api.validateLine(line,1)),{},`${profile} heeft onverwachte validatiefouten`);
  assert(!api.calculateMaterialLine(line,1,{}).errors,`${profile} kan niet worden toegevoegd`);
 }
-const incompleteRhs=api.validateLine({...base,profile:'rhs',count:1,dims:{b:'50'}},1);
+const incompleteRhs=api.validateLine({...base,profile:'rectTube',count:1,dims:{b:'50'}},1);
 assert(!incompleteRhs.b,'geldige breedte kreeg een fout');
 assert(incompleteRhs.h.includes('hoogte')&&incompleteRhs.h.includes('mm'));
 assert(incompleteRhs.t.includes('wanddikte')&&incompleteRhs.t.includes('mm'));
@@ -85,7 +85,7 @@ assert(Number.isNaN(api.strictNumber(''))); assert(Number.isNaN(api.strictNumber
 assert(Number.isNaN(api.strictNumber('NaN'))); assert(Number.isNaN(api.strictNumber('Infinity')));
 const thickError=api.validateLine({...base,profile:'shs',count:1,dims:{b:'50',t:'30',length:'1000'}},1);
 assert.equal(thickError.t,'Vul een wanddikte tussen 0 en 25 mm in.');
-const broken={...base,profile:'rhs',count:1,dims:{b:'50',h:'30',t:'20',length:'1000'}};
+const broken={...base,profile:'rectTube',count:1,dims:{b:'50',h:'30',t:'20',length:'1000'}};
 assert(api.calculateMaterialLine(broken,1,{}).errors.t);
 const repaired={...broken,dims:{...broken.dims,t:'2'}};
 const repairedResult=api.calculateMaterialLine(repaired,1,{});
