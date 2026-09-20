@@ -1484,6 +1484,61 @@ reg({
   }
 });
 
+/* ================= 10b. verstek koker/hoeklijn ================= */
+reg({
+  id: 'verstek-hoek', group: 'Plaatwerk', name: 'Verstek koker en hoeklijn',
+  desc: 'Zaaghoek en lengteverschil voor een hoek in vierkante/rechthoekige koker of hoeklijn.',
+  kw: 'verstek hoek koker hoeklijn 45 graden frame hekwerk zagen kader',
+  lede: 'Zaaghoek per stuk voor twee rechte stukken koker of hoeklijn die een hoek vormen, plus het lengteverschil tussen de buiten- en binnenkant van de zaagsnede.',
+  fields: v => [
+    { id: 'hoek', label: 'Hoek van de hoek (°)', value: isFinite(v.hoek) ? v.hoek : 90, step: '1', min: 1, max: 179 },
+    { id: 'w', label: 'Profielbreedte in de hoek (mm)', value: isFinite(v.w) ? v.w : 40, step: '1', min: 0 },
+    { type: 'note', text: 'De hoek meet je zelf in de hoek (bijvoorbeeld 90° voor een rechte hoek) — dit is niet de afbuigingshoek van een bocht.' }
+  ],
+  calc: v => {
+    if (!isFinite(v.hoek) || v.hoek <= 0 || v.hoek >= 180) return { error: 'Vul een hoek tussen 0 en 180° in.' };
+    const half = v.hoek / 2, fromAxis = 90 - half;
+    const rows = [
+      ['Zaaghoek per stuk, vanaf haaks', fmt(half, 2) + ' °', true],
+      ['Zaaghoek per stuk, vanaf de lengterichting', fmt(fromAxis, 2) + ' °'],
+      ['Hoek van de hoek', fmt(v.hoek, 1) + ' °']
+    ];
+    let extra = NaN;
+    if (isFinite(v.w) && v.w > 0) {
+      extra = v.w * Math.tan(rad(half));
+      rows.push(['Profielbreedte', fmt(v.w, 1) + ' mm']);
+      rows.push(['Verschil buiten-/binnenkant', fmt(extra, 1) + ' mm', true]);
+    }
+    const warns = [];
+    if (half > 80) warns.push('Een hoek van bijna 180° geeft een heel lange, spitse zaagsnede. Overweeg een las met opvulplaat in plaats van een zuiver verstek.');
+
+    const W = 620, H = 360, apex = { x: W / 2, y: H - 40 }, Lm = 260;
+    const hr = rad(half);
+    const leftEnd = { x: apex.x - Lm * Math.sin(hr), y: apex.y - Lm * Math.cos(hr) };
+    const rightEnd = { x: apex.x + Lm * Math.sin(hr), y: apex.y - Lm * Math.cos(hr) };
+    const sw = Math.max(8, Math.min(30, (isFinite(v.w) && v.w > 0 ? v.w : 40) * 0.5));
+    const ar = 56;
+    const arcStart = { x: apex.x - ar * Math.sin(hr), y: apex.y - ar * Math.cos(hr) };
+    const arcEnd = { x: apex.x + ar * Math.sin(hr), y: apex.y - ar * Math.cos(hr) };
+    const html = '<div class="card"><h2>Hoekaanzicht</h2>' +
+      '<svg class="draw" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Twee profielen die de opgegeven hoek vormen, met de zaaglijn van het verstek">' +
+      '<line x1="' + apex.x + '" y1="' + (apex.y - 44) + '" x2="' + apex.x + '" y2="' + (apex.y + 44) + '" stroke="#B9C7DC" stroke-dasharray="6 5"/>' +
+      '<line x1="' + apex.x + '" y1="' + apex.y + '" x2="' + leftEnd.x.toFixed(1) + '" y2="' + leftEnd.y.toFixed(1) + '" stroke="#1B3A6B" stroke-width="' + sw.toFixed(1) + '" stroke-linecap="square"/>' +
+      '<line x1="' + apex.x + '" y1="' + apex.y + '" x2="' + rightEnd.x.toFixed(1) + '" y2="' + rightEnd.y.toFixed(1) + '" stroke="#1B3A6B" stroke-width="' + sw.toFixed(1) + '" stroke-linecap="square"/>' +
+      '<path d="M ' + arcStart.x.toFixed(1) + ' ' + arcStart.y.toFixed(1) + ' A ' + ar + ' ' + ar + ' 0 0 1 ' + arcEnd.x.toFixed(1) + ' ' + arcEnd.y.toFixed(1) + '" fill="none" stroke="#5C646C" stroke-width="1.5"/>' +
+      '<text x="' + apex.x + '" y="' + (apex.y - ar - 12) + '" font-size="15" font-family="ui-monospace,monospace" fill="#5C646C" text-anchor="middle">' + fmt(v.hoek, 0) + '°</text>' +
+      '<text x="' + apex.x + '" y="' + (apex.y - 54) + '" font-size="13" font-family="ui-monospace,monospace" fill="#1B3A6B" text-anchor="middle">zaagsnede</text>' +
+      '</svg><p class="note">De gestippelde lijn is de zaaglijn (het verstek), precies middendoor de hoek. Elk stuk wordt onder ' + fmt(half, 1) + '° vanaf haaks gezaagd.</p></div>';
+
+    return {
+      big: fmt(half, 2) + ' °', label: 'zaaghoek per stuk, vanaf haaks',
+      rows: rows, warnings: warns, html: html,
+      note: 'Meet de buitenmaat van elk stuk tot aan het denkbeeldige buitenpunt van de hoek en zaag dan onder de aangegeven hoek af — bij 90° is dat het bekende 45°-verstek. ' +
+        (isFinite(extra) ? 'De binnenkant van de zaagsnede is ' + fmt(extra, 1) + ' mm korter dan de buitenkant.' : 'Vul de profielbreedte in voor het lengteverschil tussen buiten- en binnenkant.')
+    };
+  }
+});
+
 /* ================= 11. pijpoffset ================= */
 reg({
   id: 'offset', group: 'Pijp en maatwerk', name: 'Pijpoffset',
@@ -1945,6 +2000,90 @@ reg({
 reg({ id: 'kostprijs', group: 'Calculatie', name: 'Kostprijscalculator', page: true,
   desc: 'Bereken directe kosten, opslag, winstmarge, btw en prijzen per stuk.',
   kw: 'offerte verkoopprijs materiaal arbeid marge btw klant project' });
+
+/* ================= 19. omtrek/oppervlakte ================= */
+reg({
+  id: 'vormen', group: 'Vormen en maten', name: 'Omtrek en oppervlakte',
+  desc: 'Omtrek en oppervlakte van cirkel, rechthoek, vierkant of driehoek, in mm.',
+  kw: 'omtrek oppervlakte cirkel rechthoek vierkant driehoek straal diameter berekenhet vorm',
+  lede: 'Omtrek en oppervlakte van een vlakke vorm — alle maten in mm, net als de rest van de app.',
+  fields: v => {
+    const k = v.kind || 'cirkel';
+    const f = [{ id: 'kind', label: 'Vorm', type: 'select', span: true, value: k, reload: true, options: [
+      { v: 'cirkel', t: 'Cirkel' }, { v: 'rechthoek', t: 'Rechthoek' }, { v: 'vierkant', t: 'Vierkant' }, { v: 'driehoek', t: 'Driehoek (drie zijden)' }] }];
+    if (k === 'cirkel') {
+      f.push({ id: 'd', label: 'Diameter (mm)', value: isFinite(v.d) ? v.d : 100, step: '0.1', min: 0 });
+    } else if (k === 'rechthoek') {
+      f.push({ id: 'l', label: 'Lengte (mm)', value: isFinite(v.l) ? v.l : 100, step: '0.1', min: 0 });
+      f.push({ id: 'b', label: 'Breedte (mm)', value: isFinite(v.b) ? v.b : 60, step: '0.1', min: 0 });
+    } else if (k === 'vierkant') {
+      f.push({ id: 'z', label: 'Zijde (mm)', value: isFinite(v.z) ? v.z : 100, step: '0.1', min: 0 });
+    } else {
+      f.push({ id: 'a', label: 'Zijde a (mm)', value: isFinite(v.a) ? v.a : 100, step: '0.1', min: 0 });
+      f.push({ id: 'b', label: 'Zijde b (mm)', value: isFinite(v.b) ? v.b : 80, step: '0.1', min: 0 });
+      f.push({ id: 'c', label: 'Zijde c (mm)', value: isFinite(v.c) ? v.c : 60, step: '0.1', min: 0 });
+    }
+    return f;
+  },
+  calc: v => {
+    let omtrek, opp, rows = [], pts = null;
+    if (v.kind === 'cirkel') {
+      if (!isFinite(v.d) || v.d <= 0) return { error: 'Vul een diameter in.' };
+      const r = v.d / 2;
+      omtrek = Math.PI * v.d; opp = Math.PI * r * r;
+      rows = [['Diameter', fmt(v.d, 1) + ' mm'], ['Straal', fmt(r, 1) + ' mm']];
+    } else if (v.kind === 'rechthoek') {
+      if (![v.l, v.b].every(x => isFinite(x) && x > 0)) return { error: 'Vul lengte en breedte in.' };
+      omtrek = 2 * (v.l + v.b); opp = v.l * v.b;
+      rows = [['Lengte', fmt(v.l, 1) + ' mm'], ['Breedte', fmt(v.b, 1) + ' mm'], ['Diagonaal', fmt(Math.hypot(v.l, v.b), 1) + ' mm']];
+    } else if (v.kind === 'vierkant') {
+      if (!isFinite(v.z) || v.z <= 0) return { error: 'Vul een zijde in.' };
+      omtrek = 4 * v.z; opp = v.z * v.z;
+      rows = [['Zijde', fmt(v.z, 1) + ' mm'], ['Diagonaal', fmt(v.z * Math.SQRT2, 1) + ' mm']];
+    } else {
+      if (![v.a, v.b, v.c].every(x => isFinite(x) && x > 0)) return { error: 'Vul alle drie de zijden in.' };
+      if (v.a + v.b <= v.c || v.a + v.c <= v.b || v.b + v.c <= v.a) return { error: 'Deze drie zijden vormen geen geldige driehoek: de langste zijde moet korter zijn dan de som van de andere twee.' };
+      omtrek = v.a + v.b + v.c;
+      const s = omtrek / 2;
+      opp = Math.sqrt(s * (s - v.a) * (s - v.b) * (s - v.c));
+      rows = [['Zijde a', fmt(v.a, 1) + ' mm'], ['Zijde b', fmt(v.b, 1) + ' mm'], ['Zijde c', fmt(v.c, 1) + ' mm']];
+    }
+    rows.push(['Omtrek', fmt(omtrek, 1) + ' mm', true]);
+    rows.push(['Oppervlakte', fmt(opp, 0) + ' mm²', true]);
+    rows.push(['Oppervlakte', fmt(opp / 1e6, 4) + ' m²']);
+
+    const W = 460, H = 320, P = 40;
+    let shapeSvg;
+    if (v.kind === 'cirkel') {
+      const rr = Math.min(W, H) / 2 - P;
+      shapeSvg = '<circle cx="' + (W / 2) + '" cy="' + (H / 2) + '" r="' + rr + '" fill="none" stroke="#1B3A6B" stroke-width="3"/>' +
+        '<line x1="' + (W / 2) + '" y1="' + (H / 2) + '" x2="' + (W / 2 + rr) + '" y2="' + (H / 2) + '" stroke="#5C646C" stroke-dasharray="5 4"/>' +
+        '<text x="' + (W / 2 + rr / 2) + '" y="' + (H / 2 - 8) + '" font-size="13" font-family="ui-monospace,monospace" fill="#5C646C" text-anchor="middle">' + fmt(v.d / 2, 0) + '</text>';
+    } else if (v.kind === 'rechthoek' || v.kind === 'vierkant') {
+      const l = v.kind === 'vierkant' ? v.z : v.l, b = v.kind === 'vierkant' ? v.z : v.b;
+      const sc = Math.min((W - 2 * P) / l, (H - 2 * P) / b);
+      const rw = l * sc, rh = b * sc, x0 = (W - rw) / 2, y0 = (H - rh) / 2;
+      shapeSvg = '<rect x="' + x0.toFixed(1) + '" y="' + y0.toFixed(1) + '" width="' + rw.toFixed(1) + '" height="' + rh.toFixed(1) + '" fill="none" stroke="#1B3A6B" stroke-width="3"/>' +
+        '<text x="' + (x0 + rw / 2).toFixed(1) + '" y="' + (y0 - 10).toFixed(1) + '" font-size="13" font-family="ui-monospace,monospace" fill="#5C646C" text-anchor="middle">' + fmt(l, 0) + '</text>' +
+        '<text x="' + (x0 - 10).toFixed(1) + '" y="' + (y0 + rh / 2).toFixed(1) + '" font-size="13" font-family="ui-monospace,monospace" fill="#5C646C" text-anchor="end">' + fmt(b, 0) + '</text>';
+    } else {
+      const A = v.a, B = v.b, C = v.c; // a=BC, b=AC, c=AB
+      const angA = Math.acos(Math.max(-1, Math.min(1, (B * B + C * C - A * A) / (2 * B * C))));
+      const p0 = { x: 0, y: 0 }, p1 = { x: C, y: 0 }, p2 = { x: B * Math.cos(angA), y: -B * Math.sin(angA) };
+      const xs = [p0.x, p1.x, p2.x], ys = [p0.y, p1.y, p2.y];
+      const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+      const sc = Math.min((W - 2 * P) / Math.max(1, maxX - minX), (H - 2 * P) / Math.max(1, maxY - minY));
+      const tx = p => ({ x: (p.x - minX) * sc + (W - (maxX - minX) * sc) / 2, y: (p.y - minY) * sc + (H - (maxY - minY) * sc) / 2 });
+      const q0 = tx(p0), q1 = tx(p1), q2 = tx(p2);
+      shapeSvg = '<polygon points="' + q0.x.toFixed(1) + ',' + q0.y.toFixed(1) + ' ' + q1.x.toFixed(1) + ',' + q1.y.toFixed(1) + ' ' + q2.x.toFixed(1) + ',' + q2.y.toFixed(1) + '" fill="none" stroke="#1B3A6B" stroke-width="3"/>';
+    }
+    const html = '<div class="card"><h2>Schets</h2>' +
+      '<svg class="draw" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Schets van de ' + v.kind + '">' + shapeSvg + '</svg></div>';
+
+    return { big: fmt(omtrek, 1) + ' mm', label: 'omtrek', rows: rows, html: html,
+      note: 'Oppervlakte staat in mm² en m² — deel door 100 voor cm².' };
+  }
+});
 
 /* ================= start ================= */
 renderMenu();
