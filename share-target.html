@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="nl"><head><meta charset="utf-8"><title>Werkbank — gedeeld</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body>
+<p>Bezig met doorsturen naar Werkbank…</p>
+<script>
+/* Fallback als de Service Worker de POST (nog) niet onderschept heeft (bv. eerste installatie
+   vóórdat de SW actief is) — stuurt gewoon door zonder het bestand, beter dan een kapotte pagina.
+   ONGEVERIFIEERD, zie sw.js. */
+location.replace('werkbank-v2.html#gedeeld');
+</script>
+</body></html>
