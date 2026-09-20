@@ -19,6 +19,7 @@ dat, ná het draaien van de promote-scripts.
 | `quotes/` | Offerteflow: versturen, statuspipeline, dashboard-KPI's | [quotes/README.md](quotes/README.md) |
 | `step/` | Bijlagen, STEP-classificatie, 3D-preview, DXF | [step/README.md](step/README.md) |
 | `cro/` | Onboarding, frictiemeting, opvolg-herinneringen | [cro/README.md](cro/README.md) |
+| `paywall/` | Gratis kijkversie, prijs-tease, €5/mnd-€55/jr-abonnement, Mollie-koppeling | [paywall/README.md](paywall/README.md) |
 | `brand/` | Logo/favicon-assets (geen promote-script, statische bestanden) | — |
 | `design/` | Vroege ontwerp-preview (Workshop 02), geen wijzigingen nodig om de hoofdversie te bekijken | — |
 
@@ -34,7 +35,8 @@ node scripts/promote-ui-polish.js       # maatzoekfunctie
 node scripts/promote-intake.js          # snelprijs-funnel (na jobs/invoicing)
 node scripts/promote-quotes.js          # offerteflow (na invoicing/intake)
 node scripts/promote-step.js            # bijlagen/STEP/3D/DXF (na jobs/intake)
-node scripts/promote-cro.js             # onboarding/frictiemeting (moet als laatste)
+node scripts/promote-cro.js             # onboarding/frictiemeting
+node scripts/promote-paywall.js         # gratis kijkversie/prijs-tease (moet als allerlaatste)
 ```
 
 `werkbank-v2.html` bevat op dit moment alle bovenstaande lagen al samengevoegd. De promote-
@@ -65,10 +67,13 @@ Chromium-binary vereisen die in deze omgeving niet beschikbaar was) slagen.
 ## Supabase (cloud-sync)
 
 Plak `supabase/schema.sql` eenmalig in de Supabase SQL Editor (idempotent, veilig opnieuw te
-draaien). Tabellen: `customers`, `projects`, `user_settings` (bestonden al), plus sinds deze sessie
-`quotes` en `templates` (RLS, idempotent). **Nog niet aangemaakt**: de Storage-bucket
-`attachments` voor STEP/DXF/PDF-bijlagen (vereist Supabase-dashboardtoegang) — zie
-[step/README.md](step/README.md) voor de volledige bijlage-opslagstatus.
+draaien). Tabellen: `customers`, `projects`, `user_settings` (bestonden al), `quotes` en
+`templates`, plus sinds deze sessie `subscriptions` (abonnementsstatus voor de paywall-laag —
+alleen leesbaar voor de eigen gebruiker, schrijfbaar alleen via de Mollie-webhook Edge Function).
+**Nog niet aangemaakt**: de Storage-bucket `attachments` voor STEP/DXF/PDF-bijlagen (vereist
+Supabase-dashboardtoegang) — zie [step/README.md](step/README.md). **Nog niet gedeployed**: de
+Mollie Edge Functions in `supabase/functions/` — zie [paywall/README.md](paywall/README.md) voor
+de exacte deploy-stappen (vereist een eigen Mollie-account).
 
 ## Belangrijkste beperking van deze hele sessie
 

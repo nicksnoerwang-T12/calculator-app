@@ -40,7 +40,15 @@ function mergeProjects(rows){const merged=mergeProjectRows(safeGet(STORE.calcula
 function mergeCustomers(rows){const merged=mergeCustomerRows(safeGet(CUSTOMER_KEY,[]),rows);rawSafeSet(CUSTOMER_KEY,merged);return merged;}
 function mergeSettings(row){const localValues={};for(const key of SETTINGS_KEYS)localValues[key]=safeGet(key,null);const merged=mergeSettingsValues(localValues,row&&row.data);for(const key of SETTINGS_KEYS)if(merged[key]!==localValues[key])rawSafeSet(key,merged[key]);}
 
-async function pullAndMerge(){if(!cloudAdapter||!cloudSession)return;setSyncStatus('syncing');try{const[p,c,s]=await Promise.all([cloudAdapter.pullAll('projects'),cloudAdapter.pullAll('customers'),cloudAdapter.pullAll('user_settings')]);if(!p.ok||!c.ok||!s.ok)throw(p.error||c.error||s.error);mergeProjects(p.value);mergeCustomers(c.value);mergeSettings(s.value[0]);await Promise.all([syncProjects(),syncCustomers(),syncSettings()]);await flushRetryQueue();setSyncStatus('synced');}catch(e){setSyncStatus('offline');}}
+// Abonnementsstatus staat bewust NIET in user_settings: die tabel mag de gebruiker zelf volledig
+// overschrijven (RLS: eigen rijen), en dat zou een manier zijn om zelf "actief abonnement" te
+// verzinnen zonder te betalen. subscriptions heeft alleen een select-policy voor de eigen rij —
+// schrijven kan alleen via de Mollie-webhook Edge Function met de service-role-sleutel (die RLS
+// omzeilt). Zie paywall/README.md en supabase/functions/mollie-webhook.
+const SUBSCRIPTION_CACHE_KEY='werkbank.v2.subscriptionCache';
+async function pullSubscription(){if(!cloudAdapter||!cloudSession)return;const r=await cloudAdapter.pullAll('subscriptions');if(r.ok)rawSafeSet(SUBSCRIPTION_CACHE_KEY,r.value[0]||{status:'none'});}
+
+async function pullAndMerge(){if(!cloudAdapter||!cloudSession)return;setSyncStatus('syncing');try{const[p,c,s]=await Promise.all([cloudAdapter.pullAll('projects'),cloudAdapter.pullAll('customers'),cloudAdapter.pullAll('user_settings')]);if(!p.ok||!c.ok||!s.ok)throw(p.error||c.error||s.error);mergeProjects(p.value);mergeCustomers(c.value);mergeSettings(s.value[0]);await pullSubscription();await Promise.all([syncProjects(),syncCustomers(),syncSettings()]);await flushRetryQueue();setSyncStatus('synced');}catch(e){setSyncStatus('offline');}}
 
 function showWrap(show){const wrap=document.querySelector('.wrap');if(wrap)wrap.hidden=!show;const nav=document.querySelector('.bottom-nav');if(nav)nav.hidden=!show;}
 function authError(msg){const el=$('auth-error');if(el)el.textContent=msg||'';}
@@ -71,19 +79,27 @@ function renderPasswordResetForm(){showWrap(false);let gate=$('auth-gate');if(!g
  queueMicrotask(()=>$('reset-password')?.focus());
 }
 
-function addCloudSettingsCard(){const settings=document.getElementById('design-settings');if(!settings)return;const card=document.createElement('div');card.className='card';card.innerHTML='<h2>Account & synchronisatie</h2><p id="cloud-account-email" class="muted"></p><p><span class="sync-status" id="cloud-sync-status" data-state="local">Alleen lokaal opgeslagen</span></p>'+(cloudSession?'<button class="ghost" id="cloud-logout">Uitloggen</button>':'');settings.appendChild(card);if(cloudSession){$('cloud-account-email').textContent=cloudSession.user.email;$('cloud-logout').onclick=async()=>{await supabaseClient.auth.signOut();location.reload();};}}
+function addCloudSettingsCard(){const settings=document.getElementById('design-settings');if(!settings)return;const card=document.createElement('div');card.className='card';card.innerHTML='<h2>Account & synchronisatie</h2><p id="cloud-account-email" class="muted"></p><p><span class="sync-status" id="cloud-sync-status" data-state="local">Alleen lokaal opgeslagen</span></p>'+(cloudSession?'<button class="ghost" id="cloud-logout">Uitloggen</button>':'<button class="act" id="cloud-login">Inloggen of account aanmaken</button>');settings.appendChild(card);if(cloudSession){$('cloud-account-email').textContent=cloudSession.user.email;$('cloud-logout').onclick=async()=>{await supabaseClient.auth.signOut();location.reload();};}else{$('cloud-login').onclick=()=>{showWrap(false);renderAuthGate('signin');};}}
+
+// Gratis kijkversie: zonder account werkt de hele app lokaal door (rekentools, klussen, de
+// volledige snelprijs-/kostprijsflow) — dat is precies het "local-only"-gedrag van vóór de
+// cloud-sync-laag, nu bewust weer het standaardpad voor bezoekers zonder account. Alleen de
+// uiteindelijke prijs zelf wordt (door de paywall-laag, ná deze) verborgen tot een actief
+// abonnement; het inlogscherm verschijnt dus niet meer automatisch bij het opstarten, alleen nog
+// als de bezoeker zelf op "Inloggen" of op de prijs-lock klikt.
+function enterGuestMode(){showWrap(true);addCloudSettingsCard();routeHash();}
 
 (async function bootCloud(){
- if(!cloudReady()){addCloudSettingsCard();return;}
+ if(!cloudReady()){addCloudSettingsCard();showWrap(true);routeHash();return;}
  const looksLoggedIn=Object.keys(localStorage).some(k=>/^sb-.*-auth-token$/.test(k));
- if(!looksLoggedIn){showWrap(false);renderAuthGate('signin');return;}
+ if(!looksLoggedIn){enterGuestMode();return;}
  try{
   const{data}=await supabaseClient.auth.getSession();
   cloudSession=data.session;
-  if(!cloudSession){showWrap(false);renderAuthGate('signin');return;}
+  if(!cloudSession){enterGuestMode();return;}
   addCloudSettingsCard();
   window.addEventListener('online',flushRetryQueue);
   await pullAndMerge();
   routeHash();
- }catch(e){showWrap(false);renderAuthGate('signin');}
+ }catch(e){enterGuestMode();}
 })();
