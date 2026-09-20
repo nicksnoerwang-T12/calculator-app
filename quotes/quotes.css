@@ -1,0 +1,19 @@
+/* Offerteflow: uitsluitend bestaande tokens/klassen hergebruikt. */
+.quote-kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.quote-kpi{padding:14px}
+.quote-kpi .kpi-label{display:block}
+.quote-kpi .kpi-number{display:block;font-family:var(--mono);font-size:22px;font-weight:600;margin-top:6px}
+.quote-pipeline-cols{display:grid;grid-template-columns:1fr;gap:14px}
+.quote-pipeline-col{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:10px;box-shadow:var(--shadow)}
+.quote-pipeline-col h3{display:flex;align-items:center;justify-content:space-between;font-size:13px;margin:4px 4px 8px;font-weight:400}
+.quote-pipeline-col h3 span{font-family:var(--mono);color:var(--muted);font-size:12px}
+.quote-pipeline-col .recent-row{padding:10px 4px}
+.quote-stale{color:var(--warn);display:block;font-size:11px;margin-top:2px}
+.quote-photos{display:flex;gap:8px;margin:10px 0}
+.quote-photos img{width:80px;height:60px;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--line)}
+.quote-groups{display:grid;gap:6px;margin:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 0}
+.quote-groups>div{display:flex;justify-content:space-between;font-size:14px}
+.quote-groups strong{font-family:var(--mono)}
+.quote-send-choices{position:fixed;z-index:130;left:12px;right:12px;bottom:12px;max-width:420px;margin:0 auto;box-shadow:var(--shadow)}
+.quote-send-choices .actions{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+@media(min-width:700px){.quote-kpi-row{grid-template-columns:repeat(3,1fr)}.quote-pipeline-cols{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}}
