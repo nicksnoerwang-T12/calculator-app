@@ -20,6 +20,7 @@ dat, ná het draaien van de promote-scripts.
 | `step/` | Bijlagen, STEP-classificatie, 3D-preview, DXF | [step/README.md](step/README.md) |
 | `cro/` | Onboarding, frictiemeting, opvolg-herinneringen | [cro/README.md](cro/README.md) |
 | `paywall/` | Gratis kijkversie, prijs-tease, €5/mnd-€55/jr-abonnement, Mollie-koppeling | [paywall/README.md](paywall/README.md) |
+| `crm/` | Opvolging: acties, contact-in-één-tik, pipeline-bord, dashboard-KPI's, agenda-export | [crm/README.md](crm/README.md) |
 | `brand/` | Logo/favicon-assets (geen promote-script, statische bestanden) | — |
 | `design/` | Vroege ontwerp-preview (Workshop 02), geen wijzigingen nodig om de hoofdversie te bekijken | — |
 
@@ -36,6 +37,7 @@ node scripts/promote-intake.js          # snelprijs-funnel (na jobs/invoicing)
 node scripts/promote-quotes.js          # offerteflow (na invoicing/intake)
 node scripts/promote-step.js            # bijlagen/STEP/3D/DXF (na jobs/intake)
 node scripts/promote-cro.js             # onboarding/frictiemeting
+node scripts/promote-crm.js             # opvolging: acties, Vandaag-scherm (na jobs/cloud, vóór paywall)
 node scripts/promote-paywall.js         # gratis kijkversie/prijs-tease (moet als allerlaatste)
 ```
 
@@ -67,13 +69,24 @@ Chromium-binary vereisen die in deze omgeving niet beschikbaar was) slagen.
 ## Supabase (cloud-sync)
 
 Plak `supabase/schema.sql` eenmalig in de Supabase SQL Editor (idempotent, veilig opnieuw te
-draaien). Tabellen: `customers`, `projects`, `user_settings` (bestonden al), `quotes` en
-`templates`, plus sinds deze sessie `subscriptions` (abonnementsstatus voor de paywall-laag —
-alleen leesbaar voor de eigen gebruiker, schrijfbaar alleen via de Mollie-webhook Edge Function).
+draaien). Tabellen: `customers` (kreeg er `address`/`lat`/`lng` bij), `projects`, `user_settings`
+(bestonden al), `quotes` en `templates`, `subscriptions` (abonnementsstatus voor de paywall-laag —
+alleen leesbaar voor de eigen gebruiker, schrijfbaar alleen via de Mollie-webhook Edge Function),
+en sinds deze sessie `crm_actions` en `crm_log` (opvolgacties en contactlog, eigen rijen — zie
+[crm/README.md](crm/README.md)).
 **Nog niet aangemaakt**: de Storage-bucket `attachments` voor STEP/DXF/PDF-bijlagen (vereist
 Supabase-dashboardtoegang) — zie [step/README.md](step/README.md). **Nog niet gedeployed**: de
 Mollie Edge Functions in `supabase/functions/` — zie [paywall/README.md](paywall/README.md) voor
 de exacte deploy-stappen (vereist een eigen Mollie-account).
+
+## Klus-statusveld (`job.fase`)
+
+`JOB_FASES`/`JOB_FASE_LABELS`/`JOB_FASE_TONE`/`TERMINAL_FASES`/`setJobFase()` (in `werkbank-v2.html`,
+nooit in een brontekstlaag geschreven — zie [crm/README.md](crm/README.md) §0.3 voor de volledige
+toelichting) geven elke klus een `job.fase` uit `indicatie → opname → offerte_verzonden →
+opdracht → in_werkplaats → montage → geleverd → gefactureerd`, zijtakken `afgewezen`/`vervallen`
+(met `job.faseReason`). Elke wissel schrijft `job.faseSince` en breidt `job.faseHistory`
+(`[{fase, at}]`, toegevoegd deze sessie) uit — de basis voor de CRM-doorlooptijd-/conversie-KPI's.
 
 ## Belangrijkste beperking van deze hele sessie
 

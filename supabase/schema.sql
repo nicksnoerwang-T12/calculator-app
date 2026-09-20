@@ -9,8 +9,16 @@ create table if not exists customers (
   contact text,
   email text,
   phone text,
+  address text,
+  lat double precision,
+  lng double precision,
   updated_at timestamptz not null default now()
 );
+-- address/lat/lng zijn later toegevoegd (CRM pakket 2, "in de buurt") — idempotent bijwerken van
+-- een tabel die al bestond, vandaar losse ALTER-instructies i.p.v. alleen CREATE TABLE.
+alter table customers add column if not exists address text;
+alter table customers add column if not exists lat double precision;
+alter table customers add column if not exists lng double precision;
 
 create table if not exists projects (
   id text primary key,
@@ -61,11 +69,39 @@ create table if not exists subscriptions (
   updated_at timestamptz not null default now()
 );
 
+-- CRM-acties (pakket 1, "nooit meer vergeten"). project_id verwijst naar projects.id (dat is de
+-- STORE.calculations-entry-id, niet iets op de job zelf — zie crm/README.md). on delete cascade
+-- zodat een verwijderde klus niet met dode acties achterblijft; customer_id set null (een actie
+-- mag ook zonder klant blijven bestaan).
+create table if not exists crm_actions (
+  id text primary key,
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  project_id text references projects(id) on delete cascade,
+  customer_id text references customers(id) on delete set null,
+  updated_at timestamptz not null default now(),
+  data jsonb not null
+);
+
+-- Contactlog (pakket 2). Append-only vanuit de client (zie mergeCrmLogRows in crm.js: een
+-- bestaande regel wordt nooit overschreven bij het mergen) — dus geen schrijfconflicten mogelijk.
+create table if not exists crm_log (
+  id text primary key,
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  project_id text references projects(id) on delete cascade,
+  customer_id text references customers(id) on delete cascade,
+  updated_at timestamptz not null default now(),
+  data jsonb not null
+);
+
 create index if not exists projects_user_id_idx on projects(user_id);
 create index if not exists customers_user_id_idx on customers(user_id);
 create index if not exists quotes_user_id_idx on quotes(user_id);
 create index if not exists quotes_project_id_idx on quotes(project_id);
 create index if not exists templates_user_id_idx on templates(user_id);
+create index if not exists crm_actions_user_id_idx on crm_actions(user_id);
+create index if not exists crm_actions_project_id_idx on crm_actions(project_id);
+create index if not exists crm_log_user_id_idx on crm_log(user_id);
+create index if not exists crm_log_customer_id_idx on crm_log(customer_id);
 
 alter table customers enable row level security;
 alter table projects enable row level security;
@@ -73,6 +109,8 @@ alter table user_settings enable row level security;
 alter table quotes enable row level security;
 alter table templates enable row level security;
 alter table subscriptions enable row level security;
+alter table crm_actions enable row level security;
+alter table crm_log enable row level security;
 
 -- Elke gebruiker ziet en wijzigt uitsluitend zijn eigen rijen.
 drop policy if exists "customers_own_rows" on customers;
@@ -101,3 +139,11 @@ create policy "templates_own_rows" on templates
 drop policy if exists "subscriptions_read_own" on subscriptions;
 create policy "subscriptions_read_own" on subscriptions
   for select using (auth.uid() = user_id);
+
+drop policy if exists "crm_actions_own_rows" on crm_actions;
+create policy "crm_actions_own_rows" on crm_actions
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "crm_log_own_rows" on crm_log;
+create policy "crm_log_own_rows" on crm_log
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
