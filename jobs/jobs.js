@@ -1,5 +1,5 @@
 /* Job workspace; calculation arithmetic remains in the existing tested core. */
-const CUSTOMER_KEY='werkbank.jobs.v1.customers',DRAFT_KEY='werkbank.jobs.v1.draft';
+const CUSTOMER_KEY='werkbank.v2.customers',DRAFT_KEY='werkbank.v2.draft';
 let editingWork=null;
 let jobTab='site',draftTimer=null,customerEditing=null;
 const cloneJob=x=>JSON.parse(JSON.stringify(x));
