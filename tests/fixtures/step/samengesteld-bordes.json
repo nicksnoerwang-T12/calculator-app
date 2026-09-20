@@ -1,0 +1,9 @@
+{
+  "_opmerking": "Synthetische geometriedata, zie plaat-met-gaten.json voor de uitleg waarom geen echt .step-bestand. Bevat bewust alle drie de classificatie-uitkomsten: plaat (bordesplaat), profiel (poten + leuning) en overig (een klossige beugel die geen van beide vuistregels haalt).",
+  "bodies": [
+    { "name": "Bordesplaat", "bboxMm": [1000, 1000, 4], "volumeMm3": 4000000, "instances": 1 },
+    { "name": "Poot_60x60x3", "bboxMm": [60, 60, 900], "volumeMm3": 615600, "instances": 4 },
+    { "name": "Leuning_D42x2", "bboxMm": [42, 42, 2000], "volumeMm3": 502655, "instances": 1 },
+    { "name": "Hoekbeugel", "bboxMm": [80, 80, 80], "volumeMm3": 200000, "instances": 2 }
+  ]
+}

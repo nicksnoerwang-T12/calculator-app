@@ -1,0 +1,7 @@
+{
+  "_opmerking": "Synthetische geometriedata, zie plaat-met-gaten.json voor de uitleg waarom geen echt .step-bestand.",
+  "bodies": [
+    { "name": "Koker_40x40x3_lang", "bboxMm": [40, 40, 1000], "volumeMm3": 444000, "instances": 2 },
+    { "name": "Koker_40x40x3_kort", "bboxMm": [40, 40, 600], "volumeMm3": 266400, "instances": 2 }
+  ]
+}

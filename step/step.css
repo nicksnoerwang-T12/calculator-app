@@ -1,0 +1,10 @@
+/* Bijlagen + STEP-voorstel + 3D-viewer: uitsluitend bestaande tokens/klassen. */
+.badge-experimental{display:inline-block;font-size:10.5px;font-weight:600;color:var(--warn);background:var(--warn-soft);border-radius:var(--radius-sm);padding:2px 6px;margin-left:6px;vertical-align:middle;text-transform:uppercase;letter-spacing:.03em}
+.step-viewer{width:100%;height:260px;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;touch-action:none}
+.step-viewer canvas{display:block}
+.step-viewer-controls{display:flex;gap:8px;margin:8px 0 14px}
+.step-row{cursor:default}
+.step-row small{display:block;margin-top:2px}
+#attachment-list .job-row small{display:block}
+.quote-photos .step-iso{border-style:dashed}
+@media(min-width:700px){.step-viewer{height:360px}}

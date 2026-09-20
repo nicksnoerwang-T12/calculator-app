@@ -1,0 +1,6 @@
+{
+  "_opmerking": "Synthetische geometriedata (bounding box/volume/instanties per body), NIET een echt .step-bestand. Zie step/README.md sectie 'Wat is wel/niet geverifieerd' voor waarom: het hand-authoren van een geldig ISO 10303-21-bestand met correcte ADVANCED_BREP-entiteiten is foutgevoelig gebleken zonder een echte CAD-kernel om tegen te verifiëren, en deze omgeving heeft geen Chromium/occt-import-js-runtime om een echt bestand mee te testen. Dit fixture-bestand test daarom precies het deel dat wél zonder CAD-kernel te verifiëren is: de classificatieheuristiek op de vorm die occt-import-js voor deze scène zou teruggeven (per body: naam, bounding box in mm, volume in mm3, aantal instanties).",
+  "bodies": [
+    { "name": "Deksel_plaat", "bboxMm": [500, 300, 5], "volumeMm3": 712500, "instances": 1 }
+  ]
+}
