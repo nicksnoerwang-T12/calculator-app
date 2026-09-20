@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"
+     role="img" aria-label="Werkbank">
+  <defs>
+    <clipPath id="wb-right"><rect x="32" y="0" width="32" height="64"/></clipPath>
+  </defs>
+  <path d="M9 13 L20 43 L32 27 L44 43 L55 13"
+        fill="none" stroke="currentColor" stroke-width="10"
+        stroke-linejoin="miter" stroke-miterlimit="4" stroke-linecap="butt"/>
+  <path d="M9 13 L20 43 L32 27 L44 43 L55 13"
+        fill="none" stroke="#F26B1D" stroke-width="10"
+        stroke-linejoin="miter" stroke-miterlimit="4" stroke-linecap="butt"
+        clip-path="url(#wb-right)"/>
+</svg>

@@ -12,8 +12,8 @@ const context={console,Math,Number,Object,Array,String,Date,JSON,Intl,Set,Map,is
 vm.createContext(context);
 vm.runInContext(escSource+'\n'+catalog+'\n'+model+`\nthis.api={CATALOG_VERSION,CATALOG_ARTICLES,applyCatalogArticle,catalogArticle,calculateMaterialLine,buildPriceReview,applyPriceReview,calculationPayload,validateCalculationPayload};`,context);
 const api=context.api,clone=x=>JSON.parse(JSON.stringify(x));
-assert.equal(api.CATALOG_VERSION,'nl-suppliers-2026-09-15-v1');
-assert.equal(api.CATALOG_ARTICLES.length,115,'complete catalogus uit PR #9');
+assert.equal(api.CATALOG_VERSION,'nl-suppliers-2026-09-19-v5');
+assert.equal(api.CATALOG_ARTICLES.length,538,'complete catalogus: koker/buis/hoeklijn nu overal staal+RVS(304+316 waar mogelijk)+alu, 19-9-2026');
 const article=api.CATALOG_ARTICLES.find(x=>x.profileType==='rectTube'&&x.label==='50 × 30 × 2 mm');
 assert(article&&article.price.amount===4.29);
 const source={id:'saved',catalogArticleId:article.id,profile:'rectTube',material:'s235',count:4,countMode:'project',dims:{b:50,h:30,t:2,length:1000},waste:0,priceBasis:'m',priceMode:'manual',priceOrigin:'catalog',unitPrice:4.29,priceSnapshot:{price:4.29,basis:'m',source:'oude snapshot'}};
@@ -27,7 +27,10 @@ const keys=[...html.matchAll(/werkbank\.[a-z0-9.-]+/g)].map(x=>x[0]);
 assert(keys.length>0&&keys.every(x=>x.startsWith('werkbank.v2.')),'alle browseropslag is geïsoleerd');
 const staticHtml=html.replace(/<script>[\s\S]*?<\/script>/,'');
 const assets=[...staticHtml.matchAll(/<(?:script|img|link)\b[^>]*(?:src|href)="([^"]+)"/gi)].map(x=>x[1]);
-assert.deepEqual(assets,[],'geen ontbrekende lokale of online runtimeafhankelijkheden');
+// Sinds de cloud-sync-laag is de Supabase-CDN-script-tag de enige bewuste, geteste externe
+// afhankelijkheid (nodig voor accounts/synchronisatie); alle andere externe verwijzingen blijven
+// verboden.
+assert.deepEqual(assets,['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'],'alleen de bewuste Supabase-CDN-afhankelijkheid, geen andere ontbrekende lokale of online runtimeafhankelijkheden');
 const sha=f=>crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
 assert.equal(sha('werkbank-preview.html'),'e322309ab0c3b4198718f71469bff3f56980e2b7464cceb15b10554fb19c2e12');
 assert.equal(sha('design/base-catalogus.html'),'53e43bb5f63cc0e3c970f334c0da3e6fabcc36b9c8963b5a9be43ce1f1f9a3e0');

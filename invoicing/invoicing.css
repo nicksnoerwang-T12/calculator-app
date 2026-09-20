@@ -1,0 +1,6 @@
+.doc-letterhead{margin-bottom:18px}
+.doc-letterhead p{margin:0 0 2px;color:var(--muted);font-size:13px}
+.doc-type{letter-spacing:.06em;font-weight:600;color:var(--muted);margin:0 0 4px}
+.company-group{margin-top:18px}
+.company-group:first-of-type{margin-top:14px}
+.company-group h3{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:0 0 10px}
