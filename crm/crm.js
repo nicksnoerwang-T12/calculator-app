@@ -670,6 +670,21 @@ setJobFase = function (job, fase, now, reason) {
   return next;
 };
 
+// Een verwijderde klus (jobs.js, kleine-bug-fix) laat geen "spookacties"/-logregels achter: als
+// deleteProject() de klus daadwerkelijk verwijderde, ruimen we hier onze eigen gekoppelde data
+// op. jobs.js weet niets van CRM — deze laag ruimt uitsluitend zijn eigen rommel op.
+if (typeof deleteProject === 'function') {
+  const crmBaseDeleteProject = deleteProject;
+  deleteProject = function (id, confirmFn) {
+    const ok = crmBaseDeleteProject(id, confirmFn);
+    if (ok) {
+      crmSaveActions(crmActions().filter(a => a.projectId !== id));
+      crmSaveLog(crmLog().filter(l => l.projectId !== id));
+    }
+    return ok;
+  };
+}
+
 /* ---------- Instellingen → kaart "Opvolging" ---------- */
 function addCrmSettingsCard() {
   const settings = document.getElementById('design-settings');
