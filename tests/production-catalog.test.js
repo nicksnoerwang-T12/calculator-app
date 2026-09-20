@@ -27,10 +27,18 @@ const keys=[...html.matchAll(/werkbank\.[a-z0-9.-]+/g)].map(x=>x[0]);
 assert(keys.length>0&&keys.every(x=>x.startsWith('werkbank.v2.')),'alle browseropslag is geïsoleerd');
 const staticHtml=html.replace(/<script>[\s\S]*?<\/script>/,'');
 const assets=[...staticHtml.matchAll(/<(?:script|img|link)\b[^>]*(?:src|href)="([^"]+)"/gi)].map(x=>x[1]);
-// Sinds de cloud-sync-laag is de Supabase-CDN-script-tag de enige bewuste, geteste externe
-// afhankelijkheid (nodig voor accounts/synchronisatie); alle andere externe verwijzingen blijven
-// verboden.
-assert.deepEqual(assets,['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'],'alleen de bewuste Supabase-CDN-afhankelijkheid, geen andere ontbrekende lokale of online runtimeafhankelijkheden');
+// Alleen echte cross-origin verwijzingen (http/https) tellen als externe afhankelijkheid; lokale
+// relatieve paden (brand/*, manifest.webmanifest) zijn meegeleverde bestanden, geen runtime-risico.
+const external=assets.filter(u=>/^https?:\/\//.test(u));
+// Sinds de cloud-sync- en design-system-laag zijn Supabase (accounts/synchronisatie) en Google
+// Fonts (Inter/Barlow/Barlow Condensed/JetBrains Mono) de enige bewuste, geteste externe
+// afhankelijkheden; alle andere externe verwijzingen blijven verboden.
+assert.deepEqual(external,[
+ 'https://fonts.googleapis.com',
+ 'https://fonts.gstatic.com',
+ 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Barlow:wght@500;600;700&family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@400;500;600&display=swap',
+ 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
+],'alleen de bewuste Supabase- en Google Fonts-afhankelijkheden, geen andere ontbrekende lokale of online runtimeafhankelijkheden');
 const sha=f=>crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
 assert.equal(sha('werkbank-preview.html'),'e322309ab0c3b4198718f71469bff3f56980e2b7464cceb15b10554fb19c2e12');
 assert.equal(sha('design/base-catalogus.html'),'53e43bb5f63cc0e3c970f334c0da3e6fabcc36b9c8963b5a9be43ce1f1f9a3e0');

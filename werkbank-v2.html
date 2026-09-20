@@ -18,6 +18,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Barlow:wght@500;600;700&family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 <style>
 :root{
   --rest:#8A97A5;
@@ -328,6 +329,109 @@ button.act,button.ghost{font-family:var(--heading);text-transform:uppercase;lett
 button.act:active,button.ghost:active{transform:translateY(1px)}
 button.act:focus-visible,button.ghost:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(242,107,29,.45)}
 button.ghost:hover{background:var(--paper)}
+/* Snelprijs-funnel: hergebruikt uitsluitend bestaande tokens/klassen (--surface, --line, --accent,
+   .act/.ghost/.job-panel/badges, font-mono). Geen nieuwe hex-kleuren. */
+.intake-backdrop{position:fixed;z-index:110;inset:0;background:rgba(0,0,0,.42);display:flex;justify-content:center;align-items:flex-end}
+.intake-funnel{width:100%;max-width:720px;max-height:100%;overflow-y:auto;background:var(--paper);display:flex;flex-direction:column}
+.intake-head{position:sticky;top:0;z-index:2;background:var(--paper);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:14px 16px 8px;border-bottom:1px solid var(--line)}
+.intake-head h2{margin:0;font-size:18px;text-align:center}
+.intake-head #intake-close{justify-self:end}
+.intake-head #intake-back{justify-self:start}
+.intake-progress{padding:6px 16px 0;font-size:12px;color:var(--faint);font-family:var(--heading);text-transform:uppercase;letter-spacing:.04em}
+.intake-progress-bar{height:3px;background:var(--line);margin:6px 16px 0;border-radius:var(--radius-sm);overflow:hidden}
+.intake-progress-bar>span{display:block;height:100%;background:var(--accent);transition:width .2s ease}
+.intake-body{padding:14px 16px 100px;flex:1}
+.intake-cards{display:grid;grid-template-columns:1fr;gap:8px;margin:10px 0 18px}
+.intake-card{display:flex;align-items:center;gap:12px;min-height:88px;padding:12px 14px;border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);cursor:pointer;text-align:left;box-shadow:var(--shadow)}
+.intake-card:hover{border-color:var(--line-strong,var(--line))}
+.intake-card .ui-icon{width:28px;height:28px;color:var(--muted);flex:none}
+.intake-card b{display:block;font-size:14.5px}
+.intake-card small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.intake-group-label{font-family:var(--heading);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);margin:16px 0 8px}
+.intake-group-label:first-child{margin-top:0}
+#intake-schematic{margin:10px 0 16px;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:8px;color:var(--muted)}
+#intake-schematic:empty{display:none}
+.intake-schematic-svg{display:block;width:100%;height:auto;max-height:180px}
+.intake-params{display:grid;grid-template-columns:1fr;gap:14px}
+.intake-field label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}
+.intake-stepper{display:flex;align-items:stretch;gap:0;border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;background:var(--surface)}
+.intake-stepper button{appearance:none;border:0;background:var(--paper);color:var(--ink);width:44px;min-height:44px;font-size:18px;cursor:pointer;flex:none}
+.intake-stepper input{border:0;flex:1;min-width:0;text-align:center;font-family:var(--mono);font-size:16px;min-height:44px;background:var(--surface);color:var(--ink)}
+.intake-stepper span{display:flex;align-items:center;padding:0 10px;color:var(--muted);font-size:13px;background:var(--surface)}
+.intake-choice-row{display:flex;flex-wrap:wrap;gap:8px}
+.intake-choice-row button{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:10px 14px;border-radius:var(--radius-md);font-size:13.5px;cursor:pointer;min-height:44px}
+.intake-choice-row button[aria-pressed="true"]{border-color:var(--accent);background:rgba(242,107,29,.1);color:var(--accent-text)}
+.intake-toggle{display:flex;align-items:center;justify-content:space-between;min-height:44px;padding:0 2px}
+.intake-price-panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.intake-price-value{font-family:var(--mono);font-size:32px;font-weight:600;line-height:1.15;transition:opacity .12s ease}
+.intake-price-value.intake-flash{opacity:.4}
+.intake-price-sub{font-size:12.5px;color:var(--muted);margin-top:4px}
+.intake-level-row{margin:10px 0 14px}
+.intake-breakdown{margin:14px 0 0}
+.intake-breakdown-group{margin-bottom:16px}
+.intake-breakdown-group:last-of-type{margin-bottom:0}
+.intake-breakdown-group h4{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--faint)}
+.intake-breakdown-group h4 button{min-height:32px;padding:4px 10px;font-size:11.5px}
+.intake-work-row{display:grid;grid-template-columns:1fr 70px auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line-soft)}
+.intake-work-row:last-of-type{border-bottom:0}
+.intake-work-row span small{display:block;color:var(--muted);font-size:11.5px}
+.intake-work-row input{min-height:38px;padding:6px;text-align:center;font-family:var(--mono);font-size:14px}
+.intake-work-row strong{font-family:var(--mono);white-space:nowrap;text-align:right}
+.intake-quick-toggles{display:grid;gap:10px;margin-top:14px;border-top:1px solid var(--line);padding-top:14px}
+.intake-copy-zin{margin-top:14px;font-size:13px;color:var(--muted);background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px}
+.intake-bar{position:sticky;bottom:0;background:var(--paper);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:12px}
+.intake-bar-price{flex:1;min-width:0}
+.intake-bar-price small{display:block;color:var(--muted);font-size:11px}
+.intake-bar-price strong{display:block;font-family:var(--mono);font-size:18px}
+.intake-nextstep-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:16px}
+.intake-nextstep-grid button{width:100%}
+@media(min-width:1024px){
+  .intake-backdrop{align-items:center}
+  .intake-funnel{max-width:900px;max-height:92vh;border-radius:var(--radius)}
+  .intake-step23{display:grid;grid-template-columns:1.3fr 1fr;gap:24px;align-items:start}
+  .intake-price-panel{position:sticky;top:14px}
+}
+@media(max-width:1023px){
+  .intake-step23-price{margin-top:18px}
+}
+
+/* Offerteflow: uitsluitend bestaande tokens/klassen hergebruikt. */
+.quote-kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.quote-kpi{padding:14px}
+.quote-kpi .kpi-label{display:block}
+.quote-kpi .kpi-number{display:block;font-family:var(--mono);font-size:22px;font-weight:600;margin-top:6px}
+.quote-pipeline-cols{display:grid;grid-template-columns:1fr;gap:14px}
+.quote-pipeline-col{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:10px;box-shadow:var(--shadow)}
+.quote-pipeline-col h3{display:flex;align-items:center;justify-content:space-between;font-size:13px;margin:4px 4px 8px;font-weight:400}
+.quote-pipeline-col h3 span{font-family:var(--mono);color:var(--muted);font-size:12px}
+.quote-pipeline-col .recent-row{padding:10px 4px}
+.quote-stale{color:var(--warn);display:block;font-size:11px;margin-top:2px}
+.quote-photos{display:flex;gap:8px;margin:10px 0}
+.quote-photos img{width:80px;height:60px;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--line)}
+.quote-groups{display:grid;gap:6px;margin:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 0}
+.quote-groups>div{display:flex;justify-content:space-between;font-size:14px}
+.quote-groups strong{font-family:var(--mono)}
+.quote-send-choices{position:fixed;z-index:130;left:12px;right:12px;bottom:12px;max-width:420px;margin:0 auto;box-shadow:var(--shadow)}
+.quote-send-choices .actions{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+@media(min-width:700px){.quote-kpi-row{grid-template-columns:repeat(3,1fr)}.quote-pipeline-cols{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}}
+
+/* Bijlagen + STEP-voorstel + 3D-viewer: uitsluitend bestaande tokens/klassen. */
+.badge-experimental{display:inline-block;font-size:10.5px;font-weight:600;color:var(--warn);background:var(--warn-soft);border-radius:var(--radius-sm);padding:2px 6px;margin-left:6px;vertical-align:middle;text-transform:uppercase;letter-spacing:.03em}
+.step-viewer{width:100%;height:260px;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;touch-action:none}
+.step-viewer canvas{display:block}
+.step-viewer-controls{display:flex;gap:8px;margin:8px 0 14px}
+.step-row{cursor:default}
+.step-row small{display:block;margin-top:2px}
+#attachment-list .job-row small{display:block}
+.quote-photos .step-iso{border-style:dashed}
+@media(min-width:700px){.step-viewer{height:360px}}
+
+/* Onboarding-checklist + funnel-inzicht: uitsluitend bestaande tokens/klassen. */
+.onboarding-steps{display:grid;gap:2px;margin-top:12px}
+.onboarding-step{display:block;padding:10px 4px;color:var(--ink);text-decoration:none;font-size:14px;border-bottom:1px solid var(--line-soft)}
+.onboarding-step:last-child{border-bottom:0}
+.onboarding-step[data-onboarding-done="true"]{color:var(--muted);text-decoration:line-through}
+
 </style>
 </head>
 <body>
@@ -338,7 +442,7 @@ button.ghost:hover{background:var(--paper)}
   <div class="app-actions"><label for="theme" class="visually-hidden">Thema</label><select id="theme" class="theme-select" aria-label="Kleurthema"><option value="auto">Automatisch</option><option value="light">Licht</option><option value="dark">Donker</option></select></div>
 </header>
 
-<section id="home"><div id="design-dashboard"><h1 class="dashboard-title">Calculaties</h1><button class="act home-primary" id="design-new">＋ Nieuwe calculatie</button><div id="projects-kpi" class="card" hidden></div><div class="section-heading"><h2>Recent</h2><a href="#projecten">Opgeslagen projecten ›</a></div><div id="recent-design"></div><div class="home-tools"><div class="section-heading"><h2>Gereedschap</h2><a href="#tools">Alle tools ›</a></div><div class="quick-grid" id="quick-design"></div></div></div><div id="tool-directory">
+<section id="home"><div id="design-dashboard"><h1 class="dashboard-title">Calculaties</h1><button class="act home-primary" id="design-new">＋ Nieuwe calculatie</button><div id="onboarding-checklist" hidden></div><div id="projects-kpi" class="card" hidden></div><div id="quote-pipeline" hidden></div><div class="section-heading"><h2>Recent</h2><a href="#projecten">Opgeslagen projecten ›</a></div><div id="recent-design"></div><div class="home-tools"><div class="section-heading"><h2>Gereedschap</h2><a href="#tools">Alle tools ›</a></div><div class="quick-grid" id="quick-design"></div></div></div><div id="tool-directory">
   <h1 class="dashboard-title">Werkplaatsdashboard</h1>
   <p class="dashboard-copy">Kies een categorie of zoek direct in alle rekentools.</p>
   <div class="search">
@@ -411,13 +515,19 @@ const $ = id => document.getElementById(id);
 const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : NaN; };
 const fmt = (n, d = 1) => isFinite(n) ? n.toLocaleString('nl-NL', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—';
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const JOB_FASES=[['offerte','Offerte','neutral'],['opdracht','Opdracht','info'],['wacht_op_materiaal','Wacht op materiaal','warning'],['werkplaats','In werkplaats','warning'],['montage','Montage','primary'],['geleverd','Geleverd','success'],['afgekeurd','Afgekeurd','danger']];
+// Fase 2.3: exacte statusreeks Indicatie -> Opname -> Offerte verzonden -> Opdracht ->
+// In werkplaats -> Montage -> Geleverd -> Gefactureerd, plus de zijtakken Afgewezen/Vervallen.
+// Vervangt de eerdere 7-status set (die had nog geen "verzonden"-moment en geen facturatie-
+// afsluiting); "wacht_op_materiaal" is bewust vervallen, dat zat niet in de opdracht.
+const JOB_FASES=[['indicatie','Indicatie','neutral'],['opname','Opname','neutral'],['offerte_verzonden','Offerte verzonden','info'],['opdracht','Opdracht','info'],['in_werkplaats','In werkplaats','warning'],['montage','Montage','primary'],['geleverd','Geleverd','success'],['gefactureerd','Gefactureerd','success'],['afgewezen','Afgewezen','danger'],['vervallen','Vervallen','danger']];
 const JOB_FASE_LABELS=Object.fromEntries(JOB_FASES.map(([k,l])=>[k,l]));
 const JOB_FASE_TONE=Object.fromEntries(JOB_FASES.map(([k,,t])=>[k,t]));
-const TERMINAL_FASES=new Set(['geleverd','afgekeurd']);
-function faseBadgeHtml(fase){const key=JOB_FASE_LABELS[fase]?fase:'offerte';return '<span class="fase-badge" data-tone="'+JOB_FASE_TONE[key]+'"><span class="fase-dot"></span>'+esc(JOB_FASE_LABELS[key])+'</span>';}
-function setJobFase(job,fase,now){if(!JOB_FASE_LABELS[fase]||job.fase===fase)return job;return {...job,fase,faseSince:(now||new Date()).toISOString()};}
-function projectsKpi(rows,now){now=now||new Date();const fase=r=>JOB_FASE_LABELS[r.data?.job?.fase]?r.data.job.fase:'offerte';const active=rows.filter(r=>!TERMINAL_FASES.has(fase(r)));const count=key=>active.filter(r=>fase(r)===key).length;const days=n=>{const d=new Date(now);d.setDate(d.getDate()-n);return d;};const cutoff30=days(30),cutoff60=days(60);const createdBetween=(from,to)=>active.filter(r=>{const t=new Date(r.datum);return t>=from&&t<to;}).length;return{total:active.length,delta:createdBetween(cutoff30,now)-createdBetween(cutoff60,cutoff30),werkplaats:count('werkplaats'),montage:count('montage'),wachtOpMateriaal:count('wacht_op_materiaal')};}
+// "Geleverd" is bewust NIET terminaal: next-best-action is dan nog "Factureer" (2.3), de klus is
+// pas echt klaar bij gefactureerd/afgewezen/vervallen.
+const TERMINAL_FASES=new Set(['gefactureerd','afgewezen','vervallen']);
+function faseBadgeHtml(fase){const key=JOB_FASE_LABELS[fase]?fase:'indicatie';return '<span class="fase-badge" data-tone="'+JOB_FASE_TONE[key]+'"><span class="fase-dot"></span>'+esc(JOB_FASE_LABELS[key])+'</span>';}
+function setJobFase(job,fase,now,reason){if(!JOB_FASE_LABELS[fase])return job;if(job.fase===fase&&!reason)return job;const next={...job,fase,faseSince:(now||new Date()).toISOString()};if(fase==='afgewezen'||fase==='vervallen')next.faseReason=reason||'';else delete next.faseReason;return next;}
+function projectsKpi(rows,now){now=now||new Date();const fase=r=>JOB_FASE_LABELS[r.data?.job?.fase]?r.data.job.fase:'indicatie';const active=rows.filter(r=>!TERMINAL_FASES.has(fase(r)));const count=key=>active.filter(r=>fase(r)===key).length;const days=n=>{const d=new Date(now);d.setDate(d.getDate()-n);return d;};const cutoff30=days(30),cutoff60=days(60);const createdBetween=(from,to)=>active.filter(r=>{const t=new Date(r.datum);return t>=from&&t<to;}).length;return{total:active.length,delta:createdBetween(cutoff30,now)-createdBetween(cutoff60,cutoff30),werkplaats:count('in_werkplaats'),montage:count('montage'),wachtOpMateriaal:count('offerte_verzonden')};}
 const rad = d => d * Math.PI / 180;
 const deg = r => r * 180 / Math.PI;
 const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
@@ -2241,7 +2351,7 @@ const CUSTOMER_KEY='werkbank.v2.customers',DRAFT_KEY='werkbank.v2.draft';
 let editingWork=null;
 let jobTab='site',draftTimer=null,customerEditing=null;
 const cloneJob=x=>JSON.parse(JSON.stringify(x));
-function ensureJob(){if(!costState.job||typeof costState.job!=='object')costState.job={};const j=costState.job;for(const key of ['measurements','photos','work'])if(!Array.isArray(j[key]))j[key]=[];if(j.legacyOther===undefined)j.legacyOther=costState.other||0;if(!JOB_FASE_LABELS[j.fase])j.fase='offerte';return j;}
+function ensureJob(){if(!costState.job||typeof costState.job!=='object')costState.job={};const j=costState.job;for(const key of ['measurements','photos','work'])if(!Array.isArray(j[key]))j[key]=[];if(j.legacyOther===undefined)j.legacyOther=costState.other||0;if(!JOB_FASE_LABELS[j.fase])j.fase='indicatie';return j;}
 function customers(){const r=storageAdapter.read(CUSTOMER_KEY,[]);return r.ok&&Array.isArray(r.value)?r.value:[];}
 function messageJob(text){const el=$('job-save-status');if(el)el.textContent=text;}
 function persistDraft(){clearTimeout(draftTimer);if(!costState)return;readCostInput();const ok=safeSet(DRAFT_KEY,{id:savedProjectId,data:serializableState()});messageJob(ok?'Concept op dit apparaat bewaard · nog geen cloudsynchronisatie':'Opslaan mislukt. Exporteer de klus als back-up.');}
@@ -2262,7 +2372,7 @@ function customerView(){readCostInput();renderCostTotals();const v=saleView();if
 const jobBaseCost=renderCostPage;renderCostPage=function(values,message){jobBaseCost(values,message);$('cost-content').querySelector(':scope > .readout[role="status"]')?.remove();ensureJob();$('cost-title').textContent=costState.project||'Nieuwe klus';document.querySelector('.project-fields').hidden=true;const tabs=document.querySelector('.cost-tabs');tabs.classList.add('job-tabs');const site=document.createElement('div');site.id='panel-site';site.setAttribute('role','tabpanel');site.setAttribute('aria-labelledby','tab-site');tabs.after(site);const tab=document.createElement('button');tab.id='tab-site';tab.dataset.tab='site';tab.setAttribute('role','tab');tab.setAttribute('aria-controls','panel-site');tab.textContent='Opname';tabs.prepend(tab);$('tab-labor').textContent='Werk';$('tab-overview').textContent='Prijs';Array.from(tabs.children).forEach((b,i)=>{b.onclick=()=>{jobTab=b.dataset.tab;designTab=jobTab==='site'?'materials':jobTab;Array.from(tabs.children).forEach(t=>{t.setAttribute('aria-selected',String(t===b));t.tabIndex=t===b?0:-1;});document.querySelectorAll('#cost-content>[role="tabpanel"]').forEach(p=>p.hidden=p.id!=='panel-'+jobTab);};b.onkeydown=e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const all=Array.from(tabs.children),n=e.key==='Home'?0:e.key==='End'?all.length-1:(i+(e.key==='ArrowRight'?1:all.length-1))%all.length;all[n].click();all[n].focus();}};});const legacy=document.createElement('details');legacy.className='job-panel';legacy.innerHTML='<summary>Overige kosten & bestaande arbeidsbegroting</summary>';const labor=$('panel-labor');while(labor.firstChild)legacy.append(labor.firstChild);labor.append(legacy);const work=document.createElement('div');work.id='job-work';work.className='job-panel';labor.prepend(work);$('c-other').readOnly=true;$('c-other').parentElement.title='Bestaande overige kosten plus werkzaamheden';const customer=document.createElement('button');customer.id='customer-view';customer.className='act';customer.textContent='Toon prijs aan klant';customer.onclick=customerView;$('panel-overview').prepend(customer);const status=document.createElement('p');status.id='job-save-status';status.className='job-status';status.setAttribute('role','status');status.textContent=message||'Preview · alleen opslag op dit apparaat';tabs.before(status);$('cost-save').textContent='Klus bewaren';$('cost-save').setAttribute('aria-label','Klus bewaren');$('cost-content').addEventListener('input',queueDraft);renderSite();renderJobWork();syncWork();$('tab-'+jobTab).click();};
 const jobStart=startProject;startProject=function(){jobTab='site';jobStart();};const jobOpen=openSavedProject;openSavedProject=function(row){jobTab='site';jobOpen(row);};$('design-new').onclick=startProject;$('library-new').onclick=startProject;
 const jobSave=saveCalculation;saveCalculation=function(){jobSave();const text=$('job-save-status')?.textContent||'';if(text==='Calculatie bewaard.'){persistDraft();messageJob('Klus bewaard op dit apparaat.');}};
-function renderProjectsKpi(){const el=$('projects-kpi');if(!el)return;const rows=savedProjects();if(!rows.length){el.hidden=true;return;}const kpi=projectsKpi(rows);el.hidden=false;const dir=kpi.delta>0?'up':kpi.delta<0?'down':'flat';const sign=kpi.delta>0?'▲ +':kpi.delta<0?'▼ ':'– ';el.innerHTML='<div class="kpi-head"><span class="kpi-label">Lopende staalprojecten</span><span class="kpi-icon">'+uiIcon('document')+'</span></div><div class="kpi-main"><span class="kpi-number">'+kpi.total+'</span><span class="kpi-unit">projecten</span></div><div class="kpi-delta"><span class="kpi-delta-badge" data-dir="'+dir+'">'+sign+Math.abs(kpi.delta)+'</span><span class="kpi-delta-label">t.o.v. vorige maand</span></div><div class="kpi-breakdown"><div><span>Werkplaats</span><b>'+kpi.werkplaats+'</b></div><div><span>Montage</span><b>'+kpi.montage+'</b></div><div><span>Wacht op materiaal</span><b class="kpi-warn">'+kpi.wachtOpMateriaal+'</b></div></div>';}
+function renderProjectsKpi(){const el=$('projects-kpi');if(!el)return;const rows=savedProjects();if(!rows.length){el.hidden=true;return;}const kpi=projectsKpi(rows);el.hidden=false;const dir=kpi.delta>0?'up':kpi.delta<0?'down':'flat';const sign=kpi.delta>0?'▲ +':kpi.delta<0?'▼ ':'– ';el.innerHTML='<div class="kpi-head"><span class="kpi-label">Lopende staalprojecten</span><span class="kpi-icon">'+uiIcon('document')+'</span></div><div class="kpi-main"><span class="kpi-number">'+kpi.total+'</span><span class="kpi-unit">projecten</span></div><div class="kpi-delta"><span class="kpi-delta-badge" data-dir="'+dir+'">'+sign+Math.abs(kpi.delta)+'</span><span class="kpi-delta-label">t.o.v. vorige maand</span></div><div class="kpi-breakdown"><div><span>Werkplaats</span><b>'+kpi.werkplaats+'</b></div><div><span>Montage</span><b>'+kpi.montage+'</b></div><div><span>Offerte verzonden</span><b class="kpi-warn">'+kpi.wachtOpMateriaal+'</b></div></div>';}
 const jobDashboard=renderDashboard;renderDashboard=function(){jobDashboard();renderProjectsKpi();document.querySelector('.dashboard-title').textContent='Klussen';$('design-new').textContent='+ Nieuwe klus';const empty=document.querySelector('.recent-empty');if(empty&&!savedProjects().length)empty.innerHTML='<b>Van opname naar een duidelijke prijs.</b><p>Kies een klant, leg maten vast en verzamel materiaal en werk in één klus.</p>';let resume=$('job-resume');if(resume)resume.remove();const raw=storageAdapter.read(DRAFT_KEY,null);if(raw.ok&&raw.value?.data){resume=document.createElement('button');resume.id='job-resume';resume.className='recent-row';resume.textContent='Verder met concept: '+(raw.value.data.project||'Naamloze klus');resume.onclick=()=>{if(!allowDiscard())return;savedProjectId=raw.value.id||null;jobTab='site';history.pushState(null,'','#kostprijs');hidePages();$('cost').hidden=false;renderCostPage(migrateCalculation(raw.value.data));setNav('home');cleanProject=serial();};$('recent-design').before(resume);}};
 const customerPage=document.createElement('section');customerPage.id='customer-page';customerPage.hidden=true;document.querySelector('.wrap').append(customerPage);
 function renderCustomers(){customerPage.innerHTML='<h1>Klanten</h1><p class="job-intro">Kies een klant bij je volgende klus. Gegevens blijven in deze preview op dit apparaat.</p>'+customers().map(c=>'<div class="job-panel"><b>'+esc(c.name)+'</b><p>'+esc(c.contact||'')+'<br>'+esc(c.email||'')+'<br>'+esc(c.phone||'')+'</p><button class="ghost" data-customer-edit="'+esc(c.id)+'">Bewerken</button></div>').join('')+'<div class="job-panel"><h2 id="customer-form-title">Klant toevoegen</h2><div class="job-grid">'+jobInput('client-name','Naam / bedrijf')+jobInput('client-contact','Contactpersoon')+jobInput('client-email','E-mail','','email')+jobInput('client-phone','Telefoon','','tel')+'</div><button class="act" id="client-save">Klant bewaren</button><button class="ghost" id="client-cancel">Annuleren</button><p id="client-status" role="status"></p></div>';customerEditing=null;document.querySelectorAll('[data-customer-edit]').forEach(b=>b.onclick=()=>{const c=customers().find(x=>x.id===b.dataset.customerEdit);customerEditing=c.id;for(const k of ['name','contact','email','phone'])$('client-'+k).value=c[k]||'';$('customer-form-title').textContent='Klant bewerken';$('client-name').focus();});$('client-cancel').onclick=renderCustomers;$('client-save').onclick=()=>{const c={id:customerEditing||uid()};for(const k of ['name','contact','email','phone'])c[k]=$('client-'+k).value.trim();if(!c.name){$('client-status').textContent='Vul een klantnaam in.';return;}const raw=storageAdapter.read(CUSTOMER_KEY,[]);if(!raw.ok||!Array.isArray(raw.value)||!safeSet(CUSTOMER_KEY,[c,...raw.value.filter(x=>x.id!==c.id)])){$('client-status').textContent='Bewaren mislukt; bestaande gegevens zijn niet overschreven.';return;}renderCustomers();$('client-status').textContent='Klant bewaard.';};}
@@ -2464,6 +2574,2237 @@ bindMaterialEditor = function (state, root, touched, draw) {
     empty.hidden = anyVisible;
   };
 };
+
+/* Sjabloon-engine voor de snelprijs-funnel: data, geen UI. Elk sjabloon is
+   { id, group, name, icon, params[], build(p, ctx) }. build() is een pure functie:
+   params -> { materials:[...], work:[...], confidence }. Materiaalregels volgen exact het
+   contract uit intake/README.md ("Materiaalregel-contract"); werkregels het contract van
+   jobs.js (name, category, quantity, unit, rate).
+   ctx = { uid, hourlyRate, montageRate, voorrijkosten, poedercoatM2 } — wordt door de
+   aanroeper samengesteld (leest instellingen/costState), build() zelf leest nooit globale
+   state, zodat elk sjabloon geïsoleerd getest kan worden.
+   Vuistregel, geen sterkteberekening: profielkeuzes zijn praktijkschattingen voor een
+   snelle indicatie, geen constructieve dimensionering. Dat staat ook letterlijk in de
+   gegenereerde regel-notities bij draagbalk/kolom-balk-frame.
+
+   Materiaalsoort en profielmaat (koker-/buis-/staf-/hoeklijngrootte) zijn per sjabloon
+   kiesbaar (zie materialChoice/sizeChoice hieronder) — géén stille aanname meer, wél nog
+   steeds "altijd een prijs": bestaat er een exacte catalogusmatch voor de gekozen combinatie
+   (CATALOG_ARTICLES, al gevuld door de kernrekenmodule), dan krijgt de regel een echte
+   leveranciersprijs; ontbreekt die, dan valt de regel terug op de bestaande algemene
+   €/kg-vuistregel met precies de gekozen afmeting (zie sizedBar). */
+
+function mat(ctx, line) {
+  return Object.assign({
+    id: ctx.uid(), countMode: 'project', priceBasis: 'kg', priceMode: 'catalog',
+    priceOrigin: 'catalog', waste: 5, source: 'template'
+  }, line);
+}
+function work(ctx, entry) {
+  return Object.assign({ id: ctx.uid(), unit: 'uur', category: 'Fabricage' }, entry);
+}
+function voorrijden(ctx) {
+  return work(ctx, { name: 'Voorrijden', quantity: 1, rate: ctx.voorrijkosten, unit: 'rit', category: 'Reis & vervoer' });
+}
+function montage(ctx, uren, name) {
+  return work(ctx, { name: name || 'Montage', quantity: Math.max(0.25, uren), rate: ctx.montageRate, category: 'Montage' });
+}
+function lassen(ctx, uren, name) {
+  return work(ctx, { name: name || 'Lassen', quantity: Math.max(0.1, uren), rate: ctx.hourlyRate, category: 'Fabricage' });
+}
+function poedercoat(ctx, m2, name) {
+  return work(ctx, { name: name || 'Poedercoating', quantity: Math.max(0.1, m2), rate: ctx.poedercoatM2, unit: 'm²', category: 'Uitbesteding' });
+}
+// Rechthoekige balk/profiel in meterprijs; lengte in mm.
+// priceBasis 'kg': geen catalogArticleId/catalogSize gekoppeld, dus resolvePrice() valt terug
+// op het algemene €/kg-tarief per materiaalsoort (altijd beschikbaar) in plaats van een
+// meterprijs die alleen bestaat bij een exacte of familie-catalogusmatch. Dat is precies wat
+// de funnel nodig heeft: altijd een prijs, ook zonder catalogusmatch.
+function bar(ctx, profile, material, count, lengthMm, dims, note) {
+  return mat(ctx, { profile, material, count, dims: Object.assign({ length: lengthMm }, dims), priceBasis: 'kg', note });
+}
+function plateLine(ctx, material, lengthMm, widthMm, tMm, note) {
+  return mat(ctx, { profile: 'plate', material, count: 1, dims: { length: lengthMm, width: widthMm, t: tMm }, priceBasis: 'kg', note });
+}
+function hardware(ctx, description, note) {
+  return mat(ctx, {
+    profile: 'purchasedItem', description, count: 1, priceBasis: 'piece', priceMode: 'manual',
+    priceOrigin: 'user', unitPrice: '', waste: 0, note: note || 'Prijs op aanvraag — eigen prijs invullen.'
+  });
+}
+// Rule-of-thumb overspanning -> profielhoogte (span/20), afgerond naar de dichtstbijzijnde
+// beschikbare IPE/HEA-maat. Geen sterkteberekening; altijd door een constructeur te laten
+// controleren, zie de notitie op de gegenereerde regel.
+function beamSize(sections, spanMm) {
+  const target = spanMm / 20;
+  const cols = sections.cols;
+  let best = cols[0];
+  for (const c of cols) if (Math.abs(c - target) < Math.abs(best - target)) best = c;
+  return { size: String(best), kgm: sections.d[best][7] };
+}
+
+/* ---------- Materiaalsoort + profielmaat: kiesbaar per sjabloon ---------- */
+
+// Vaste maatvoeringkeuzes per profielvorm — gebaseerd op de daadwerkelijke leverancierscatalogus
+// (CATALOG_ARTICLES, S235-reeks als basis) aangevuld met een paar veelgebruikte maten die daar
+// niet in staan (die vallen dan terug op de algemene €/kg-vuistregel, zie sizedBar hieronder —
+// geen fabricage van een prijs die er niet is, alleen een geometrisch geldige keuze).
+const STD_SIZES = {
+  rectTube: [[30, 20, 2], [40, 20, 2], [40, 20, 3], [50, 25, 2], [50, 30, 2], [50, 30, 3], [60, 40, 2], [60, 40, 3], [60, 40, 4], [80, 40, 4], [100, 50, 3], [100, 50, 4]],
+  squareTube: [[20, 2], [25, 2], [30, 2], [30, 3], [40, 2], [40, 3], [40, 4], [50, 3], [60, 3], [80, 4], [100, 5]],
+  roundTube: [[17.2, 1.8], [21.3, 2], [26.9, 2.35], [33.7, 2.65], [42.4, 2.65], [48.3, 2.9], [60.3, 2.9], [76.1, 3.25]],
+  equalAngle: [[40, 4], [50, 5], [60, 6], [80, 8], [100, 10]],
+  squareBar: [[10], [12], [14], [16], [20]]
+};
+function sizeLabels(profile) { return STD_SIZES[profile].map(v => v.join('×')); }
+// Vertaalt een gekozen maatlabel terug naar een dims-object via de vaste veldvolgorde van het
+// profiel zelf (PROFILES[profile].fields, zonder 'length') — elk profiel definieert zijn
+// veldvolgorde dus maar één keer, hier wordt hij hergebruikt in plaats van herhaald.
+function dimsFromLabel(profile, label) {
+  const keys = PROFILES[profile].fields.map(f => f.key).filter(k => k !== 'length');
+  const nums = String(label).split('×').map(s => parseFloat(s));
+  const dims = {};
+  keys.forEach((k, i) => dims[k] = nums[i]);
+  return dims;
+}
+// Exacte catalogusmatch zoeken voor de gekozen combinatie profiel + materiaal + afmeting.
+function findCatalogArticle(profile, material, dims) {
+  return CATALOG_ARTICLES.find(a => a.profileType === profile && a.material === material &&
+    Object.keys(dims).every(k => Math.abs((a.dimensionsMm[k] ?? NaN) - dims[k]) < 0.01)) || null;
+}
+// Materiaalregel met een door de gebruiker gekozen maat + materiaal. Bestaat er een exacte
+// catalogusmatch, dan krijgt de regel een echte leveranciersprijs (bron "Catalogusrichtprijs")
+// in plaats van de algemene €/kg-vuistregel — precies wat een prijsopbouw "ter controle" nodig
+// heeft. Ontbreekt de match, dan blijft de regel gewoon op de vuistregel, met exact de gekozen
+// afmeting (geen stille aanname meer, wél nog steeds altijd een prijs).
+function sizedBar(ctx, profile, material, count, lengthMm, dims, note) {
+  const line = bar(ctx, profile, material, count, lengthMm, dims, note);
+  const article = findCatalogArticle(profile, material, dims);
+  if (article) Object.assign(line, {
+    catalogArticleId: article.id, priceBasis: article.price.basis === 'wholePlate' ? 'wholePlate' : article.price.basis,
+    priceMode: 'catalog', priceOrigin: 'catalog', supplierKgm: article.supplierWeightKgPerM ?? undefined
+  });
+  return line;
+}
+function materialChoice(defaultMaterial) {
+  return { id: 'material', label: 'Materiaalsoort', type: 'choice', options: ['s235', 's355', 'rvs304', 'rvs316', 'alu'], default: defaultMaterial || 's235' };
+}
+function sizeChoice(id, label, profile, defaultDims) {
+  return { id, label, type: 'choice', options: sizeLabels(profile), default: defaultDims.join('×'), profile };
+}
+// Kaderprofiel voor poorten/deuren: één vlakke keuzelijst die koker- én hoeklijnmaten samen
+// aanbiedt (voorkomt een los "profielvorm"-veld waarvan de opties van weer een ander veld
+// zouden moeten afhangen — de funnel kent alleen statische keuzelijsten). "Koker" met 2 getallen
+// is een vierkante koker (squareTube), met 3 getallen een rechthoekige koker (rectTube);
+// "Hoeklijn" is altijd gelijkzijdig (equalAngle).
+function parseFramedChoice(value) {
+  const [kind, sizeLabel] = String(value).split(' ');
+  const numCount = sizeLabel.split('×').length;
+  const profile = kind === 'Hoeklijn' ? 'equalAngle' : (numCount === 3 ? 'rectTube' : 'squareTube');
+  return { profile, dims: dimsFromLabel(profile, sizeLabel) };
+}
+function framedChoice(id, label, options, defaultValue) {
+  return { id, label, type: 'choice', options, default: defaultValue };
+}
+
+const TEMPLATES = [
+{
+  id: 'hekwerk-spijlen', group: 'Hekwerk / balustrade / leuning', name: 'Spijlenhekwerk', icon: 'fence',
+  params: [
+    { id: 'length', label: 'Lengte', unit: 'm', type: 'number', min: 0.5, max: 100, step: 0.5, default: 3 },
+    { id: 'height', label: 'Hoogte', unit: 'mm', type: 'number', min: 600, max: 2000, step: 50, default: 1000 },
+    { id: 'spacing', label: 'Spijlafstand', unit: 'mm', type: 'number', min: 80, max: 150, step: 5, default: 110 },
+    materialChoice('s235'),
+    sizeChoice('railSize', 'Regelmaat (boven/onder)', 'rectTube', [40, 20, 2]),
+    sizeChoice('spindleSize', 'Spijlmaat', 'squareBar', [12]),
+    { id: 'finish', label: 'Afwerking', type: 'choice', options: ['Blank', 'Gemenied', 'Verzinkt', 'Gepoedercoat'], default: 'Gepoedercoat' },
+    { id: 'mount', label: 'Montage door ons', type: 'boolean', default: true }
+  ],
+  build(p, ctx) {
+    const lengthMm = p.length * 1000, spindles = Math.ceil(lengthMm / p.spacing) + 1;
+    const railDims = dimsFromLabel('rectTube', p.railSize), spindleDims = dimsFromLabel('squareBar', p.spindleSize);
+    const materials = [
+      sizedBar(ctx, 'rectTube', p.material, 2, lengthMm, railDims, 'Boven- en onderregel'),
+      sizedBar(ctx, 'squareBar', p.material, spindles, p.height, spindleDims, 'Spijlen, ' + p.finish.toLowerCase())
+    ];
+    const w = [lassen(ctx, spindles * 2 * 0.08, 'Lassen spijlen'), voorrijden(ctx)];
+    if (p.mount) w.push(montage(ctx, p.length * 0.35));
+    if (p.finish === 'Gepoedercoat') w.push(poedercoat(ctx, p.length * (p.height / 1000)));
+    return { materials, work: w, confidence: 'indicatie' };
+  }
+},
+{
+  id: 'balustrade-handregel', group: 'Hekwerk / balustrade / leuning', name: 'Balustrade met handregel', icon: 'fence',
+  params: [
+    { id: 'length', label: 'Lengte', unit: 'm', type: 'number', min: 0.5, max: 50, step: 0.5, default: 4 },
+    { id: 'height', label: 'Hoogte', unit: 'mm', type: 'number', min: 900, max: 1200, step: 50, default: 1000 },
+    { id: 'postSpacing', label: 'Stijlafstand', unit: 'mm', type: 'number', min: 500, max: 2000, step: 100, default: 1200 },
+    materialChoice('s235'),
+    sizeChoice('tubeSize', 'Buismaat (handregel + stijlen)', 'roundTube', [42.4, 2]),
+    sizeChoice('infillSize', 'Tussenregelmaat', 'squareTube', [20, 2]),
+    { id: 'finish', label: 'Afwerking', type: 'choice', options: ['Blank', 'Gemenied', 'Verzinkt', 'Gepoedercoat'], default: 'Gepoedercoat' },
+    { id: 'mount', label: 'Montage door ons', type: 'boolean', default: true }
+  ],
+  build(p, ctx) {
+    const lengthMm = p.length * 1000, posts = Math.ceil(lengthMm / p.postSpacing) + 1;
+    const tubeDims = dimsFromLabel('roundTube', p.tubeSize), infillDims = dimsFromLabel('squareTube', p.infillSize);
+    const materials = [
+      sizedBar(ctx, 'roundTube', p.material, 1, lengthMm, tubeDims, 'Handregel'),
+      sizedBar(ctx, 'roundTube', p.material, posts, p.height, tubeDims, 'Stijlen'),
+      sizedBar(ctx, 'squareTube', p.material, 2, lengthMm, infillDims, 'Tussenregels vulling')
+    ];
+    const w = [lassen(ctx, posts * 2 * 0.1), voorrijden(ctx)];
+    if (p.mount) w.push(montage(ctx, p.length * 0.4));
+    if (p.finish === 'Gepoedercoat') w.push(poedercoat(ctx, p.length * (p.height / 1000)));
+    return { materials, work: w, confidence: 'indicatie' };
+  }
+},
+{
+  id: 'trapleuning', group: 'Hekwerk / balustrade / leuning', name: 'Trapleuning', icon: 'fence',
+  params: [
+    { id: 'length', label: 'Lengte (horizontaal)', unit: 'm', type: 'number', min: 0.5, max: 20, step: 0.5, default: 3 },
+    { id: 'height', label: 'Hoogte boven trede', unit: 'mm', type: 'number', min: 900, max: 1100, step: 50, default: 1000 },
+    { id: 'angle', label: 'Hellingshoek trap', unit: '°', type: 'number', min: 0, max: 45, step: 5, default: 30 },
+    materialChoice('s235'),
+    sizeChoice('railSize', 'Leuningbuismaat', 'roundTube', [42.4, 2]),
+    sizeChoice('postSize', 'Stijlbuismaat', 'roundTube', [33.7, 2]),
+    { id: 'finish', label: 'Afwerking', type: 'choice', options: ['Blank', 'Gemenied', 'Verzinkt', 'Gepoedercoat'], default: 'Gepoedercoat' },
+    { id: 'mount', label: 'Montage door ons', type: 'boolean', default: true }
+  ],
+  build(p, ctx) {
+    const railMm = Math.round(p.length * 1000 / Math.cos(p.angle * Math.PI / 180));
+    const posts = Math.ceil(p.length * 1000 / 900) + 1;
+    const railDims = dimsFromLabel('roundTube', p.railSize), postDims = dimsFromLabel('roundTube', p.postSize);
+    const materials = [
+      sizedBar(ctx, 'roundTube', p.material, 1, railMm, railDims, 'Trapleuning, schuin gemeten'),
+      sizedBar(ctx, 'roundTube', p.material, posts, p.height, postDims, 'Stijlen op trede')
+    ];
+    const w = [lassen(ctx, posts * 2 * 0.1), voorrijden(ctx)];
+    if (p.mount) w.push(montage(ctx, p.length * 0.5, 'Montage (trap, extra tijd)'));
+    if (p.finish === 'Gepoedercoat') w.push(poedercoat(ctx, p.length * (p.height / 1000)));
+    return { materials, work: w, confidence: 'indicatie' };
+  }
+},
+{
+  id: 'trap-recht', group: 'Trap / bordes / platform', name: 'Rechte steektrap', icon: 'weight',
+  params: [
+    { id: 'rise', label: 'Te overbruggen hoogte', unit: 'mm', type: 'number', min: 500, max: 4000, step: 50, default: 2500 },
+    { id: 'width', label: 'Breedte', unit: 'mm', type: 'number', min: 600, max: 1200, step: 50, default: 900 },
+    materialChoice('s235'),
+    sizeChoice('stringerSize', 'Boomstukmaat (stringers)', 'rectTube', [100, 50, 4]),
+    { id: 'treadThickness', label: 'Plaatdikte treden', unit: 'mm', type: 'choice', options: ['4', '5', '6', '8'], default: '5' },
+    { id: 'finish', label: 'Afwerking', type: 'choice', options: ['Blank', 'Gemenied', 'Verzinkt', 'Gepoedercoat'], default: 'Blank' },
+    { id: 'mount', label: 'Montage door ons', type: 'boolean', default: true }
+  ],
+  build(p, ctx) {
+    const treads = Math.max(2, Math.round(p.rise / 180));
+    const run = treads * 250;
+    const stringerLen = Math.round(Math.sqrt(p.rise * p.rise + run * run));
+    const stringerDims = dimsFromLabel('rectTube', p.stringerSize);
+    const materials = [
+      sizedBar(ctx, 'rectTube', p.material, 2, stringerLen, stringerDims, 'Boomstukken (stringers), vuistregel 180 mm stapafstand'),
+      plateLine(ctx, p.material, p.width, 250, parseFloat(p.treadThickness), 'Treden, ' + treads + ' stuks (traanplaat)')
+    ];
+    materials[1].count = treads;
+    const w = [lassen(ctx, treads * 0.3), voorrijden(ctx)];
+    if (p.mount) w.push(montage(ctx, p.rise / 1000 * 0.6));
+    if (p.finish === 'Gepoedercoat') w.push(poedercoat(ctx, (stringerLen / 1000) * (p.width / 1000) * 0.6));
+    return { materials, work: w, confidence: 'indicatie' };
+  }
+},
+{
+  id: 'bordes-leuning', group: 'Trap / bordes / platform', name: 'Bordes met leuning', icon: 'weight',
+  params: [
+    { id: 'width', label: 'Breedte', unit: 'mm', type: 'number', min: 600, max: 2000, step: 50, default: 1000 },
+    { id: 'depth', label: 'Diepte', unit: 'mm', type: 'number', min: 600, max: 2000, step: 50, default: 1000 },
+    { id: 'height', label: 'Hoogte boven vloer', unit: 'mm', type: 'number', min: 300, max: 2000, step: 50, default: 900 },
+    materialChoice('s235'),
+    sizeChoice('frameSize', 'Draagframemaat', 'rectTube', [60, 40, 3]),
+    sizeChoice('legSize', 'Pootmaat', 'squareTube', [60, 3]),
+    { id: 'deckThickness', label: 'Plaatdikte bordes', unit: 'mm', type: 'choice', options: ['3', '4', '5', '6'], default: '4' },
+    { id: 'railing', label: 'Leuning rondom', type: 'boolean', default: true },
+    { id: 'mount', label: 'Montage door ons', type: 'boolean', default: true }
+  ],
+  build(p, ctx) {
+    const frameDims = dimsFromLabel('rectTube', p.frameSize), legDims = dimsFromLabel('squareTube', p.legSize);
+    const materials = [
+      sizedBar(ctx, 'rectTube', p.material, 2, p.width, frameDims, 'Draagframe, breedterichting'),
+      sizedBar(ctx, 'rectTube', p.material, 2, p.depth, frameDims, 'Draagframe, dieprichting'),
+      sizedBar(ctx, 'squareTube', p.material, 4, p.height, legDims, 'Poten'),
+      plateLine(ctx, p.material, p.depth, p.width, parseFloat(p.deckThickness), 'Bordesplaat')
+    ];
+    const w = [lassen(ctx, 8 * 0.15), voorrijden(ctx)];
+    if (p.railing) {
+      materials.push(sizedBar(ctx, 'roundTube', p.material, 1, Math.round((p.width + p.depth) * 2 * 0.7), { D: 42.4, t: 2 }, 'Leuning, ca. 3 zijden'));
+      materials.push(sizedBar(ctx, 'roundTube', p.material, 6, 1000, { D: 33.7, t: 2 }, 'Leuningstijlen'));
+      w.push(lassen(ctx, 6 * 2 * 0.1, 'Lassen leuning'));
+    }
+    if (p.mount) w.push(montage(ctx, (p.width / 1000) * (p.depth / 1000) * 0.8));
+    return { materials, work: w, confidence: 'indicatie' };
+  }
+},
+{
+  id: 'draagbalk', group: 'Frame / constructie / draagbalk', name: 'Draagbalk (IPE/HEA op overspanning)', icon: 'weight',
+  params: [
+    { id: 'span', label: 'Overspanning', unit: 'm', type: 'number', min: 1, max: 15, step: 0.25, default: 4 },
+    { id: 'family', label: 'Profielfamilie', type: 'choice', options: ['IPE', 'HEA'], default: 'IPE' },
+    materialChoice('s235'),
+    { id: 'heightOverride', label: 'Profielhoogte (optioneel, anders vuistregel span/20)', unit: 'mm', type: 'choice',
+      options: ['Automatisch'].concat([80, 100, 120, 140, 160, 180, 200, 220, 240, 270, 300, 330, 360, 400, 450, 500, 550, 600].map(String)), default: 'Automatisch' },
+    { id: 'count', label: 'Aantal balken', type: 'number', min: 1, max: 6, step: 1, default: 1 },
+    { id: 'mount', label: 'Hijsen/monteren door ons', type: 'boolean', default: true }
+  ],
+  build(p, ctx) {
+    const spanMm = p.span * 1000, sections = ctx.sections[p.family];
+    let choice, override = p.heightOverride && p.heightOverride !== 'Automatisch';
+    if (override) {
+      const wanted = Number(p.heightOverride);
+      const nearest = sections.cols.reduce((best, c) => Math.abs(c - wanted) < Math.abs(best - wanted) ? c : best, sections.cols[0]);
+      choice = { size: String(nearest), kgm: sections.d[nearest][7] };
+    } else {
+      choice = beamSize(sections, spanMm);
+    }
+    const materials = [Object.assign(mat(ctx, {
+      profile: p.family, material: p.material, count: p.count, dims: { length: spanMm },
+      catalogSize: choice.size, priceBasis: 'kg',
+      note: p.family + ' ' + choice.size + (override ? ' — handmatig gekozen' : ' — vuistregel (overspanning/20)') + ', geen sterkteberekening. Laat een constructeur dit controleren vóór uitvoering.'
+    }))];
+    const w = [voorrijden(ctx)];
+    if (p.mount) w.push(work(ctx, { name: 'Hijsen en monteren', quantity: Math.max(0.5, p.count * p.span * 0.25), rate: ctx.montageRate, category: 'Montage' }));
+    return { materials, work: w, confidence: 'indicatie' };
+  }
+},
+{
+  id: 'kolom-balk-frame', group: 'Frame / constructie / draagbalk', name: 'Kolom-balk frame', icon: 'weight',
+  params: [
+    { id: 'width', label: 'Breedte', unit: 'm', type: 'number', min: 1, max: 10, step: 0.5, default: 4 },
+    { id: 'depth', label: 'Diepte', unit: 'm', type: 'number', min: 1, max: 10, step: 0.5, default: 4 },
+    { id: 'height', label: 'Hoogte', unit: 'm', type: 'number', min: 2, max: 6, step: 0.25, default: 3 },
+    materialChoice('s235'),
+    sizeChoice('columnSize', 'Kolommaat', 'squareTube', [100, 5]),
+    sizeChoice('memberSize', 'Balkmaat (breedte + diepte)', 'rectTube', [100, 50, 4]),
+    { id: 'mount', label: 'Montage door ons', type: 'boolean', default: true }
+  ],
+  build(p, ctx) {
+    const columnDims = dimsFromLabel('squareTube', p.columnSize), beamDims = dimsFromLabel('rectTube', p.memberSize);
+    const materials = [
+      sizedBar(ctx, 'squareTube', p.material, 4, p.height * 1000, columnDims, 'Kolommen'),
+      sizedBar(ctx, 'rectTube', p.material, 2, p.width * 1000, beamDims, 'Balken, breedterichting — vuistregel, geen sterkteberekening'),
+      sizedBar(ctx, 'rectTube', p.material, 2, p.depth * 1000, beamDims, 'Balken, dieprichting — vuistregel, geen sterkteberekening')
+    ];
+    const w = [lassen(ctx, 8 * 0.4), voorrijden(ctx)];
+    if (p.mount) w.push(montage(ctx, p.width * p.depth * 0.5));
+    return { materials, work: w, confidence: 'indicatie' };
+  }
+},
+{
+  id: 'werktafel-frame', group: 'Frame / constructie / draagbalk', name: 'Werktafel/frame', icon: 'weight',
+  params: [
+    { id: 'width', label: 'Breedte', unit: 'mm', type: 'number', min: 400, max: 3000, step: 50, default: 1200 },
+    { id: 'depth', label: 'Diepte', unit: 'mm', type: 'number', min: 400, max: 1500, step: 50, default: 700 },
+    { id: 'height', label: 'Hoogte', unit: 'mm', type: 'number', min: 600, max: 1000, step: 10, default: 850 },
+    materialChoice('s235'),
+    sizeChoice('legSize', 'Pootmaat', 'squareTube', [40, 3]),
+    sizeChoice('frameSize', 'Onderframemaat', 'rectTube', [30, 20, 2]),
+    { id: 'top', label: 'Blad', type: 'choice', options: ['Geen blad', 'Plaatstaal', 'Multiplex'], default: 'Plaatstaal' },
+    { id: 'topThickness', label: 'Bladdikte (bij plaatstaal)', unit: 'mm', type: 'choice', options: ['2', '3', '4'], default: '3' }
+  ],
+  build(p, ctx) {
+    const legDims = dimsFromLabel('squareTube', p.legSize), frameDims = dimsFromLabel('rectTube', p.frameSize);
+    const materials = [
+      sizedBar(ctx, 'squareTube', p.material, 4, p.height, legDims, 'Poten'),
+      sizedBar(ctx, 'rectTube', p.material, 2, p.width, frameDims, 'Onderframe, breedterichting'),
+      sizedBar(ctx, 'rectTube', p.material, 2, p.depth, frameDims, 'Onderframe, dieprichting')
+    ];
+    if (p.top === 'Plaatstaal') materials.push(plateLine(ctx, p.material, p.depth, p.width, parseFloat(p.topThickness), 'Werkblad'));
+    if (p.top === 'Multiplex') materials.push(hardware(ctx, 'Multiplex werkblad ' + p.width + '×' + p.depth + ' mm', 'Inkoop, geen eigen staalproductie.'));
+    const w = [lassen(ctx, 8 * 0.12), voorrijden(ctx)];
+    return { materials, work: w, confidence: 'indicatie' };
+  }
+},
+{
+  id: 'draaipoort', group: 'Poort / deur / afscheiding', name: 'Draaipoort', icon: 'fence',
+  params: [
+    { id: 'width', label: 'Doorgangsbreedte', unit: 'mm', type: 'number', min: 1000, max: 6000, step: 100, default: 3000 },
+    { id: 'height', label: 'Hoogte', unit: 'mm', type: 'number', min: 800, max: 2000, step: 50, default: 1500 },
+    { id: 'leaves', label: 'Uitvoering', type: 'choice', options: ['Enkel', 'Dubbel'], default: 'Enkel' },
+    materialChoice('s235'),
+    framedChoice('kaderProfile', 'Kaderprofiel', ['Koker 40×3', 'Koker 40×4', 'Koker 50×3', 'Hoeklijn 40×4', 'Hoeklijn 50×5', 'Hoeklijn 60×6'], 'Koker 40×3'),
+    sizeChoice('spindleSize', 'Vulling (spijlmaat)', 'squareBar', [12]),
+    { id: 'finish', label: 'Afwerking', type: 'choice', options: ['Blank', 'Gemenied', 'Verzinkt', 'Gepoedercoat'], default: 'Gepoedercoat' },
+    { id: 'mount', label: 'Montage door ons', type: 'boolean', default: true }
+  ],
+  build(p, ctx) {
+    const leafCount = p.leaves === 'Dubbel' ? 2 : 1, leafWidth = p.width / leafCount;
+    const spindles = (Math.ceil(leafWidth / 110) + 1) * leafCount;
+    const kader = parseFramedChoice(p.kaderProfile), spindleDims = dimsFromLabel('squareBar', p.spindleSize);
+    const materials = [
+      sizedBar(ctx, kader.profile, p.material, 2 * leafCount, leafWidth, kader.dims, 'Kader, boven/onder per vleugel'),
+      sizedBar(ctx, kader.profile, p.material, 2 * leafCount, p.height, kader.dims, 'Kader, stijlen per vleugel'),
+      sizedBar(ctx, 'squareBar', p.material, spindles, p.height - 80, spindleDims, 'Vulling'),
+      hardware(ctx, 'Scharnieren en slot')
+    ];
+    const w = [lassen(ctx, (4 * leafCount) * 0.15 + spindles * 0.06), voorrijden(ctx)];
+    if (p.mount) w.push(montage(ctx, 2 + p.width / 1000 * 0.3));
+    if (p.finish === 'Gepoedercoat') w.push(poedercoat(ctx, (p.width / 1000) * (p.height / 1000)));
+    return { materials, work: w, confidence: 'indicatie' };
+  }
+},
+{
+  id: 'schuifpoort', group: 'Poort / deur / afscheiding', name: 'Schuifpoort', icon: 'fence',
+  params: [
+    { id: 'width', label: 'Doorgangsbreedte', unit: 'mm', type: 'number', min: 1500, max: 8000, step: 100, default: 4000 },
+    { id: 'height', label: 'Hoogte', unit: 'mm', type: 'number', min: 1000, max: 2000, step: 50, default: 1500 },
+    materialChoice('s235'),
+    framedChoice('kaderProfile', 'Kaderprofiel', ['Koker 60×40×3', 'Koker 60×40×4', 'Koker 80×40×4', 'Hoeklijn 50×50×5', 'Hoeklijn 60×60×6', 'Hoeklijn 80×80×8'], 'Koker 60×40×3'),
+    sizeChoice('spindleSize', 'Vulling (spijlmaat)', 'squareBar', [12]),
+    { id: 'finish', label: 'Afwerking', type: 'choice', options: ['Blank', 'Gemenied', 'Verzinkt', 'Gepoedercoat'], default: 'Gepoedercoat' },
+    { id: 'mount', label: 'Montage door ons', type: 'boolean', default: true }
+  ],
+  build(p, ctx) {
+    const spindles = Math.ceil(p.width / 110) + 1;
+    const kader = parseFramedChoice(p.kaderProfile), spindleDims = dimsFromLabel('squareBar', p.spindleSize);
+    const materials = [
+      sizedBar(ctx, kader.profile, p.material, 2, p.width * 1.15, kader.dims, 'Kader boven/onder, +15% overlap voor rijrail'),
+      sizedBar(ctx, kader.profile, p.material, 2, p.height, kader.dims, 'Kader stijlen'),
+      sizedBar(ctx, 'squareBar', p.material, spindles, p.height - 80, spindleDims, 'Vulling'),
+      hardware(ctx, 'Rijrail en loopwielen')
+    ];
+    const w = [lassen(ctx, 4 * 0.2 + spindles * 0.06), voorrijden(ctx)];
+    if (p.mount) w.push(montage(ctx, 2 + p.width / 1000 * 0.5, 'Montage (rail ingraven/bevestigen)'));
+    if (p.finish === 'Gepoedercoat') w.push(poedercoat(ctx, (p.width / 1000) * (p.height / 1000)));
+    return { materials, work: w, confidence: 'indicatie' };
+  }
+},
+{
+  id: 'stalen-deur', group: 'Poort / deur / afscheiding', name: 'Stalen deur/kozijn', icon: 'fence',
+  params: [
+    { id: 'width', label: 'Breedte', unit: 'mm', type: 'number', min: 700, max: 1200, step: 10, default: 900 },
+    { id: 'height', label: 'Hoogte', unit: 'mm', type: 'number', min: 1900, max: 2400, step: 10, default: 2100 },
+    materialChoice('s235'),
+    framedChoice('kaderProfile', 'Kozijnprofiel', ['Koker 40×3', 'Koker 40×4', 'Koker 50×3', 'Hoeklijn 40×4', 'Hoeklijn 50×5'], 'Koker 40×3'),
+    { id: 'frameOnly', label: 'Alleen kozijn (geen deurblad)', type: 'boolean', default: false },
+    { id: 'doorThickness', label: 'Plaatdikte deurblad', unit: 'mm', type: 'choice', options: ['1.5', '2', '3'], default: '2' },
+    { id: 'finish', label: 'Afwerking', type: 'choice', options: ['Blank', 'Gemenied', 'Verzinkt', 'Gepoedercoat'], default: 'Gepoedercoat' },
+    { id: 'mount', label: 'Montage door ons', type: 'boolean', default: true }
+  ],
+  build(p, ctx) {
+    const kader = parseFramedChoice(p.kaderProfile);
+    const materials = [
+      sizedBar(ctx, kader.profile, p.material, 2, p.width, kader.dims, 'Kozijn, boven/onder'),
+      sizedBar(ctx, kader.profile, p.material, 2, p.height, kader.dims, 'Kozijn, stijlen')
+    ];
+    if (!p.frameOnly) {
+      materials.push(plateLine(ctx, p.material, p.height - 20, p.width - 20, parseFloat(p.doorThickness), 'Deurblad'));
+      materials.push(hardware(ctx, 'Scharnieren en cilinderslot'));
+    }
+    const w = [lassen(ctx, 4 * 0.15), voorrijden(ctx)];
+    if (p.mount) w.push(montage(ctx, 2));
+    if (p.finish === 'Gepoedercoat') w.push(poedercoat(ctx, (p.width / 1000) * (p.height / 1000)));
+    return { materials, work: w, confidence: 'indicatie' };
+  }
+},
+{
+  id: 'maatwerk', group: 'Maatwerk / reparatie', name: 'Maatwerk / reparatie', icon: 'tools', always: true,
+  params: [
+    { id: 'omschrijving', label: 'Wat ga je maken of herstellen?', type: 'text', default: '' },
+    { id: 'material', label: 'Materiaalsoort', type: 'choice', options: ['s235', 's355', 'rvs304', 'rvs316', 'alu', 'messing', 'koper'], default: 's235' },
+    { id: 'kg', label: 'Geschat materiaalgewicht', unit: 'kg', type: 'number', min: 0, max: 2000, step: 5, default: 50 },
+    { id: 'uren', label: 'Geschatte uren', unit: 'uur', type: 'number', min: 0, max: 200, step: 0.5, default: 4 }
+  ],
+  build(p, ctx) {
+    const density = ctx.densities[p.material] || 7850;
+    const widthM = 0.5, tM = 0.01, volumeM3 = Math.max(0.0001, p.kg) / density;
+    const lengthMm = Math.max(1, Math.round((volumeM3 / (widthM * tM)) * 1000));
+    const materials = [plateLine(ctx, p.material, lengthMm, widthM * 1000, tM * 1000,
+      'Geschat materiaalgewicht (maatwerk), geen echte plaatmaat — ' + p.kg + ' kg ' + ctx.materialNames[p.material])];
+    const w = [
+      work(ctx, { name: p.omschrijving || 'Maatwerk', quantity: Math.max(0.25, p.uren), rate: ctx.hourlyRate, category: 'Fabricage' }),
+      voorrijden(ctx)
+    ];
+    return { materials, work: w, confidence: 'indicatie' };
+  }
+}
+];
+
+/* Snelprijs-funnel: nieuw instappunt vóór renderCostPage(). Bouwt geen eigen rekenkern —
+   levert alleen materiaal-/werkregels aan calculateMaterialList()/calculateSale() (ongewijzigd)
+   en zet na stap 4 een normale costState/costState.job op zodat de bestaande tabs (Opname/
+   Materiaal/Werk/Prijs) gewoon doorwerken. Zie intake/README.md voor het volledige contract. */
+
+/* Live 2D-schets bij de snelprijs-parameters: een simpele lijntekening (elevatie) per sjabloon-
+   familie, in echte mm, die live meebeweegt met elke parameterwijziging. Bewust géén exacte maat-
+   aanduidingen in de SVG zelf (fragiele positionering); de live cijfers staan al in de velden
+   ernaast. Puur: elke schematicFn(params) -> {width, height, lines:[{x1,y1,x2,y2}]} in mm, los
+   van schaal/weergave (die zit in intakeRenderSchematicSvg, wél in de UI-laag). */
+
+function fenceSchematic(lengthMm, heightMm, spacingMm) {
+  const w = Math.max(1, lengthMm), h = Math.max(1, heightMm), sp = Math.max(10, spacingMm);
+  const lines = [{ x1: 0, y1: 0, x2: w, y2: 0 }, { x1: 0, y1: h, x2: w, y2: h }];
+  const count = Math.max(2, Math.round(w / sp) + 1);
+  for (let i = 0; i < count; i++) { const x = Math.min(w, i * sp); lines.push({ x1: x, y1: 0, x2: x, y2: h }); }
+  return { width: w, height: h, lines };
+}
+function gateSchematic(widthMm, heightMm, leaves) {
+  const w = Math.max(1, widthMm), h = Math.max(1, heightMm), n = Math.max(1, leaves);
+  const leafW = w / n, gap = w * 0.02;
+  const lines = [];
+  for (let L = 0; L < n; L++) {
+    const x0 = L * leafW + (L > 0 ? gap / 2 : 0), x1 = (L + 1) * leafW - (L < n - 1 ? gap / 2 : 0);
+    lines.push({ x1: x0, y1: 0, x2: x1, y2: 0 }, { x1: x0, y1: h, x2: x1, y2: h }, { x1: x0, y1: 0, x2: x0, y2: h }, { x1: x1, y1: 0, x2: x1, y2: h });
+    const spindles = Math.max(2, Math.round((x1 - x0) / 110));
+    for (let i = 1; i < spindles; i++) { const x = x0 + (x1 - x0) * i / spindles; lines.push({ x1: x, y1: 8, x2: x, y2: h - 8 }); }
+  }
+  return { width: w, height: h, lines };
+}
+function stairSchematic(riseMm) {
+  const rise = Math.max(1, riseMm), treads = Math.max(2, Math.round(rise / 180)), stepH = rise / treads, stepD = 250;
+  const lines = [];
+  let x = 0, y = 0;
+  for (let i = 0; i < treads; i++) { lines.push({ x1: x, y1: y, x2: x, y2: y + stepH }); y += stepH; lines.push({ x1: x, y1: y, x2: x + stepD, y2: y }); x += stepD; }
+  return { width: x, height: rise, lines };
+}
+function platformSchematic(widthMm, depthMm, heightMm) {
+  const d = Math.max(1, depthMm), h = Math.max(1, heightMm), deckT = 30;
+  return {
+    width: d, height: h + deckT, lines: [
+      { x1: 0, y1: h, x2: d, y2: h }, { x1: 0, y1: h + deckT, x2: d, y2: h + deckT },
+      { x1: 0, y1: h, x2: 0, y2: h + deckT }, { x1: d, y1: h, x2: d, y2: h + deckT },
+      { x1: 20, y1: 0, x2: 20, y2: h }, { x1: d - 20, y1: 0, x2: d - 20, y2: h }
+    ]
+  };
+}
+function beamSchematic(spanMm) {
+  const w = Math.max(1, spanMm), h = Math.max(10, w / 20);
+  return { width: w, height: h, lines: [{ x1: 0, y1: 0, x2: w, y2: 0 }, { x1: 0, y1: h, x2: w, y2: h }, { x1: 0, y1: 0, x2: 0, y2: h }, { x1: w, y1: 0, x2: w, y2: h }] };
+}
+function frameSchematic(widthMm, heightMm) {
+  const w = Math.max(1, widthMm), h = Math.max(1, heightMm);
+  return { width: w, height: h, lines: [{ x1: 0, y1: 0, x2: 0, y2: h }, { x1: w, y1: 0, x2: w, y2: h }, { x1: 0, y1: h, x2: w, y2: h }] };
+}
+function tableSchematic(widthMm, heightMm) {
+  const w = Math.max(1, widthMm), h = Math.max(1, heightMm);
+  return { width: w, height: h, lines: [{ x1: 0, y1: h, x2: w, y2: h }, { x1: 10, y1: 0, x2: 10, y2: h }, { x1: w - 10, y1: 0, x2: w - 10, y2: h }] };
+}
+// Eén dispatcher per sjabloon-id -> geen schets voor maatwerk (geen vaste vorm om te tekenen).
+function intakeSchematicFor(templateId, p) {
+  switch (templateId) {
+    case 'hekwerk-spijlen': return fenceSchematic(p.length * 1000, p.height, p.spacing);
+    case 'balustrade-handregel': return fenceSchematic(p.length * 1000, p.height, p.postSpacing);
+    case 'trapleuning': return fenceSchematic(p.length * 1000 / Math.cos(p.angle * Math.PI / 180), p.height, 900);
+    case 'draaipoort': return gateSchematic(p.width, p.height, p.leaves === 'Dubbel' ? 2 : 1);
+    case 'schuifpoort': return gateSchematic(p.width, p.height, 1);
+    case 'stalen-deur': return gateSchematic(p.width, p.height, 1);
+    case 'trap-recht': return stairSchematic(p.rise);
+    case 'bordes-leuning': return platformSchematic(p.width, p.depth, p.height);
+    case 'draagbalk': return beamSchematic(p.span * 1000);
+    case 'kolom-balk-frame': return frameSchematic(p.width * 1000, p.height * 1000);
+    case 'werktafel-frame': return tableSchematic(p.width, p.height);
+    default: return null;
+  }
+}
+// Past de mm-coördinaten in een viewBox met marge, en spiegelt de y-as (bouwkundig: omhoog is
+// positief; SVG: omlaag is positief) — puur, en dus apart testbaar van de SVG-stringopbouw.
+function schematicFit(width, height, viewW, viewH, pad) {
+  const availW = Math.max(1, viewW - 2 * pad), availH = Math.max(1, viewH - 2 * pad);
+  const scale = Math.min(availW / Math.max(1, width), availH / Math.max(1, height));
+  return { scale, offsetX: (viewW - width * scale) / 2, offsetY: (viewH - height * scale) / 2 };
+}
+function intakeSchematicSvg(schematic, viewW, viewH) {
+  if (!schematic || !schematic.lines.length) return '';
+  viewW = viewW || 320; viewH = viewH || 180;
+  const fit = schematicFit(schematic.width, schematic.height, viewW, viewH, 20);
+  const tx = x => Math.round((x * fit.scale + fit.offsetX) * 10) / 10;
+  const ty = y => Math.round((viewH - (y * fit.scale + fit.offsetY)) * 10) / 10;
+  const lines = schematic.lines.map(l => '<line x1="' + tx(l.x1) + '" y1="' + ty(l.y1) + '" x2="' + tx(l.x2) + '" y2="' + ty(l.y2) + '" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="round"/>').join('');
+  return '<svg viewBox="0 0 ' + viewW + ' ' + viewH + '" class="intake-schematic-svg" role="img" aria-label="Schematische weergave, geen exacte maatvoering">' + lines + '</svg>';
+}
+
+/* ---------- Pure helpers (los van DOM, apart core-getest) ---------- */
+
+const INTAKE_LEVELS = { indicatie: 0, opname: 1, offerte: 2 };
+function intakeBandFor(level, rates) {
+  return { indicatie: (rates.bandIndicatie ?? 15) / 100, opname: (rates.bandOpname ?? 7) / 100, offerte: 0 }[level] ?? 0.15;
+}
+// Automatisch niveau uit de klusdata; kan handmatig omhoog maar nooit stilzwijgend omlaag.
+function intakeAutoLevel(job, materialsComplete) {
+  const hasOpname = (job.measurements && job.measurements.length > 0) || (job.photos && job.photos.length > 0);
+  if (materialsComplete) return 'offerte';
+  if (hasOpname) return 'opname';
+  return 'indicatie';
+}
+function intakeResolveLevel(autoLevel, manualLevel) {
+  if (manualLevel && INTAKE_LEVELS[manualLevel] > INTAKE_LEVELS[autoLevel]) return manualLevel;
+  return autoLevel;
+}
+function intakePriceBand(saleCents, level, rates) {
+  const b = intakeBandFor(level, rates);
+  const amount = saleCents / 100;
+  return { low: amount * (1 - b), high: amount * (1 + b), single: b === 0, b };
+}
+function intakeBandCopy(projectName, band, level, euroFn, fmtFn) {
+  const prijs = band.single
+    ? euroFn(band.low)
+    : euroFn(band.low) + ' – ' + euroFn(band.high);
+  const voorbehoud = level === 'offerte' ? '' : ' Onder voorbehoud van opname.';
+  return 'Indicatie voor ' + (projectName || 'je klus') + ': ' + prijs + ' excl. btw.' + voorbehoud;
+}
+// Materiaalregels zijn "compleet" (er is een prijs, funnel/klantweergave niet geblokkeerd)
+// zodra elke regel een resultaat heeft — inclusief de algemene €/kg-vuistregel die de
+// sjablonen gebruiken. Dat is bewust een lage lat: precies genoeg om snel een indicatie te
+// tonen, zie intake/README.md.
+function intakeMaterialsComplete(materialRows) {
+  return materialRows.length > 0 && materialRows.every(r => !r.result.errors && r.result.lineCents !== null);
+}
+// Materiaalregels zijn "bevestigd" (offerteniveau, bandbreedte = 0) alleen als de prijs
+// vastligt: een eigen ingevulde prijs, of een exacte catalogusmatch. Een regel die alleen
+// via de algemene €/kg-vuistregel of een familie-schatting prijst telt hier NIET mee — dat
+// is precies het verschil tussen "we kunnen een indicatie geven" en "dit bedrag staat vast".
+function intakeMaterialsConfirmed(materialRows) {
+  return materialRows.length > 0 && materialRows.every(r => !r.result.errors && r.result.lineCents !== null &&
+    (r.line.priceOrigin === 'user' || r.result.priceSource === 'Exact catalogusartikel'));
+}
+function intakeWorkTotalCents(work) {
+  return work.reduce((sum, w) => sum + Math.round(w.quantity * w.rate * 100), 0);
+}
+// Vergelijkt twee materiaaltotalen (in centen) en geeft een percentage-diff voor eigen
+// producten ("materiaal +4% t.o.v. vorige keer"). null als er geen vorig totaal is.
+function intakePriceDiff(previousCents, currentCents) {
+  if (!Number.isFinite(previousCents) || previousCents <= 0) return null;
+  return Math.round(((currentCents - previousCents) / previousCents) * 1000) / 10;
+}
+// Past handmatige ureninschattingen toe op de door het sjabloon berekende werkregels (matcht op
+// regelnaam — binnen één sjabloon zijn die namen vast). Een regel zonder override behoudt zijn
+// berekende hoeveelheid; zo blijft "harmonica met aanpasbare ureninschatting" een kwestie van
+// alleen de afwijkingen bewaren, niet de hele werkregelset overschrijven.
+function intakeApplyWorkOverrides(work, overrides) {
+  if (!overrides) return work;
+  return work.map(w => Number.isFinite(overrides[w.name]) ? Object.assign({}, w, { quantity: overrides[w.name] }) : w);
+}
+
+/* ---------- Toast (ontbrak nog als herbruikbare helper — .toast-CSS bestond al, alleen
+   inline gebruikt in removeMaterial()) ---------- */
+function showToast(message) {
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+  const t = document.createElement('div');
+  t.className = 'toast no-print';
+  t.setAttribute('role', 'status');
+  t.textContent = message;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+/* ---------- Instellingen (tarieven) ---------- */
+
+const INTAKE_RATES_KEY = 'werkbank.v2.intakeRates';
+const INTAKE_DRAFT_KEY = 'werkbank.v2.intake.draft';
+const TEMPLATE_STORE_KEY = 'werkbank.v2.templates';
+function intakeRateDefaults() { return { montageUurtarief: 55, voorrijkosten: 45, toeslagPoedercoatM2: 18, bandIndicatie: 15, bandOpname: 7 }; }
+function intakeRates() { return Object.assign(intakeRateDefaults(), safeGet(INTAKE_RATES_KEY, {})); }
+function addIntakeRatesSettingsCard() {
+  const settings = document.getElementById('design-settings');
+  if (!settings || document.getElementById('intake-rates-save')) return;
+  const rates = intakeRates();
+  const card = document.createElement('div');
+  card.className = 'card';
+  const fields = [
+    ['montageUurtarief', 'Montage-uurtarief', '€/uur'],
+    ['voorrijkosten', 'Voorrijkosten', '€ per rit'],
+    ['toeslagPoedercoatM2', 'Poedercoat-toeslag', '€/m²'],
+    ['bandIndicatie', 'Bandbreedte bij indicatie', '%'],
+    ['bandOpname', 'Bandbreedte na opname', '%']
+  ];
+  card.innerHTML = '<h2>Snelprijs-tarieven</h2><p class="muted">Gebruikt door de sjablonen in de snelprijs-funnel. Standaardwaarde — pas aan naar je eigen tarief.</p><div class="job-grid">' +
+    fields.map(([key, label, unit]) => '<div><label for="ir-' + key + '">' + esc(label) + '</label><input id="ir-' + key + '" type="text" inputmode="decimal" value="' + esc(rates[key]) + '"><span class="hint">' + esc(unit) + '</span></div>').join('') +
+    '</div><button class="act" id="intake-rates-save">Tarieven bewaren</button><p id="intake-rates-status" role="status" class="job-status"></p>';
+  settings.appendChild(card);
+  $('intake-rates-save').onclick = () => {
+    const next = {};
+    for (const [key] of fields) next[key] = strictNumber($('ir-' + key).value) || 0;
+    safeSet(INTAKE_RATES_KEY, next);
+    $('intake-rates-status').textContent = 'Bewaard.';
+  };
+}
+
+/* ---------- Runtime ctx voor sjablonen ---------- */
+
+function intakeCtx() {
+  const rates = intakeRates();
+  return {
+    uid, hourlyRate: COST_DEFAULTS.hourlyRate, montageRate: rates.montageUurtarief,
+    voorrijkosten: rates.voorrijkosten, poedercoatM2: rates.toeslagPoedercoatM2,
+    sections: SECTIONS, densities: Object.fromEntries(Object.entries(MATERIALS).map(([k, v]) => [k, v.density])),
+    materialNames: Object.fromEntries(Object.entries(MATERIALS).map(([k, v]) => [k, v.name]))
+  };
+}
+function intakeOverheadMargin() { return { overhead: COST_DEFAULTS.overhead, margin: intakeState ? intakeState.margin : COST_DEFAULTS.margin }; }
+
+/* ---------- State ---------- */
+
+let intakeState = null, intakeDraftTimer = null, intakeRecalcTimer = null;
+function intakeDefaultState() {
+  return {
+    step: 1, templateId: null, ownProductId: null, params: {}, margin: COST_DEFAULTS.overhead ? COST_DEFAULTS.margin : 20,
+    manualLevel: null, photos: [], measurements: [], customerName: '', customerPhone: '', customerEmail: '', workOverrides: {}
+  };
+}
+function activeTemplate() { return TEMPLATES.find(t => t.id === intakeState.templateId) || null; }
+function intakeParamsWithDefaults(tpl, saved) {
+  const p = {};
+  for (const spec of tpl.params) p[spec.id] = (saved && saved[spec.id] !== undefined) ? saved[spec.id] : spec.default;
+  return p;
+}
+function intakeBuild() {
+  const tpl = activeTemplate();
+  if (!tpl) return { materials: [], work: [] };
+  return tpl.build(intakeState.params, intakeCtx());
+}
+function intakePersistDraft() {
+  clearTimeout(intakeDraftTimer);
+  if (!intakeState) return;
+  safeSet(INTAKE_DRAFT_KEY, intakeState);
+}
+function intakeQueueDraft() { clearTimeout(intakeDraftTimer); intakeDraftTimer = setTimeout(intakePersistDraft, 450); }
+
+/* ---------- Overlay & rendering ---------- */
+
+function ensureIntakeOverlay() {
+  let el = document.getElementById('intake-overlay');
+  if (el) return el;
+  el = document.createElement('div');
+  el.className = 'intake-backdrop editor-backdrop';
+  el.id = 'intake-overlay';
+  el.hidden = true;
+  el.innerHTML = '<div class="intake-funnel" role="dialog" aria-modal="true" aria-label="Snelprijs">' +
+    '<div class="intake-head"><button class="ghost" id="intake-back" aria-label="Vorige stap" hidden>← Terug</button><h2 id="intake-title">Snelprijs</h2><button class="ghost" id="intake-close">Sluiten</button></div>' +
+    '<div class="intake-progress">Stap <span id="intake-step-num">1</span> van 4</div>' +
+    '<div class="intake-progress-bar"><span id="intake-progress-fill" style="width:25%"></span></div>' +
+    '<div class="intake-body" id="intake-body"></div>' +
+    '<div class="intake-bar" id="intake-bar" aria-live="polite"></div></div>';
+  document.body.appendChild(el);
+  $('intake-close').onclick = closeIntakeFunnel;
+  $('intake-back').onclick = intakeGoBack;
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeIntakeFunnel(); return; }
+    if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); intakeGoStep(4); return; }
+    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON') {
+      e.preventDefault(); intakeAdvance();
+    }
+  });
+  return el;
+}
+function openIntakeFunnel() {
+  intakeState = intakeDefaultState();
+  const raw = storageAdapter.read(INTAKE_DRAFT_KEY, null);
+  if (raw.ok && raw.value && raw.value.templateId) intakeState = Object.assign(intakeDefaultState(), raw.value);
+  ensureIntakeOverlay().hidden = false;
+  document.body.classList.add('dialog-open');
+  renderIntakeStep();
+}
+function closeIntakeFunnel() {
+  const el = document.getElementById('intake-overlay');
+  if (el) el.hidden = true;
+  document.body.classList.remove('dialog-open');
+}
+function intakeGoStep(n) { intakeState.step = n; renderIntakeStep(); intakeQueueDraft(); }
+function intakeAdvance() {
+  const desktop = window.matchMedia('(min-width:1024px)').matches;
+  if (intakeState.step === 1) return; // stap 1 gaat verder via kaartkeuze, niet Enter
+  if (intakeState.step === 2) return intakeGoStep(desktop ? 4 : 3);
+  if (intakeState.step === 3) return intakeGoStep(4);
+}
+function intakeGoBack() {
+  if (intakeState.step <= 1) return;
+  const desktop = window.matchMedia('(min-width:1024px)').matches;
+  if (intakeState.step === 4) { intakeGoStep(3); return; }
+  if (!desktop && intakeState.step === 3) { intakeGoStep(2); return; }
+  if (!confirm('Terug naar het overzicht? Je huidige maten en keuzes voor dit sjabloon gaan dan verloren.')) return;
+  intakeState.templateId = null; intakeState.params = {}; intakeState.workOverrides = {};
+  intakeGoStep(1);
+}
+
+function renderIntakeStep() {
+  $('intake-step-num').textContent = String(Math.min(intakeState.step, 4));
+  $('intake-back').hidden = intakeState.step <= 1;
+  $('intake-progress-fill').style.width = (intakeState.step / 4 * 100) + '%';
+  const body = $('intake-body');
+  if (intakeState.step === 1) { body.innerHTML = intakeStep1Html(); bindIntakeStep1(); $('intake-bar').innerHTML = ''; }
+  else if (intakeState.step === 2 || intakeState.step === 3) { renderIntakeStep23(body); }
+  else { body.innerHTML = intakeStep4Html(); bindIntakeStep4(); $('intake-bar').innerHTML = ''; }
+  const first = body.querySelector('input,button,select,textarea');
+  if (first) first.focus({ preventScroll: true });
+}
+
+function intakeStep1Html() {
+  const own = safeGet(TEMPLATE_STORE_KEY, []).filter(x => x && x.baseTemplateId);
+  const groups = {};
+  for (const t of TEMPLATES) (groups[t.group] = groups[t.group] || []).push(t);
+  let html = '';
+  if (own.length) {
+    html += '<div class="intake-group-label">Jouw producten</div><div class="intake-cards">' +
+      own.map(o => '<button class="intake-card" data-own="' + esc(o.id) + '">' + uiIcon('document') +
+        '<span><b>' + esc(o.name) + '</b><small>' + esc(o.customerTag || TEMPLATES.find(t => t.id === o.baseTemplateId)?.name || '') + '</small></span></button>').join('') + '</div>';
+  }
+  for (const [group, list] of Object.entries(groups)) {
+    if (list.every(t => t.always)) continue;
+    html += '<div class="intake-group-label">' + esc(group) + '</div><div class="intake-cards">' +
+      list.filter(t => !t.always).map(t => '<button class="intake-card" data-template="' + t.id + '">' + uiIcon(t.icon) +
+        '<span><b>' + esc(t.name) + '</b><small>Sjabloon, ' + t.params.length + ' parameters</small></span></button>').join('') + '</div>';
+  }
+  const maatwerk = TEMPLATES.find(t => t.id === 'maatwerk');
+  html += '<div class="intake-group-label">' + esc(maatwerk.group) + '</div><div class="intake-cards"><button class="intake-card" data-template="maatwerk">' +
+    uiIcon('tools') + '<span><b>Maatwerk / reparatie</b><small>Vrije omschrijving, geschat gewicht en uren</small></span></button></div>';
+  return html;
+}
+function bindIntakeStep1() {
+  document.querySelectorAll('[data-template]').forEach(b => b.onclick = () => {
+    const tpl = TEMPLATES.find(t => t.id === b.dataset.template);
+    intakeState.templateId = tpl.id; intakeState.ownProductId = null;
+    intakeState.params = intakeParamsWithDefaults(tpl, null); intakeState.workOverrides = {};
+    intakeGoStep(2);
+  });
+  document.querySelectorAll('[data-own]').forEach(b => b.onclick = () => {
+    const own = safeGet(TEMPLATE_STORE_KEY, []).find(x => x.id === b.dataset.own);
+    const tpl = TEMPLATES.find(t => t.id === own.baseTemplateId);
+    intakeState.templateId = tpl.id; intakeState.ownProductId = own.id;
+    intakeState.params = intakeParamsWithDefaults(tpl, own.params); intakeState.workOverrides = Object.assign({}, own.workOverrides);
+    intakeGoStep(2);
+  });
+}
+
+function intakeFieldHtml(spec, value) {
+  if (spec.type === 'boolean') {
+    return '<div class="intake-field intake-toggle"><label for="ip-' + spec.id + '">' + esc(spec.label) + '</label><input id="ip-' + spec.id + '" type="checkbox" ' + (value ? 'checked' : '') + '></div>';
+  }
+  if (spec.type === 'choice') {
+    return '<div class="intake-field"><label>' + esc(spec.label) + '</label><div class="intake-choice-row" data-choice="' + spec.id + '">' +
+      spec.options.map(o => '<button type="button" aria-pressed="' + (o === value) + '" data-value="' + esc(o) + '">' + esc(o) + '</button>').join('') + '</div></div>';
+  }
+  if (spec.type === 'text') {
+    return '<div class="intake-field"><label for="ip-' + spec.id + '">' + esc(spec.label) + '</label><textarea id="ip-' + spec.id + '">' + esc(value || '') + '</textarea></div>';
+  }
+  return '<div class="intake-field"><label for="ip-' + spec.id + '">' + esc(spec.label) + '</label><div class="intake-stepper">' +
+    '<button type="button" data-step="-1" aria-label="Minder">−</button>' +
+    '<input id="ip-' + spec.id + '" type="text" inputmode="decimal" class="num" value="' + esc(value) + '">' +
+    (spec.unit ? '<span>' + esc(spec.unit) + '</span>' : '') +
+    '<button type="button" data-step="1" aria-label="Meer">+</button></div></div>';
+}
+function bindIntakeField(root, spec) {
+  if (spec.type === 'boolean') {
+    root.querySelector('#ip-' + spec.id).onchange = e => { intakeState.params[spec.id] = e.target.checked; intakeRecalcSoon(); };
+  } else if (spec.type === 'choice') {
+    root.querySelectorAll('[data-choice="' + spec.id + '"] button').forEach(b => b.onclick = () => {
+      intakeState.params[spec.id] = b.dataset.value;
+      root.querySelectorAll('[data-choice="' + spec.id + '"] button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      intakeRecalcSoon();
+    });
+  } else if (spec.type === 'text') {
+    root.querySelector('#ip-' + spec.id).oninput = e => { intakeState.params[spec.id] = e.target.value; intakeQueueDraft(); };
+  } else {
+    const input = root.querySelector('#ip-' + spec.id);
+    const clampStep = delta => {
+      const v = strictNumber(input.value) || 0;
+      const next = Math.min(spec.max ?? Infinity, Math.max(spec.min ?? -Infinity, Math.round((v + delta * spec.step) / spec.step) * spec.step));
+      input.value = String(Math.round(next * 1000) / 1000);
+      intakeState.params[spec.id] = strictNumber(input.value);
+      intakeRecalcSoon();
+    };
+    root.querySelectorAll('.intake-stepper button[data-step]').forEach(b => {
+      if (b.closest('.intake-field').querySelector('input') !== input) return;
+      b.onclick = () => clampStep(Number(b.dataset.step));
+    });
+    input.oninput = () => { intakeState.params[spec.id] = strictNumber(input.value); intakeRecalcSoon(); };
+  }
+}
+
+function renderIntakeStep23(body) {
+  const tpl = activeTemplate();
+  const desktop = window.matchMedia('(min-width:1024px)').matches;
+  const showParams = desktop || intakeState.step === 2;
+  const showPrice = desktop || intakeState.step === 3;
+  let html = '<div class="intake-step23">';
+  if (showParams) {
+    html += '<div><h3>' + esc(tpl.name) + '</h3><div id="intake-schematic"></div><div class="intake-params">' + tpl.params.map(s => intakeFieldHtml(s, intakeState.params[s.id])).join('') + '</div>' +
+      '<label for="intake-photo-input" class="hint" style="display:block;margin-top:14px">Foto of schets toevoegen (optioneel)</label>' +
+      '<input id="intake-photo-input" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple>' +
+      '<p id="intake-photo-feedback" class="photo-loading" role="status"></p><div id="intake-photos" class="job-photo-grid"></div></div>';
+  }
+  if (showPrice) html += '<div class="intake-step23-price" id="intake-price-panel"></div>';
+  html += '</div>';
+  body.innerHTML = html;
+  if (showParams) {
+    for (const spec of tpl.params) bindIntakeField(body, spec);
+    $('intake-photo-input').onchange = intakeAddPhotos;
+    intakeRenderPhotos();
+    intakeRenderSchematic();
+  }
+  if (showPrice) intakeRenderPricePanel();
+  intakeRefreshBar();
+}
+// Live 2D-schets: herbouwt de SVG voor het actieve sjabloon+parameters. Geen-op als het sjabloon
+// geen vaste vorm heeft (maatwerk) of het schetsvak niet in de DOM zit (bv. stap 1/4).
+function intakeRenderSchematic() {
+  const el = document.getElementById('intake-schematic');
+  if (!el) return;
+  const schematic = intakeSchematicFor(intakeState.templateId, intakeState.params);
+  el.innerHTML = schematic ? intakeSchematicSvg(schematic, 320, 180) : '';
+  el.hidden = !schematic;
+}
+// Herbouwt de onderste prijsbalk (bedrag + niveau + volgende-knop) vanaf de huidige state.
+// Wordt na elke wijziging opnieuw aangeroepen (recalc, marge, handmatig niveau) zodat de balk
+// nooit een verouderd bedrag toont terwijl het prijspaneel erboven al is bijgewerkt.
+function intakeRefreshBar() {
+  const desktop = window.matchMedia('(min-width:1024px)').matches;
+  $('intake-bar').innerHTML = intakeBarHtml(desktop);
+  bindIntakeBar(desktop);
+}
+function intakeRecalcSoon() {
+  clearTimeout(intakeRecalcTimer);
+  intakeRecalcTimer = setTimeout(() => { intakeRenderPricePanel(); intakeRefreshBar(); intakeRenderSchematic(); intakeQueueDraft(); }, 150);
+}
+function intakePreview() {
+  const raw = intakeBuild();
+  const built = Object.assign({}, raw, { work: intakeApplyWorkOverrides(raw.work, intakeState.workOverrides) });
+  const list = calculateMaterialList(built.materials, 1, getPrices());
+  const workCents = intakeWorkTotalCents(built.work);
+  const om = intakeOverheadMargin();
+  const sale = calculateSale(list.cents + workCents, om.overhead, om.margin);
+  const complete = intakeMaterialsComplete(list.rows);
+  const confirmed = intakeMaterialsConfirmed(list.rows);
+  const auto = intakeAutoLevel({ measurements: intakeState.measurements, photos: intakeState.photos }, confirmed);
+  const level = intakeResolveLevel(auto, intakeState.manualLevel);
+  const rates = intakeRates();
+  return { built, list, sale, complete, level, rates };
+}
+function intakeRenderPricePanel() {
+  const panel = document.getElementById('intake-price-panel');
+  if (!panel) return;
+  const wasOpen = document.getElementById('intake-breakdown') ? document.getElementById('intake-breakdown').open : false;
+  const { built, list, sale, level, rates } = intakePreview();
+  if (sale.error) { panel.innerHTML = '<div class="intake-price-panel"><p class="err">' + esc(sale.error) + '</p></div>'; return; }
+  const band = intakePriceBand(sale.saleCents, level, rates);
+  const tone = { indicatie: 'neutral', opname: 'info', offerte: 'success' }[level];
+  const label = { indicatie: 'Indicatie', opname: 'Na opname', offerte: 'Offerte' }[level];
+  panel.innerHTML = '<div class="intake-price-panel">' +
+    '<div class="intake-level-row"><span class="fase-badge" data-tone="' + tone + '"><span class="fase-dot"></span>' + label + '</span></div>' +
+    '<div class="intake-price-value" id="intake-price-value">' + (band.single ? euro(band.low) : euro(band.low) + ' – ' + euro(band.high)) + '</div>' +
+    '<div class="intake-price-sub">Verkoopprijs excl. btw' + (band.single ? '' : ' · bandbreedte ±' + Math.round(band.b * 100) + '%') + '</div>' +
+    intakeBreakdownHtml(list, built.work, wasOpen) +
+    '<div class="intake-quick-toggles">' + intakeQuickToggleHtml() + '</div>' +
+    (band.single ? '' : '<button class="ghost" id="intake-level-up" type="button">Zekerheid handmatig verhogen</button>') +
+    '<div class="intake-copy-zin" id="intake-copy-zin"></div>' +
+    '<button class="ghost" id="intake-copy-btn" type="button">Kopieer prijszin</button>' +
+    '</div>';
+  const valueEl = $('intake-price-value');
+  valueEl.classList.add('intake-flash');
+  requestAnimationFrame(() => valueEl.classList.remove('intake-flash'));
+  $('intake-copy-zin').textContent = intakeBandCopy(costState && costState.project, band, level, euro, fmt);
+  $('intake-copy-btn').onclick = () => {
+    const text = intakeBandCopy(intakeState.customerName ? intakeState.customerName + ' — snelprijs' : 'je klus', band, level, euro, fmt);
+    (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(
+      () => showToast('Prijszin gekopieerd.'), () => showToast('Kopiëren niet gelukt; selecteer de tekst handmatig.')
+    );
+  };
+  const up = document.getElementById('intake-level-up');
+  if (up) up.onclick = () => {
+    const order = ['indicatie', 'opname', 'offerte'];
+    const next = order[Math.min(order.length - 1, order.indexOf(level) + 1)];
+    intakeState.manualLevel = next; intakeRenderPricePanel(); intakeRefreshBar(); intakeQueueDraft();
+  };
+  bindIntakeQuickToggles();
+  bindIntakeBreakdown();
+}
+// Harmonica "Prijsopbouw ter controle": materiaalregels (met maat/materiaal, precies wat er
+// gekozen is) en werkregels — de ureninschatting is hier per regel aanpasbaar (invoerveld i.p.v.
+// alleen-lezen tekst), de rest blijft ter controle alleen-lezen. Blijft open staan over een
+// recalc heen (wasOpen) zodat bijstellen tijdens het typen niet steeds dichtklapt.
+function intakeBreakdownHtml(list, work, wasOpen) {
+  const materialRows = list.rows.map(row => {
+    const l = row.line, r = row.result;
+    const amount = r.errors || r.lineCents === null ? '—' : euro(r.lineCents / 100);
+    const matName = MATERIALS[l.material] ? MATERIALS[l.material].name : '';
+    const desc = (l.note ? esc(l.note) : esc(matName)) + (l.note && matName ? ' · ' + esc(matName) : '') + ' ' + esc(lineDescription(l));
+    const source = l.catalogArticleId ? ' <small>(catalogusprijs)</small>' : '';
+    return '<div class="line-price"><span>' + desc + source + '</span><strong>' + amount + '</strong></div>';
+  });
+  const workRows = work.map(w => {
+    const amount = euro(w.quantity * w.rate);
+    return '<div class="intake-work-row"><span>' + esc(w.name) + ' <small>(€' + fmt(w.rate) + '/' + esc(w.unit) + ')</small></span>' +
+      '<input type="text" inputmode="decimal" class="num" data-work-name="' + esc(w.name) + '" value="' + esc(w.quantity) + '">' +
+      '<strong>' + amount + '</strong></div>';
+  });
+  return '<div class="material-accordion intake-breakdown"><details id="intake-breakdown"' + (wasOpen ? ' open' : '') + '>' +
+    '<summary>Prijsopbouw <span class="summary-amount">' + euro(list.cents / 100 + intakeWorkTotalCents(work) / 100) + '</span></summary>' +
+    '<div class="accordion-body">' +
+    '<div class="intake-breakdown-group"><h4>Materiaal</h4>' + (materialRows.join('') || '<p class="muted">Geen materiaalregels.</p>') +
+    '<div class="line-price"><span><strong>Materiaal totaal</strong></span><strong>' + euro(list.cents / 100) + '</strong></div></div>' +
+    '<div class="intake-breakdown-group"><h4>Werk en uren <button class="ghost" id="intake-hours-reset" type="button">Herstel schatting</button></h4>' + workRows.join('') +
+    '<div class="line-price"><span><strong>Werk totaal</strong></span><strong>' + euro(intakeWorkTotalCents(work) / 100) + '</strong></div></div>' +
+    '<p class="muted">Kostprijs vóór opslag en marge, ter controle — geen offerte.</p>' +
+    '</div></details></div>';
+}
+function bindIntakeBreakdown() {
+  const root = document.getElementById('intake-price-panel');
+  if (!root) return;
+  root.querySelectorAll('[data-work-name]').forEach(input => {
+    input.onchange = () => {
+      const v = strictNumber(input.value);
+      intakeState.workOverrides = intakeState.workOverrides || {};
+      if (Number.isFinite(v) && v >= 0) intakeState.workOverrides[input.dataset.workName] = v;
+      else delete intakeState.workOverrides[input.dataset.workName];
+      intakeRecalcSoon();
+    };
+  });
+  const reset = document.getElementById('intake-hours-reset');
+  if (reset) reset.onclick = () => {
+    intakeState.workOverrides = {};
+    intakeRenderPricePanel(); intakeRefreshBar(); intakeQueueDraft();
+  };
+}
+function intakeQuickToggleHtml() {
+  const tpl = activeTemplate();
+  const quick = tpl.params.filter(s => s.id === 'finish' || s.id === 'mount');
+  return quick.map(s => intakeFieldHtml(s, intakeState.params[s.id])).join('') +
+    '<div class="intake-field"><label for="intake-margin">Winstmarge</label><div class="intake-stepper">' +
+    '<button type="button" id="intake-margin-down">−</button><input id="intake-margin" type="text" inputmode="decimal" class="num" value="' + esc(intakeState.margin) + '"><span>%</span>' +
+    '<button type="button" id="intake-margin-up">+</button></div></div>';
+}
+function bindIntakeQuickToggles() {
+  const root = document.getElementById('intake-price-panel');
+  if (!root) return;
+  const tpl = activeTemplate();
+  for (const s of tpl.params) if (s.id === 'finish' || s.id === 'mount') bindIntakeField(root, s);
+  const marginInput = document.getElementById('intake-margin');
+  if (!marginInput) return;
+  const setMargin = v => { intakeState.margin = Math.max(0, Math.min(95, v)); marginInput.value = String(intakeState.margin); intakeRecalcSoon(); };
+  marginInput.oninput = () => setMargin(strictNumber(marginInput.value) || 0);
+  $('intake-margin-down').onclick = () => setMargin(intakeState.margin - 1);
+  $('intake-margin-up').onclick = () => setMargin(intakeState.margin + 1);
+}
+async function intakeAddPhotos(e) {
+  const files = Array.from(e.target.files);
+  e.target.disabled = true;
+  $('intake-photo-feedback').textContent = 'Foto’s verwerken…';
+  const errors = [];
+  for (const file of files) {
+    if (intakeState.photos.length >= 6) { errors.push('Maximaal 6 foto’s per klus.'); break; }
+    try { intakeState.photos.push(await compressJobPhoto(file)); } catch (err) { errors.push(err.message); }
+  }
+  intakeRenderPhotos();
+  intakeQueueDraft();
+  intakeRecalcSoon();
+  $('intake-photo-feedback').textContent = errors.join(' ') || 'Foto’s toegevoegd.';
+  e.target.value = ''; e.target.disabled = false;
+}
+function intakeRenderPhotos() {
+  const el = document.getElementById('intake-photos');
+  if (!el) return;
+  el.innerHTML = intakeState.photos.map((p, i) => '<figure><img src="' + p.data + '" alt="' + esc(p.name) + '"><figcaption><button class="ghost" type="button" data-photo-remove="' + i + '">Verwijder foto ' + (i + 1) + '</button></figcaption></figure>').join('');
+  el.querySelectorAll('[data-photo-remove]').forEach(b => b.onclick = () => { intakeState.photos.splice(+b.dataset.photoRemove, 1); intakeRenderPhotos(); intakeQueueDraft(); intakeRecalcSoon(); });
+}
+function intakeBarHtml(desktop) {
+  if (desktop) return '';
+  const { sale, level, rates } = intakePreview();
+  if (sale.error) return '';
+  const band = intakePriceBand(sale.saleCents, level, rates);
+  return '<div class="intake-bar-price"><small>' + { indicatie: 'Indicatie', opname: 'Na opname', offerte: 'Offerte' }[level] + '</small>' +
+    '<strong>' + (band.single ? euro(band.low) : euro(band.low) + '–' + euro(band.high)) + '</strong></div>' +
+    '<button class="act" id="intake-bar-next" type="button">' + (intakeState.step === 2 ? 'Naar prijs' : 'Volgende') + '</button>';
+}
+function bindIntakeBar(desktop) {
+  if (desktop) return;
+  const btn = document.getElementById('intake-bar-next');
+  if (btn) btn.onclick = intakeAdvance;
+}
+
+function intakeStep4Html() {
+  return '<div class="job-panel"><h2>Klantgegevens</h2><p class="muted">Optioneel — mag leeg blijven tot de offerte.</p><div class="job-grid">' +
+    '<div><label for="intake-c-name">Klant / bedrijf</label><input id="intake-c-name" value="' + esc(intakeState.customerName) + '"></div>' +
+    '<div><label for="intake-c-phone">Telefoon</label><input id="intake-c-phone" type="tel" value="' + esc(intakeState.customerPhone) + '"></div>' +
+    '<div class="wide"><label for="intake-c-email">E-mail</label><input id="intake-c-email" type="email" value="' + esc(intakeState.customerEmail) + '"></div></div></div>' +
+    '<div class="intake-nextstep-grid">' +
+    '<button class="ghost" id="intake-next-refine" type="button">Verfijn opname</button>' +
+    '<button class="ghost" id="intake-next-customer" type="button">Klantweergave</button>' +
+    '<button class="ghost" id="intake-next-quote" type="button">Offerte versturen</button>' +
+    '<button class="ghost" id="intake-next-save-own" type="button">Bewaar als eigen product</button></div>';
+}
+function bindIntakeStep4() {
+  $('intake-c-name').oninput = e => { intakeState.customerName = e.target.value; intakeQueueDraft(); };
+  $('intake-c-phone').oninput = e => { intakeState.customerPhone = e.target.value; intakeQueueDraft(); };
+  $('intake-c-email').oninput = e => { intakeState.customerEmail = e.target.value; intakeQueueDraft(); };
+  $('intake-next-refine').onclick = () => intakeFinish('refine');
+  $('intake-next-customer').onclick = () => intakeFinish('customer');
+  $('intake-next-quote').onclick = () => intakeFinish('quote');
+  $('intake-next-save-own').onclick = intakeSaveOwnProduct;
+}
+
+/* ---------- Eigen producten ---------- */
+
+function intakeSaveOwnProduct() {
+  const tpl = activeTemplate();
+  if (!tpl || tpl.id === 'maatwerk') { showToast('Maatwerk kan niet als eigen product worden bewaard.'); return; }
+  const list = safeGet(TEMPLATE_STORE_KEY, []);
+  const { list: calc } = intakePreview();
+  const id = intakeState.ownProductId || uid();
+  const name = prompt('Naam voor dit eigen product', (TEMPLATES.find(t => t.id === tpl.id) || {}).name || 'Eigen product');
+  if (!name) return;
+  const entry = {
+    id, baseTemplateId: tpl.id, name, customerTag: intakeState.customerName || '',
+    params: Object.assign({}, intakeState.params), workOverrides: Object.assign({}, intakeState.workOverrides),
+    lastMaterialCents: calc.cents, updatedAt: new Date().toISOString(), archived: false
+  };
+  safeSet(TEMPLATE_STORE_KEY, [entry, ...list.filter(x => x.id !== id)]);
+  intakeState.ownProductId = id;
+  showToast('Bewaard als eigen product.');
+}
+function intakeOwnProductDiff() {
+  if (!intakeState.ownProductId) return null;
+  const saved = safeGet(TEMPLATE_STORE_KEY, []).find(x => x.id === intakeState.ownProductId);
+  if (!saved) return null;
+  const { list } = intakePreview();
+  return intakePriceDiff(saved.lastMaterialCents, list.cents);
+}
+
+/* ---------- Finalisatie: intake -> normale klus ---------- */
+
+function intakeFinish(action) {
+  const raw = intakeBuild();
+  const built = Object.assign({}, raw, { work: intakeApplyWorkOverrides(raw.work, intakeState.workOverrides) });
+  const tpl = activeTemplate();
+  const data = Object.assign({}, COST_DEFAULTS, {
+    project: tpl ? tpl.name : 'Nieuwe klus', qty: 1, materials: built.materials,
+    klant: intakeState.customerName, margin: intakeState.margin
+  });
+  savedProjectId = null; jobTab = 'site';
+  history.pushState(null, '', '#kostprijs'); hidePages(); $('cost').hidden = false;
+  renderCostPage(data);
+  const job = ensureJob();
+  job.location = ''; job.contact = ''; job.email = intakeState.customerEmail; job.phone = intakeState.customerPhone;
+  job.photos = intakeState.photos; job.measurements = intakeState.measurements;
+  job.work = built.work;
+  job.intake = {
+    templateId: intakeState.templateId, params: intakeState.params, manualLevel: intakeState.manualLevel,
+    ownProductId: intakeState.ownProductId, confidence: built.confidence
+  };
+  // Prijszekerheid "offerte" (alle regels bevestigd) betekent hier alleen dat er niets meer
+  // ontbreekt om te kunnen versturen — de status zelf springt pas naar "Offerte verzonden"
+  // zodra de gebruiker in de offerteflow (Fase 2) daadwerkelijk verstuurt.
+  const previewLevel = intakePreview().level;
+  costState.job = setJobFase(job, previewLevel === 'offerte' ? 'opname' : previewLevel, new Date());
+  syncWork();
+  closeIntakeFunnel();
+  rawSafeSet(INTAKE_DRAFT_KEY, null);
+  if (action === 'refine') { $('tab-site').click(); }
+  else if (action === 'customer') { $('tab-overview').click(); customerView(); }
+  else if (action === 'quote') {
+    $('tab-overview').click();
+    if (typeof openDocument === 'function') openDocument('offerte'); else customerView();
+  }
+}
+
+/* ---------- Instap: vervangt "Nieuwe klus" -> formulier ---------- */
+
+const intakeBaseStart = startProject;
+startProject = function () { if (!allowDiscard()) return; openIntakeFunnel(); };
+document.querySelectorAll('#design-new,#library-new').forEach(b => { b.onclick = startProject; });
+addIntakeRatesSettingsCard();
+if (!SETTINGS_KEYS.includes(INTAKE_RATES_KEY)) SETTINGS_KEYS.push(INTAKE_RATES_KEY);
+
+/* Offerteflow: van een klus in één actie een offerte versturen, status "Offerte verzonden",
+   pipeline-overzicht op het dashboard. Hergebruikt assignDocumentNumber/companyProfileFields/
+   renderDocumentOverlay uit invoicing/invoicing.js (niet dupliceren) en de bestaande
+   setJobFase/JOB_FASES-pipeline. Zie quotes/README.md voor het volledige contract. */
+
+/* ---------- Pure helpers ---------- */
+
+// OFF-JJJJ-NNNN[-vN]: hergebruikt het bestaande offertenummer uit assignDocumentNumber (geen
+// eigen tellersysteem), voegt alleen de weergavevorm en versienotatie uit 2.1 toe.
+function formatQuoteNumber(offerteNummer, version) {
+  return 'OFF-' + offerteNummer + (version > 1 ? '-v' + version : '');
+}
+function nextQuoteVersion(existingQuotesForJob) {
+  return (existingQuotesForJob || []).reduce((max, q) => Math.max(max, q.version || 1), 0) + 1;
+}
+// Verdeelt de directe kosten (materiaal + werk per categorie) in de vier zichtbare groepen.
+function groupQuoteDirectCents(materialCents, workRows) {
+  const buckets = { Materiaal: materialCents, Werkzaamheden: 0, Montage: 0, Overig: 0 };
+  const catMap = { Fabricage: 'Werkzaamheden', Montage: 'Montage', 'Reis & vervoer': 'Overig', Uitbesteding: 'Overig', Overig: 'Overig' };
+  for (const w of workRows || []) {
+    const cents = Math.round(w.quantity * w.rate * 100);
+    buckets[catMap[w.category] || 'Overig'] += cents;
+  }
+  return buckets;
+}
+// Schaalt de directe-kosten-groepen naar verkoopbedrag-groepen met dezelfde marge/opslagratio
+// als het totaal — nooit de kostprijs zelf tonen. De laatste groep krijgt het restant, zodat de
+// groepen altijd exact optellen tot het echte verkooptotaal (geen afrondingsverschil).
+function allocateQuoteGroups(directBuckets, saleCents) {
+  const directTotal = Object.values(directBuckets).reduce((a, b) => a + b, 0);
+  const ratio = directTotal > 0 ? saleCents / directTotal : 0;
+  const keys = Object.keys(directBuckets);
+  const out = {};
+  let allocated = 0;
+  keys.forEach((k, i) => {
+    if (i === keys.length - 1) { out[k] = saleCents - allocated; }
+    else { const v = Math.round(directBuckets[k] * ratio); out[k] = v; allocated += v; }
+  });
+  return out;
+}
+// NL-telefoonnummer naar E.164 voor wa.me-links. Onherkenbare vorm blijft ongewijzigd terug
+// (nooit gokken naar een ander land).
+function normalizeDutchPhone(raw) {
+  const s = String(raw || '').replace(/[\s()-]/g, '');
+  if (!s) return '';
+  if (s.startsWith('+')) return s;
+  if (s.startsWith('00')) return '+' + s.slice(2);
+  if (s.startsWith('0')) return '+31' + s.slice(1);
+  return s;
+}
+function isQuoteStale(sentAt, now, days) {
+  days = days || 5;
+  if (!sentAt) return false;
+  return (now.getTime() - new Date(sentAt).getTime()) / 86400000 >= days;
+}
+function quoteWhatsappLink(phone, text) {
+  const number = normalizeDutchPhone(phone).replace('+', '');
+  return 'https://wa.me/' + number + '?text=' + encodeURIComponent(text);
+}
+function quoteMailLink(email, subject, body) {
+  return 'mailto:' + encodeURIComponent(email || '') + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+}
+function quoteWhatsappText(projectName, band, level, euroFn) {
+  const bedrag = band.single ? euroFn(band.low / 100) : euroFn(band.low / 100) + ' - ' + euroFn(band.high / 100);
+  return 'Offerte ' + (projectName || 'je klus') + ': ' + bedrag + ' excl. btw' + (band.geldigTot ? ', geldig tot ' + band.geldigTot : '') + '. Zie bijlage.';
+}
+// Dashboard-KPI's uit 2.3: openstaande offertes (€), conversie laatste 30 dagen (%), gemiddelde
+// tijd offerte -> opdracht. Werkt op de opgeslagen projecten (rows), leest de gedenormaliseerde
+// job-velden lastQuoteCents/quoteSentAt/opdrachtAt (gezet door markQuoteSent/markOpdracht).
+function quotePipelineKpi(rows, now) {
+  now = now || new Date();
+  const fase = r => JOB_FASE_LABELS[r.data && r.data.job && r.data.job.fase] ? r.data.job.fase : 'indicatie';
+  const job = r => (r.data && r.data.job) || {};
+  const openRows = rows.filter(r => fase(r) === 'offerte_verzonden');
+  const openCents = openRows.reduce((s, r) => s + (job(r).lastQuoteCents || 0), 0);
+  const cutoff30 = new Date(now); cutoff30.setDate(cutoff30.getDate() - 30);
+  const sentLast30 = rows.filter(r => job(r).quoteSentAt && new Date(job(r).quoteSentAt) >= cutoff30);
+  const converted30 = sentLast30.filter(r => !['offerte_verzonden', 'afgewezen', 'vervallen'].includes(fase(r)));
+  const conversionPct = sentLast30.length ? Math.round((converted30.length / sentLast30.length) * 1000) / 10 : null;
+  const durations = rows.filter(r => job(r).quoteSentAt && job(r).opdrachtAt).map(r => (new Date(job(r).opdrachtAt) - new Date(job(r).quoteSentAt)) / 86400000);
+  const avgDays = durations.length ? Math.round((durations.reduce((a, b) => a + b, 0) / durations.length) * 10) / 10 : null;
+  return { openCents, openCount: openRows.length, conversionPct, avgDays, sentCount30: sentLast30.length };
+}
+// Next-best-action per status (2.3): welke ene knop hoort bij deze fase.
+const QUOTE_NEXT_ACTION = {
+  indicatie: ['Verfijn opname', 'refine'], opname: ['Maak offerte', 'quote'],
+  offerte_verzonden: ['Opvolgen', 'follow-up'], opdracht: ['Werkplaatskaart', 'workfloor'],
+  in_werkplaats: ['Werkplaatskaart', 'workfloor'], montage: ['Werkplaatskaart', 'workfloor'],
+  geleverd: ['Factureer', 'invoice']
+};
+function quoteNextAction(fase) { return QUOTE_NEXT_ACTION[fase] || null; }
+
+/* ---------- Opslag + cloud-sync (zelfde adapter/wachtrij-patroon als projects/customers) ---------- */
+
+const QUOTE_STORE_KEY = 'werkbank.v2.quotes';
+function quotesForJob(jobId) { return safeGet(QUOTE_STORE_KEY, []).filter(q => q.jobId === jobId); }
+function saveQuote(quote) {
+  const list = safeGet(QUOTE_STORE_KEY, []);
+  safeSet(QUOTE_STORE_KEY, [quote, ...list.filter(q => q.id !== quote.id)]);
+}
+async function syncQuotes() {
+  if (!cloudAdapter || !cloudSession) return;
+  const list = safeGet(QUOTE_STORE_KEY, []);
+  const rows = list.map(q => ({ id: q.id, user_id: cloudSession.user.id, project_id: q.jobId || null, number: q.number, version: q.version, updated_at: q.sentAt || q.createdAt, data: q }));
+  setSyncStatus('syncing');
+  const r = await cloudAdapter.push('quotes', rows);
+  if (r.ok) setSyncStatus('synced'); else { setSyncStatus('offline'); queueRetry('quotes'); }
+}
+function mergeQuoteRows(localList, cloudRows) {
+  const byId = {};
+  for (const q of localList) byId[q.id] = { q, ts: q.sentAt || q.createdAt };
+  for (const row of cloudRows) {
+    const q = row.data; if (!q || !q.id) continue;
+    const existing = byId[q.id];
+    if (!existing || new Date(row.updated_at) > new Date(existing.ts)) byId[q.id] = { q, ts: row.updated_at };
+  }
+  return Object.values(byId).map(x => x.q);
+}
+function mergeQuotes(rows) { const merged = mergeQuoteRows(safeGet(QUOTE_STORE_KEY, []), rows); rawSafeSet(QUOTE_STORE_KEY, merged); return merged; }
+// safeSet/flushRetryQueue/pullAndMerge zijn generiek per-sleutel gebouwd maar herkennen 'quotes'
+// nog niet (bestonden vóór deze fase) — hier uitgebreid i.p.v. cloud.js's al geteste code te
+// wijzigen. flushRetryQueue moet volledig herschreven worden (niet alleen aanvullen): de
+// basisversie leegt de wachtrij onvoorwaardelijk vóórdat hij per entry beslist, dus een
+// 'quotes'-item zou anders stilzwijgend verdwijnen zonder ooit gesynchroniseerd te worden.
+const quoteBaseSafeSet = safeSet;
+safeSet = function (key, value) {
+  const ok = quoteBaseSafeSet(key, value);
+  if (ok && key === QUOTE_STORE_KEY && cloudAdapter && cloudSession) syncQuotes();
+  return ok;
+};
+// Zelfde gedeelde register als intake.js (var, bewust geen const: beide lagen delen dit object
+// in dezelfde scriptscope — zie de toelichting daar).
+if (typeof retryHandlers === 'undefined') var retryHandlers = { projects: syncProjects, customers: syncCustomers, settings: syncSettings };
+retryHandlers.quotes = syncQuotes;
+flushRetryQueue = async function () {
+  if (!cloudAdapter || !cloudSession) return;
+  const list = safeGet(SYNC_QUEUE_KEY, []);
+  if (!list.length) return;
+  rawSafeSet(SYNC_QUEUE_KEY, []);
+  for (const entry of list) { const fn = retryHandlers[entry]; if (fn) await fn(); }
+};
+const quoteBasePullAndMerge = pullAndMerge;
+pullAndMerge = async function () {
+  await quoteBasePullAndMerge();
+  if (!cloudAdapter || !cloudSession) return;
+  setSyncStatus('syncing');
+  try {
+    const q = await cloudAdapter.pullAll('quotes');
+    if (!q.ok) throw q.error;
+    mergeQuotes(q.value);
+    await syncQuotes();
+    setSyncStatus('synced');
+  } catch (e) { setSyncStatus('offline'); }
+};
+
+/* ---------- Offerte bouwen (snapshot) ---------- */
+
+function buildQuoteSnapshot(now) {
+  readCostInput(); renderCostTotals();
+  const v = saleView();
+  if (!v.complete) return null;
+  const job = ensureJob();
+  const profile = safeGet(COMPANY_PROFILE_KEY, {});
+  const { job: job2, profile: profile2 } = assignDocumentNumber(job, 'offerte', profile, now);
+  if (profile2 !== profile) safeSet(COMPANY_PROFILE_KEY, profile2);
+  costState.job = job2;
+  const prices = getPrices();
+  const list = calculateMaterialList(costState.materials, positiveInt(costState.qty) || 1, prices);
+  const direct = groupQuoteDirectCents(list.cents, job2.work || []);
+  const saleCents = Math.round(strictNumber(v.ex.replace(/[^\d,.-]/g, '').replace(',', '.')) * 100) || 0;
+  const groups = allocateQuoteGroups(direct, saleCents);
+  const version = nextQuoteVersion(quotesForJob(job2.id || savedProjectId || 'draft'));
+  const days = strictNumber(profile2.geldigheidsduurDagen) || 30;
+  const validUntil = new Date(now); validUntil.setDate(validUntil.getDate() + days);
+  const level = costState.job.intake ? costState.job.intake.confidence : (v.complete ? 'offerte' : 'indicatie');
+  const quote = {
+    id: uid(), jobId: job2.id || savedProjectId || 'draft', version,
+    number: formatQuoteNumber(job2.offerteNummer, version), createdAt: now.toISOString(),
+    level, company: profile2, customer: { name: costState.klant || '', phone: job2.phone || '', email: job2.email || '' },
+    project: costState.project || 'Je klus', description: costState.omschrijving || '', location: job2.location || '',
+    photos: (job2.photos || []).slice(0, 2), groups, totals: { saleExCents: saleCents },
+    validUntil: validUntil.toISOString().slice(0, 10), terms: profile2.voorwaarden || '', sentAt: null, sentChannel: null
+  };
+  saveQuote(quote);
+  return quote;
+}
+
+/* ---------- Verzenden: Web Share -> WhatsApp -> mailto, met status/timestamp ---------- */
+
+function markQuoteSent(quote, channel, now) {
+  quote.sentAt = (now || new Date()).toISOString(); quote.sentChannel = channel;
+  saveQuote(quote);
+  const job = ensureJob();
+  job.lastQuoteCents = quote.totals.saleExCents; job.quoteSentAt = quote.sentAt;
+  costState.job = setJobFase(job, 'offerte_verzonden', now || new Date());
+  saveCalculation();
+}
+async function sendQuote(quote, pdfBlob) {
+  const file = pdfBlob ? new File([pdfBlob], quote.number + '.pdf', { type: 'application/pdf' }) : null;
+  if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: quote.number, text: quote.project }); markQuoteSent(quote, 'share'); return 'share'; }
+    catch (e) { if (e && e.name === 'AbortError') return 'cancelled'; }
+  }
+  return 'manual';
+}
+function quoteFollowUpText(quote) {
+  return 'Even opvolgen: heb je nog vragen over offerte ' + quote.number + ' voor ' + quote.project + '?';
+}
+
+/* ---------- Documentweergave (uitgebreide klantweergave, print-only PDF) ---------- */
+
+function renderQuoteDocument(quote) {
+  const overlay = document.createElement('section');
+  overlay.className = 'job-customer-view quote-view';
+  overlay.setAttribute('role', 'dialog'); overlay.setAttribute('aria-modal', 'true'); overlay.setAttribute('aria-label', 'Offerte ' + quote.number);
+  const companyLines = [quote.company.bedrijfsnaam, [quote.company.straat, [quote.company.postcode, quote.company.plaats].filter(Boolean).join(' ')].filter(Boolean).join(', '),
+    quote.company.kvkNummer ? 'KvK ' + quote.company.kvkNummer : '', quote.company.btwNummer ? 'Btw ' + quote.company.btwNummer : ''].filter(Boolean);
+  const groupRows = Object.entries(quote.groups).filter(([, c]) => c !== 0).map(([label, cents]) => '<div><span>' + esc(label) + '</span><strong>' + euro(cents / 100) + '</strong></div>').join('');
+  const photos = quote.photos.map(p => '<img src="' + p.data + '" alt="' + esc(p.name) + '">').join('');
+  overlay.innerHTML = '<div class="doc-letterhead">' + (companyLines.length ? companyLines.map(l => '<p>' + esc(l) + '</p>').join('') : '<p class="job-error">Vul je bedrijfsgegevens in bij Instellingen.</p>') + '</div>' +
+    '<p class="doc-type">OFFERTE &middot; ' + esc(quote.number) + ' &middot; ' + esc(quote.createdAt.slice(0, 10)) + '</p>' +
+    '<h1>' + esc(quote.project) + '</h1><p>' + esc(quote.customer.name) + '</p><p>' + esc(quote.location) + '</p>' +
+    '<p class="customer-copy">' + esc(quote.description) + '</p>' +
+    (photos ? '<div class="quote-photos">' + photos + '</div>' : '') +
+    '<div class="quote-groups">' + groupRows + '</div>' +
+    '<div class="customer-price">' + euro(quote.totals.saleExCents / 100) + '</div><p>Exclusief btw</p>' +
+    '<p>Geldig tot ' + esc(quote.validUntil) + '.' + (quote.terms ? ' ' + esc(quote.terms) : '') + '</p>' +
+    '<div class="customer-actions"><button class="ghost" id="quote-close">Terug naar klus</button><button class="act" id="quote-print">Print / bewaar PDF</button></div>';
+  document.body.append(overlay);
+  const wrap = document.querySelector('.wrap'); wrap.inert = true; document.body.classList.add('customer-print');
+  const close = () => { wrap.inert = false; document.body.classList.remove('customer-print'); overlay.remove(); };
+  $('quote-close').onclick = close; $('quote-print').onclick = () => window.print();
+  overlay.onkeydown = e => { if (e.key === 'Escape') close(); };
+  $('quote-close').focus();
+  return overlay;
+}
+
+async function openQuoteFlow() {
+  const quote = buildQuoteSnapshot(new Date());
+  if (!quote) return;
+  renderQuoteDocument(quote);
+  const result = await sendQuote(quote, null);
+  if (result === 'manual') renderQuoteSendChoices(quote);
+}
+function renderQuoteSendChoices(quote) {
+  const panel = document.createElement('div');
+  panel.className = 'job-panel quote-send-choices';
+  const phone = normalizeDutchPhone(quote.customer.phone);
+  const waText = quoteWhatsappText(quote.project, { single: true, low: quote.totals.saleExCents, geldigTot: quote.validUntil }, quote.level, euro);
+  panel.innerHTML = '<h2>Offerte versturen</h2><p class="muted">Bewaar eerst de PDF (Print / bewaar PDF hierboven), voeg hem daarna bij in WhatsApp of e-mail.</p>' +
+    '<div class="actions">' +
+    (phone ? '<a class="ghost" target="_blank" rel="noopener" href="' + quoteWhatsappLink(phone, waText) + '">WhatsApp openen</a>' : '<span class="hint">Geen telefoonnummer bekend voor WhatsApp.</span>') +
+    (quote.customer.email ? '<a class="ghost" href="' + quoteMailLink(quote.customer.email, 'Offerte ' + quote.number, waText) + '">E-mail openen</a>' : '<span class="hint">Geen e-mailadres bekend.</span>') +
+    '<button class="act" id="quote-mark-sent">Ik heb hem verstuurd</button></div>';
+  document.body.append(panel);
+  $('quote-mark-sent').onclick = () => { markQuoteSent(quote, phone ? 'whatsapp' : 'email'); panel.remove(); showToast('Offerte gemarkeerd als verzonden.'); renderDashboard(); };
+}
+
+/* ---------- Dashboard: pipeline-overzicht + KPI's + next-best-action ---------- */
+
+function renderQuotePipeline() {
+  const el = document.getElementById('quote-pipeline');
+  if (!el) return;
+  const rows = savedProjects();
+  if (!rows.length) { el.hidden = true; return; }
+  el.hidden = false;
+  const kpi = quotePipelineKpi(rows);
+  const fase = r => JOB_FASE_LABELS[r.data && r.data.job && r.data.job.fase] ? r.data.job.fase : 'indicatie';
+  const byStatus = {};
+  for (const [key] of JOB_FASES) byStatus[key] = rows.filter(r => fase(r) === key);
+  el.innerHTML = '<div class="quote-kpi-row">' +
+    '<div class="card quote-kpi"><span class="kpi-label">Openstaande offertes</span><span class="kpi-number">' + euro(kpi.openCents / 100) + '</span><span class="intake-price-sub">' + kpi.openCount + ' stuks</span></div>' +
+    '<div class="card quote-kpi"><span class="kpi-label">Conversie laatste 30 dagen</span><span class="kpi-number">' + (kpi.conversionPct === null ? '—' : kpi.conversionPct + '%') + '</span><span class="intake-price-sub">' + kpi.sentCount30 + ' verzonden</span></div>' +
+    '<div class="card quote-kpi"><span class="kpi-label">Gem. tijd offerte → opdracht</span><span class="kpi-number">' + (kpi.avgDays === null ? '—' : kpi.avgDays + 'd') + '</span></div></div>' +
+    '<div class="quote-pipeline-cols">' + JOB_FASES.map(([key, label]) => {
+      const list = byStatus[key];
+      if (!list.length) return '';
+      const total = list.reduce((s, r) => s + (r.data && r.data.job && r.data.job.lastQuoteCents || 0), 0);
+      return '<div class="quote-pipeline-col" data-status="' + key + '"><h3>' + faseBadgeHtml(key) + '<span>' + list.length + (total ? ' · ' + euro(total / 100) : '') + '</span></h3>' +
+        list.slice(0, 5).map(r => quotePipelineRowHtml(r, key)).join('') + '</div>';
+    }).join('') + '</div>';
+  el.querySelectorAll('[data-open-project]').forEach(b => b.onclick = () => openSavedProject(rows.find(x => x.id === b.dataset.openProject)));
+  el.querySelectorAll('[data-next-action]').forEach(b => b.onclick = () => {
+    openSavedProject(rows.find(x => x.id === b.dataset.nextAction));
+    const action = b.dataset.actionType;
+    if (action === 'quote') openQuoteFlow();
+    else if (action === 'refine') { $('tab-site').click(); }
+    else if (action === 'invoice') { $('tab-overview').click(); if (typeof openDocument === 'function') openDocument('factuur'); }
+    else { $('tab-overview').click(); }
+  });
+}
+function quotePipelineRowHtml(row, status) {
+  const job = row.data.job || {};
+  const stale = status === 'offerte_verzonden' && isQuoteStale(job.quoteSentAt, new Date());
+  const action = quoteNextAction(status);
+  return '<button class="recent-row" data-open-project="' + esc(row.id) + '">' + uiIcon('document') +
+    '<span><b>' + esc(row.data.project || 'Naamloze klus') + '</b>' + (stale ? '<small class="quote-stale">Nog geen reactie</small>' : '') + '</span></button>' +
+    (action ? '<button class="ghost" data-next-action="' + esc(row.id) + '" data-action-type="' + action[1] + '">' + esc(action[0]) + '</button>' : '');
+}
+
+/* ---------- Wiring: bestaande "Offerte maken"-knop, dashboard, opdracht-tijdstip, reden ---------- */
+
+// "Offerte maken" (invoicing.js) opent nu de rijkere offerteflow i.p.v. de simpele printoverlay.
+const quoteBaseCost = renderCostPage;
+renderCostPage = function (values, message) {
+  quoteBaseCost(values, message);
+  const btn = document.getElementById('make-offerte');
+  if (btn) btn.onclick = openQuoteFlow;
+};
+// Dashboard toont het pipeline-overzicht naast de bestaande "Lopende staalprojecten"-kaart.
+const quoteBaseDashboard = renderDashboard;
+renderDashboard = function () { quoteBaseDashboard(); renderQuotePipeline(); };
+// opdrachtAt vastleggen (voor de "gemiddelde tijd offerte -> opdracht"-KPI) en een reden vragen
+// bij Afgewezen/Vervallen — gecentraliseerd hier i.p.v. in de fase-dropdown zelf, zodat het ook
+// werkt wanneer de status via de pipeline-kolommen wordt gewijzigd.
+const quoteBaseSetJobFase = setJobFase;
+setJobFase = function (job, fase, now, reason) {
+  if ((fase === 'afgewezen' || fase === 'vervallen') && reason === undefined && job.fase !== fase) {
+    reason = prompt('Reden voor ' + (JOB_FASE_LABELS[fase] || fase) + '?') || '';
+  }
+  const next = quoteBaseSetJobFase(job, fase, now, reason);
+  if (next !== job && fase === 'opdracht' && !job.opdrachtAt) return Object.assign({}, next, { opdrachtAt: (now || new Date()).toISOString() });
+  return next;
+};
+
+/* Geometrie uit een getrianguleerde mesh (wat occt-import-js daadwerkelijk teruggeeft: platte
+   vertex-posities + driehoeksindices — géén kant-en-klare bounding box/volume). Puur wiskunde,
+   dus wél volledig testbaar zonder WASM/browser; dit is de brug tussen step-worker.js's ruwe
+   mesh-output en classify.js's {bboxMm, volumeMm3}-input. */
+
+function meshBoundingBoxMm(positions) {
+  let min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
+  for (let i = 0; i < positions.length; i += 3) {
+    for (let k = 0; k < 3; k++) { const v = positions[i + k]; if (v < min[k]) min[k] = v; if (v > max[k]) max[k] = v; }
+  }
+  return { min, max, sizeMm: [max[0] - min[0], max[1] - min[1], max[2] - min[2]] };
+}
+// Volume van een gesloten driehoeksmesh via de divergentiestelling (som van getekende
+// tetraëdervolumes t.o.v. de oorsprong) — standaardtechniek, onafhankelijk van de oorsprongkeuze
+// zolang de mesh gesloten is.
+function meshVolumeMm3(positions, indices) {
+  let volume = 0;
+  const tri = (i0, i1, i2) => {
+    const ax = positions[i0 * 3], ay = positions[i0 * 3 + 1], az = positions[i0 * 3 + 2];
+    const bx = positions[i1 * 3], by = positions[i1 * 3 + 1], bz = positions[i1 * 3 + 2];
+    const cx = positions[i2 * 3], cy = positions[i2 * 3 + 1], cz = positions[i2 * 3 + 2];
+    volume += (ax * (by * cz - bz * cy) - ay * (bx * cz - bz * cx) + az * (bx * cy - by * cx)) / 6;
+  };
+  if (indices && indices.length) { for (let i = 0; i < indices.length; i += 3) tri(indices[i], indices[i + 1], indices[i + 2]); }
+  else { for (let i = 0; i < positions.length / 3; i += 3) tri(i, i + 1, i + 2); }
+  return Math.abs(volume);
+}
+// occt-import-js geeft meshes in de eenheid van het STEP-bestand (meestal mm, soms m — 3.2 vraagt
+// om dit te lezen en bij ontbreken mm aan te nemen). schaal=1 laat mm ongemoeid, 1000 zet m om.
+function meshToStepBody(name, positions, indices, instances, schaal) {
+  const s = schaal || 1;
+  const scaled = new Array(positions.length);
+  for (let i = 0; i < positions.length; i++) scaled[i] = positions[i] * s;
+  const bbox = meshBoundingBoxMm(scaled);
+  const volumeMm3 = meshVolumeMm3(scaled, indices);
+  return { name, bboxMm: bbox.sizeMm, volumeMm3, instances: instances || 1 };
+}
+
+/* STEP-classificatie (Fase 3.2): pure functies op geometriedata (bounding box, volume) zoals
+   occt-import-js die per body/solid teruggeeft. Bewust losgekoppeld van het inlezen van het
+   bestand zelf (zie step/step-worker.js) zodat deze heuristiek zonder WASM/browser/echt
+   STEP-bestand getest kan worden — zie step/README.md voor waarom dat in deze omgeving nodig was.
+   Alles hier is een "voorstel", nooit een stille correctie van de rekenkern (Bijlage B). */
+
+const STANDARD_PLATE_THICKNESSES_MM = [2, 3, 4, 5, 6, 8, 10, 12, 15, 20];
+const PLATE_THICKNESS_TOLERANCE_MM = 0.3;
+const PROFILE_LENGTH_RATIO = 5;
+const PROFILE_CROSS_SECTION_TOLERANCE = 0.05;
+const STEP_DENSITIES = { s235: 7850, s355: 7850, rvs304: 7900, rvs316: 7980, rvs430: 7700, alu: 2700, messing: 8500, koper: 8960 };
+
+// Sorteert de drie bbox-dimensies (mm) klein->groot; simpele, robuuste basis voor beide regels.
+function sortedDims(bbox) { return [...bbox].sort((a, b) => a - b); }
+
+function matchPlateThickness(dMm) {
+  let best = null, bestDiff = Infinity;
+  for (const t of STANDARD_PLATE_THICKNESSES_MM) { const diff = Math.abs(t - dMm); if (diff < bestDiff) { best = t; bestDiff = diff; } }
+  return bestDiff <= PLATE_THICKNESS_TOLERANCE_MM ? best : null;
+}
+// candidates: [{label, profile, dims, crossSectionMm2}], door de aanroeper samengesteld uit de
+// bestaande catalogus/PROFILES — deze functie kent de catalogus zelf niet, blijft dus puur.
+function matchProfileCrossSection(areaMm2, candidates) {
+  return (candidates || [])
+    .map(c => ({ ...c, diffPct: Math.round((Math.abs(c.crossSectionMm2 - areaMm2) / areaMm2) * 1000) / 10 }))
+    .filter(c => c.diffPct <= PROFILE_CROSS_SECTION_TOLERANCE * 100)
+    .sort((a, b) => a.diffPct - b.diffPct);
+}
+// body: {name, bboxMm:[x,y,z], volumeMm3, instances}. candidates: zie matchProfileCrossSection.
+// Classificeert nooit stilzwijgend "overig" als plaat/profiel twijfelachtig is — bij twijfel
+// (bv. twee even aannemelijke kandidaten) blijft het aan de gebruiker (keuzelijst in de UI-laag).
+function classifyStepBody(body, candidates) {
+  const [d0, d1, d2] = sortedDims(body.bboxMm);
+  if (d0 <= 25 && d1 > 0 && d0 <= d1 / 10) {
+    const matched = matchPlateThickness(d0);
+    return { kind: 'plate', thicknessMm: Math.round(d0 * 100) / 100, matchedThicknessMm: matched, lengthMm: d2, widthMm: d1, confident: matched !== null };
+  }
+  if (d1 > 0 && d2 >= PROFILE_LENGTH_RATIO * d1 && d2 >= PROFILE_LENGTH_RATIO * d0) {
+    const crossSectionMm2 = body.volumeMm3 / d2;
+    const matches = matchProfileCrossSection(crossSectionMm2, candidates);
+    return { kind: 'profile', lengthMm: Math.round(d2 * 100) / 100, crossSectionMm2: Math.round(crossSectionMm2 * 100) / 100, candidates: matches, confident: matches.length === 1 };
+  }
+  return { kind: 'overig' };
+}
+function stepBodyWeightKg(volumeMm3, materialKey) {
+  const density = STEP_DENSITIES[materialKey] || STEP_DENSITIES.s235;
+  return volumeMm3 * density * 1e-9;
+}
+// Bouwt een materiaalregel-voorstel (Fase 0.4-contract) uit een classificatie; de UI-laag beslist
+// per regel Overnemen/Aanpassen/Overslaan, hier alleen het voorstel zelf. Zaagverlies uit
+// instellingen (kerfMm) wordt op profiellengtes toegepast als waste-percentage-equivalent zoals
+// de bestaande aankoopplanning dat ook al doet.
+function stepProposalLine(body, classification, materialKey, uidFn) {
+  const base = { id: uidFn(), material: materialKey, count: body.instances || 1, countMode: 'project', source: 'step', attachmentId: body.attachmentId, note: body.name };
+  if (classification.kind === 'plate') {
+    return Object.assign(base, { profile: 'plate', priceBasis: 'kg', priceMode: 'catalog', waste: 5, dims: { length: classification.lengthMm, width: classification.widthMm, t: classification.matchedThicknessMm || classification.thicknessMm } });
+  }
+  if (classification.kind === 'profile' && classification.candidates.length) {
+    const best = classification.candidates[0];
+    return Object.assign(base, { profile: best.profile, priceBasis: 'kg', priceMode: 'catalog', waste: 5, dims: Object.assign({}, best.dims, { length: classification.lengthMm }) });
+  }
+  return null; // "overig"/onzekere profielmatch: geen voorstel, UI zet dit in de "Handmatig"-lijst.
+}
+
+/* Snijlijst/DXF (Fase 3.4, "experimenteel" — zo gelabeld in de UI). Pure tekstgeneratie: ASCII
+   DXF R12, uitsluitend LWPOLYLINE/CIRCLE/TEXT-entiteiten, zelf geschreven (geen extra library,
+   harde randvoorwaarde 1). Werkt op contourdata (polylijnen/cirkels in mm) — waar die data
+   vandaan komt (een geprojecteerd STEP-vlak) is het onverifieerde deel, zie step/README.md. */
+
+function dxfNum(n) { return String(Math.round(n * 1000) / 1000); }
+function dxfPolylineLines(points, closed) {
+  const lines = ['0', 'LWPOLYLINE', '8', '0', '90', String(points.length), '70', closed === false ? '0' : '1'];
+  for (const [x, y] of points) lines.push('10', dxfNum(x), '20', dxfNum(y));
+  return lines;
+}
+function dxfCircleLines(cx, cy, r) { return ['0', 'CIRCLE', '8', '0', '10', dxfNum(cx), '20', dxfNum(cy), '40', dxfNum(r)]; }
+// entities: [{type:'polyline', points:[[x,y],...], closed}, {type:'circle', cx, cy, r}]
+function buildDxf(entities, label) {
+  const body = [];
+  for (const e of entities || []) {
+    if (e.type === 'polyline' && Array.isArray(e.points) && e.points.length >= 2) body.push(...dxfPolylineLines(e.points, e.closed));
+    else if (e.type === 'circle' && Number.isFinite(e.r)) body.push(...dxfCircleLines(e.cx, e.cy, e.r));
+  }
+  const controle = ['0', 'TEXT', '8', 'WERKBANK-CONTROLE', '10', '0', '20', '-10', '40', '5', '1',
+    'Automatisch afgeleid uit STEP (' + (label || 'onbekend') + ') — controleer maten voor snijden'];
+  return ['0', 'SECTION', '2', 'ENTITIES', ...body, ...controle, '0', 'ENDSEC', '0', 'EOF'].join('\n') + '\n';
+}
+// Hoek tussen een eindvlak-normaal en de lengte-as van een profiel: 0deg = haaks afgezaagd
+// (normaal evenwijdig aan de as), anders een verstekhoek. Puur vectorwiskunde; de echte
+// vlaknormalen komen in productie uit de STEP-geometrie (onverifieerd deel, zie README).
+function miterAngleDeg(axisVector, faceNormalVector) {
+  const dot = axisVector[0] * faceNormalVector[0] + axisVector[1] * faceNormalVector[1] + axisVector[2] * faceNormalVector[2];
+  const magA = Math.hypot(...axisVector), magN = Math.hypot(...faceNormalVector);
+  if (!magA || !magN) return null;
+  const cosAngle = Math.max(-1, Math.min(1, dot / (magA * magN)));
+  return Math.round(Math.acos(Math.abs(cosAngle)) * 180 / Math.PI * 10) / 10;
+}
+// Zaaglijst: profiel/lengte/aantal(/hoek) -> CSV, hergebruikt door de werkplaatskaart-print.
+function zaaglijstRows(profielBodies) {
+  return (profielBodies || []).map(b => ({ profiel: b.profile, lengteMm: b.lengthMm, aantal: b.count || 1, hoekGraden: b.miterDeg != null ? b.miterDeg : null }));
+}
+function zaaglijstCsv(rows) {
+  const esc = v => v == null ? '' : String(v);
+  const header = 'Profiel;Lengte (mm);Aantal;Hoek (graden)';
+  return [header, ...rows.map(r => [esc(r.profiel), esc(r.lengteMm), esc(r.aantal), esc(r.hoekGraden)].join(';'))].join('\n');
+}
+function plaatlijstRows(plaatBodies) {
+  return (plaatBodies || []).map(b => ({ dikteMm: b.thicknessMm, lengteMm: b.lengthMm, breedteMm: b.widthMm, aantal: b.count || 1, gewichtKg: b.weightKg }));
+}
+
+/* 3D-preview (Fase 3.3): three.js, lazy geladen vanaf jsdelivr. Werkt op elke getrianguleerde
+   mesh (positions/indices) — dus onafhankelijk testbaar met synthetische geometrie, ook al is de
+   STEP-parsing zelf (step-worker.js) ongeverifieerd. Dat is in deze sessie ook precies gedaan:
+   zie step/README.md voor het verificatieverslag (procedurele testkubus, niet een echt STEP-
+   afgeleide mesh). Prestatiebudget (200k driehoeken): findExcessiveMesh() waarschuwt, decimeert
+   niet zelf (geen extra library) maar valt terug op een bbox-wireframe. */
+
+const STEP_THREE_VERSION = '0.160.0';
+const STEP_ORBIT_URL = 'https://cdn.jsdelivr.net/npm/three@' + STEP_THREE_VERSION + '/examples/jsm/controls/OrbitControls.js';
+const STEP_TRIANGLE_BUDGET = 200000;
+
+// OrbitControls.js importeert intern de kale specifier "three" (geen relatief pad) — dat werkt
+// alleen als de pagina een importmap heeft die "three" naar de CDN-URL wijst. Zonder importmap
+// faalt de dynamic import van OrbitControls met "Failed to resolve module specifier three", ook
+// al lijkt de eigen import van three.module.js prima te werken — dit is in de Browser-pane
+// daadwerkelijk zo gereproduceerd vóór deze fix (zie step/README.md). werkbank-v2.html's <head>
+// krijgt daarom een <script type="importmap"> via scripts/promote-step.js.
+let stepThreeModules = null;
+function loadStepThree() {
+  if (stepThreeModules) return stepThreeModules;
+  stepThreeModules = Promise.all([import('three'), import(STEP_ORBIT_URL)])
+    .then(([THREE, orbit]) => ({ THREE, OrbitControls: orbit.OrbitControls }));
+  return stepThreeModules;
+}
+// Puur: telt driehoeken, geeft aan of decimatie/wireframe-fallback nodig is (geen library voor
+// echte decimatie — buiten scope, wel duidelijk gemeld in de UI).
+function meshTriangleCount(indices, positionsLength) { return indices ? indices.length / 3 : (positionsLength / 3) / 3; }
+function exceedsTriangleBudget(totalTriangles) { return totalTriangles > STEP_TRIANGLE_BUDGET; }
+
+async function createStepViewer(container) {
+  const { THREE, OrbitControls } = await loadStepThree();
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue('--paper') ? 0xf3f5f7 : 0xffffff);
+  const camera = new THREE.PerspectiveCamera(45, Math.max(1, container.clientWidth) / Math.max(1, container.clientHeight), 1, 1e7);
+  camera.position.set(500, 500, 500);
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  renderer.localClippingEnabled = true;
+  container.appendChild(renderer.domElement);
+  const controls = new OrbitControls(camera, renderer.domElement);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+  const dir = new THREE.DirectionalLight(0xffffff, 0.7); dir.position.set(1, 1, 1); scene.add(dir);
+  const group = new THREE.Group(); scene.add(group);
+  let sectionOn = false, running = true;
+  (function animate() { if (!running) return; requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); })();
+
+  function addMesh(bodyId, positions, indices, color) {
+    const triangles = meshTriangleCount(indices, positions.length);
+    if (exceedsTriangleBudget(triangles)) {
+      const box = new THREE.Box3(); const pos = new THREE.Float32BufferAttribute(positions, 3);
+      box.setFromBufferAttribute(pos);
+      const helper = new THREE.Box3Helper(box, new THREE.Color(0x667487));
+      helper.userData.bodyId = bodyId; group.add(helper);
+      return { mesh: helper, wireframeFallback: true };
+    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    if (indices) geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+    const material = new THREE.MeshStandardMaterial({ color: color || 0x8a97a5, side: THREE.DoubleSide });
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.userData.bodyId = bodyId;
+    group.add(mesh);
+    return { mesh, wireframeFallback: false };
+  }
+  function fitToView() {
+    const box = new THREE.Box3().setFromObject(group);
+    if (box.isEmpty()) return;
+    const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z) || 1;
+    camera.position.copy(center).clone().add(new THREE.Vector3(maxDim, maxDim, maxDim));
+    camera.near = maxDim / 1000; camera.far = maxDim * 100; camera.updateProjectionMatrix();
+    controls.target.copy(center); controls.update();
+  }
+  function highlight(bodyId) {
+    group.children.forEach(m => { if (m.material && 'emissive' in m.material) { m.material.emissive = new THREE.Color(m.userData.bodyId === bodyId ? 0xf26b1d : 0x000000); m.material.emissiveIntensity = m.userData.bodyId === bodyId ? 0.4 : 0; } });
+  }
+  function toggleSection() {
+    sectionOn = !sectionOn;
+    const box = new THREE.Box3().setFromObject(group);
+    const mid = box.getCenter(new THREE.Vector3());
+    const plane = new THREE.Plane(new THREE.Vector3(0, -1, 0), mid.y);
+    group.children.forEach(m => { if (m.material) m.material.clippingPlanes = sectionOn ? [plane] : []; });
+    return sectionOn;
+  }
+  function toIsoPng() {
+    fitToView();
+    camera.position.set(1, 1, 1).normalize().multiplyScalar(camera.position.length() || 1000);
+    renderer.render(scene, camera);
+    return renderer.domElement.toDataURL('image/png');
+  }
+  function resize() { camera.aspect = container.clientWidth / container.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(container.clientWidth, container.clientHeight); }
+  function dispose() { running = false; renderer.dispose(); if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement); }
+  return { addMesh, fitToView, highlight, toggleSection, toIsoPng, resize, dispose };
+}
+
+/* Bijlagen (Fase 3.1): STEP/DXF/PDF/afbeeldingen bij een klus. Metadata leeft op
+   costState.job.attachments (zelfde patroon als photos/measurements, syncbaar via de bestaande
+   projectopslag); de bytes zelf leven lokaal in IndexedDB (te groot voor localStorage) en, als
+   cloud actief is, in Supabase Storage-bucket "attachments" onder user_id/-prefix. */
+
+/* ---------- Pure helpers (limieten, validatie, bestandsnaam-logica) ---------- */
+
+const ATTACHMENT_MAX_FILE_BYTES = 25 * 1024 * 1024;
+const ATTACHMENT_MAX_JOB_BYTES = 100 * 1024 * 1024;
+const ATTACHMENT_EXTENSIONS = ['.step', '.stp', '.dxf', '.pdf', '.jpg', '.jpeg', '.png', '.webp'];
+function attachmentExt(name) { const m = /\.[a-z0-9]+$/i.exec(String(name || '')); return m ? m[0].toLowerCase() : ''; }
+function attachmentTypeAllowed(name) { return ATTACHMENT_EXTENSIONS.includes(attachmentExt(name)); }
+function attachmentIsStep(name) { return ['.step', '.stp'].includes(attachmentExt(name)); }
+function attachmentSizeOk(bytes) { return Number.isFinite(bytes) && bytes > 0 && bytes <= ATTACHMENT_MAX_FILE_BYTES; }
+function attachmentUsageBytes(existing) { return (existing || []).reduce((s, a) => s + (a.size || 0), 0); }
+function attachmentBudgetOk(existing, newBytes) { return attachmentUsageBytes(existing) + newBytes <= ATTACHMENT_MAX_JOB_BYTES; }
+// Eén validatiefunctie die alle drie de regels combineert en een Nederlandse foutmelding teruggeeft
+// (of null als het bestand geaccepteerd mag worden) — dit is wat de upload-handler aanroept.
+function attachmentValidate(file, existing) {
+  if (!attachmentTypeAllowed(file.name)) return 'Bestandstype niet ondersteund: ' + esc(attachmentExt(file.name) || file.name) + '.';
+  if (!attachmentSizeOk(file.size)) return 'Bestand groter dan 25 MB.';
+  if (!attachmentBudgetOk(existing, file.size)) return 'Deze klus zit al aan de 100 MB aan bijlagen.';
+  return null;
+}
+function attachmentUsageLabel(existing) {
+  const used = attachmentUsageBytes(existing) / (1024 * 1024), max = ATTACHMENT_MAX_JOB_BYTES / (1024 * 1024);
+  return fmt(used, 1) + ' / ' + fmt(max, 0) + ' MB gebruikt';
+}
+
+/* ---------- SHA-256 (Web Crypto; browser-only, geen DOM nodig) ---------- */
+
+async function attachmentSha256(arrayBuffer) {
+  const digest = await crypto.subtle.digest('SHA-256', arrayBuffer);
+  return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/* ---------- IndexedDB (bytes; metadata leeft apart op costState.job.attachments) ---------- */
+
+const ATTACHMENT_DB_NAME = 'werkbank-attachments', ATTACHMENT_STORE_NAME = 'attachments';
+function openAttachmentDb() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(ATTACHMENT_DB_NAME, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(ATTACHMENT_STORE_NAME)) db.createObjectStore(ATTACHMENT_STORE_NAME, { keyPath: 'id' }).createIndex('jobId', 'jobId');
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function attachmentPutBytes(id, jobId, blob) {
+  const db = await openAttachmentDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(ATTACHMENT_STORE_NAME, 'readwrite');
+    tx.objectStore(ATTACHMENT_STORE_NAME).put({ id, jobId, blob });
+    tx.oncomplete = () => resolve(); tx.onerror = () => reject(tx.error);
+  });
+}
+async function attachmentGetBytes(id) {
+  const db = await openAttachmentDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(ATTACHMENT_STORE_NAME, 'readonly');
+    const req = tx.objectStore(ATTACHMENT_STORE_NAME).get(id);
+    req.onsuccess = () => resolve(req.result ? req.result.blob : null);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function attachmentDeleteBytes(id) {
+  const db = await openAttachmentDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(ATTACHMENT_STORE_NAME, 'readwrite');
+    tx.objectStore(ATTACHMENT_STORE_NAME).delete(id);
+    tx.oncomplete = () => resolve(); tx.onerror = () => reject(tx.error);
+  });
+}
+
+/* ---------- UI: bijlagenpaneel in de Opname-tab ---------- */
+
+function ensureJobAttachments(job) { if (!Array.isArray(job.attachments)) job.attachments = []; return job.attachments; }
+
+async function addAttachments(fileList) {
+  const j = ensureJob(), list = ensureJobAttachments(j);
+  const files = Array.from(fileList);
+  const feedback = document.getElementById('attachment-feedback');
+  const errors = [];
+  for (const file of files) {
+    const err = attachmentValidate(file, list);
+    if (err) { errors.push(file.name + ': ' + err); continue; }
+    try {
+      const buffer = await file.arrayBuffer();
+      const sha256 = await attachmentSha256(buffer);
+      const id = uid();
+      await attachmentPutBytes(id, j.id || savedProjectId || 'draft', new Blob([buffer], { type: file.type }));
+      list.push({ id, name: file.name, type: attachmentExt(file.name), size: file.size, sha256, createdAt: new Date().toISOString() });
+    } catch (e) { errors.push(file.name + ': kon niet worden gelezen.'); }
+  }
+  if (feedback) feedback.textContent = errors.join(' ') || 'Bijlage(n) toegevoegd.';
+  renderAttachmentList();
+  queueDraft();
+  const stepFile = files.find(f => attachmentIsStep(f.name) && !errors.some(e => e.startsWith(f.name)));
+  if (stepFile && typeof onStepAttachmentAdded === 'function') { const added = list[list.length - 1]; onStepAttachmentAdded(added); }
+}
+function renderAttachmentList() {
+  const el = document.getElementById('attachment-list');
+  if (!el) return;
+  const j = ensureJob(), list = ensureJobAttachments(j);
+  el.innerHTML = list.length ? list.map(a => '<div class="job-row"><span>' + esc(a.name) + '<small>' + esc(a.type) + ' · ' + fmt(a.size / 1024 / 1024, 2) + ' MB</small></span><span><button class="ghost" data-attach-download="' + esc(a.id) + '">Download</button><button class="ghost" data-attach-remove="' + esc(a.id) + '">Verwijder</button></span></div>').join('')
+    : '<p class="muted">Nog geen bijlagen.</p>';
+  const usage = document.getElementById('attachment-usage');
+  if (usage) usage.textContent = attachmentUsageLabel(list);
+  el.querySelectorAll('[data-attach-remove]').forEach(b => b.onclick = async () => {
+    const id = b.dataset.attachRemove;
+    j.attachments = list.filter(a => a.id !== id);
+    await attachmentDeleteBytes(id);
+    renderAttachmentList(); queueDraft();
+  });
+  el.querySelectorAll('[data-attach-download]').forEach(b => b.onclick = async () => {
+    const blob = await attachmentGetBytes(b.dataset.attachDownload);
+    if (!blob) return;
+    const meta = list.find(a => a.id === b.dataset.attachDownload);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = meta.name; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  });
+}
+function attachmentPanelHtml() {
+  return '<div class="job-panel"><h2>Bijlagen</h2><p class="muted">STEP, DXF, PDF of foto’s. Max 25 MB per bestand, 100 MB per klus.</p>' +
+    '<label for="attachment-input" class="file-label">Bestand kiezen<input id="attachment-input" type="file" accept="' + ATTACHMENT_EXTENSIONS.join(',') + '" multiple></label>' +
+    '<p id="attachment-feedback" class="photo-loading" role="status"></p><p id="attachment-usage" class="hint"></p><div id="attachment-list"></div></div>';
+}
+const attachmentBaseRenderSite = renderSite;
+renderSite = function () {
+  attachmentBaseRenderSite();
+  const site = document.getElementById('panel-site');
+  if (site && !document.getElementById('attachment-input')) {
+    site.insertAdjacentHTML('beforeend', attachmentPanelHtml());
+    document.getElementById('attachment-input').onchange = e => { addAttachments(e.target.files); e.target.value = ''; };
+    renderAttachmentList();
+  }
+};
+
+/* ---------- Export/import: metadata gaat mee, bytes bewust niet ---------- */
+
+const attachmentBaseValidatePayload = validateCalculationPayload;
+validateCalculationPayload = function (obj) {
+  const r = attachmentBaseValidatePayload(obj);
+  if (!r.ok) return r;
+  const j = r.data.job;
+  if (j && j.attachments !== undefined && (!Array.isArray(j.attachments) || j.attachments.some(a => typeof a.id !== 'string' || typeof a.name !== 'string' || !Number.isFinite(a.size)))) {
+    return { ok: false, error: 'Ongeldige bijlage-metadata' };
+  }
+  return r;
+};
+const attachmentBaseImport = importCalculation;
+importCalculation = async function (e) {
+  await attachmentBaseImport(e);
+  const j = costState && costState.job;
+  if (j && Array.isArray(j.attachments) && j.attachments.length) {
+    const status = document.querySelector('#cost-content .readout');
+    if (status) status.insertAdjacentHTML('afterend', '<p class="warnbox">Deze klus had ' + j.attachments.length + ' bijlage(n). Alleen de bestandsnamen zijn geïmporteerd — de bestanden zelf moet je los overzetten (ze stonden lokaal op het andere apparaat).</p>');
+  }
+};
+
+/* UI-laag die attachments.js (bijlagen), step-worker.js (STEP-inlezen, ONGEVERIFIEERD — zie
+   step/README.md), classify.js (classificatie, wél getest), mesh-geometry.js (wél getest),
+   viewer.js (3D-preview, wél getest met synthetische geometrie) en dxf.js (wél getest) samenbrengt
+   tot het "STEP-voorstel"-paneel uit 3.2. Alles hier is een voorstel, nooit een stille wijziging
+   van de rekenkern of het zekerheidsniveau van de klus (Bijlage B, en 3.2's laatste zin). */
+
+// Kandidaat-profielen voor de doorsnede-match: bestaande PROFILES-rekenfuncties, geen eigen
+// formules (voorkomt dat deze lijst uit de pas gaat lopen met de rekenkern).
+function stepCandidateProfiles() {
+  const sizes = {
+    squareTube: [[20, 2], [25, 2], [30, 2], [30, 3], [40, 2], [40, 3], [40, 4], [50, 3], [50, 4], [60, 3], [60, 4], [60, 5], [80, 4], [80, 5], [100, 4], [100, 5]],
+    rectTube: [[50, 30, 2], [60, 40, 3], [60, 40, 4], [80, 40, 3], [100, 50, 4], [100, 60, 4]],
+    roundTube: [[21.3, 2], [26.9, 2], [33.7, 2], [33.7, 3], [42.4, 2], [42.4, 3], [48.3, 3], [60.3, 3], [76.1, 3], [88.9, 3]]
+  };
+  const out = [];
+  for (const [profileKey, list] of Object.entries(sizes)) {
+    const dimKeys = PROFILES[profileKey].dims.filter(d => d !== 'length');
+    for (const vals of list) {
+      const dims = {}; dimKeys.forEach((k, i) => dims[k] = vals[i]);
+      out.push({ label: Object.values(dims).join('x'), profile: profileKey, dims, crossSectionMm2: PROFILES[profileKey].rekenfunctie(dims) });
+    }
+  }
+  return out;
+}
+
+/* ---------- Worker-orchestratie ---------- */
+
+let stepWorkerInstance = null, stepWorkerCallId = 0;
+const stepWorkerPending = {};
+function stepWorker() {
+  if (!stepWorkerInstance) {
+    stepWorkerInstance = new Worker('step/step-worker.js');
+    stepWorkerInstance.onmessage = e => { const p = stepWorkerPending[e.data.id]; if (p) { delete stepWorkerPending[e.data.id]; p(e.data); } };
+  }
+  return stepWorkerInstance;
+}
+function parseStepFile(buffer, fileName) {
+  return new Promise(resolve => {
+    const id = ++stepWorkerCallId;
+    stepWorkerPending[id] = resolve;
+    stepWorker().postMessage({ id, buffer, fileName }, [buffer]);
+  });
+}
+
+/* ---------- STEP-voorstel-paneel ---------- */
+
+function ensureStepPanel() {
+  let el = document.getElementById('step-proposal');
+  if (!el) {
+    el = document.createElement('div'); el.id = 'step-proposal'; el.className = 'job-panel'; el.hidden = true;
+    const site = document.getElementById('panel-site');
+    if (site) site.appendChild(el);
+  }
+  return el;
+}
+async function onStepAttachmentAdded(attachment) {
+  const panel = ensureStepPanel();
+  panel.hidden = false;
+  panel.innerHTML = '<h2>STEP-voorstel <span class="badge-experimental">Controleer</span></h2><p role="status" id="step-status">Bestand inlezen… dit kan bij het eerste gebruik een moment duren (WASM wordt gedownload).</p>';
+  let blob;
+  try { blob = await attachmentGetBytes(attachment.id); } catch (e) { $('step-status').textContent = 'Kon de bijlage niet uit de lokale opslag lezen.'; return; }
+  const buffer = await blob.arrayBuffer();
+  let result;
+  try { result = await parseStepFile(buffer, attachment.name); }
+  catch (e) { $('step-status').textContent = 'Onverwachte fout bij het inlezen van dit STEP-bestand.'; return; }
+  if (!result.ok) { panel.innerHTML = '<h2>STEP-voorstel</h2><p class="err">' + esc(result.error) + '</p>'; return; }
+  if (!result.meshes.length) { panel.innerHTML = '<h2>STEP-voorstel</h2><p class="muted">Geen lichamen gevonden in dit bestand.</p>'; return; }
+  const unitScale = result.unit === 'm' ? 1000 : 1;
+  const bodies = result.meshes.map(m => Object.assign(
+    meshToStepBody(m.name, m.positions, m.indices, m.instances, unitScale),
+    { attachmentId: attachment.id, positions: m.positions, indices: m.indices }
+  ));
+  panel.dataset.stepBodies = 'pending';
+  panel.__stepBodies = bodies;
+  renderStepProposal(panel, bodies, 's235');
+  if (typeof createStepViewer === 'function') attachStepViewer(bodies);
+}
+function renderStepProposal(panel, bodies, materialKey) {
+  const candidates = stepCandidateProfiles();
+  const classified = bodies.map(b => ({ body: b, classification: classifyStepBody(b, candidates) }));
+  const rows = classified.map(({ body, classification }, i) => stepProposalRowHtml(body, classification, materialKey, i)).join('');
+  panel.innerHTML = '<h2>STEP-voorstel <span class="badge-experimental">Controleer</span></h2>' +
+    '<div class="job-grid"><div><label for="step-material">Materiaalsoort (voor dit bestand)</label><select id="step-material">' +
+    Object.entries(MATERIALS).map(([k, v]) => '<option value="' + k + '"' + (k === materialKey ? ' selected' : '') + '>' + esc(v.name) + '</option>').join('') + '</select></div></div>' +
+    '<div id="step-viewer" class="step-viewer" role="img" aria-label="3D-voorbeeld van het STEP-bestand"></div>' +
+    '<div class="step-rows">' + rows + '</div>' +
+    '<div class="actions no-print"><button class="act" id="step-accept-all">Alles overnemen</button>' +
+    '<button class="ghost" id="step-export-zaaglijst">Zaaglijst (CSV)</button><button class="ghost" id="step-export-dxf">Plaatcontour (DXF)</button></div>';
+  $('step-material').onchange = e => renderStepProposal(panel, bodies, e.target.value);
+  panel.querySelectorAll('[data-step-row]').forEach(row => {
+    const i = +row.dataset.stepRow;
+    row.querySelector('[data-step-add]').onclick = () => { addStepProposalLine(classified[i], materialKey); row.querySelector('[data-step-add]').textContent = 'Toegevoegd'; row.querySelector('[data-step-add]').disabled = true; };
+    row.querySelector('[data-step-skip]').onclick = () => { row.hidden = true; };
+  });
+  $('step-accept-all').onclick = () => { classified.forEach(c => { if (c.classification.kind !== 'overig') addStepProposalLine(c, materialKey); }); showToast('STEP-regels toegevoegd. Controleer maten vóór het bewaren.'); };
+  $('step-export-zaaglijst').onclick = () => downloadStepZaaglijst(classified);
+  $('step-export-dxf').onclick = () => downloadStepDxf(classified);
+}
+function stepProposalRowHtml(body, classification, materialKey, i) {
+  const weightKg = fmt(stepBodyWeightKg(body.volumeMm3, materialKey) * (body.instances || 1), 2);
+  let desc;
+  if (classification.kind === 'plate') desc = 'Plaat, dikte ' + (classification.matchedThicknessMm || fmt(classification.thicknessMm, 1)) + ' mm, ' + fmt(classification.lengthMm, 0) + '×' + fmt(classification.widthMm, 0) + ' mm' + (classification.confident ? '' : ' <span class="badge-experimental">geen standaarddikte</span>');
+  else if (classification.kind === 'profile' && classification.candidates.length) desc = classification.candidates[0].profile + ' ' + classification.candidates[0].label + ', lengte ' + fmt(classification.lengthMm, 0) + ' mm' + (classification.candidates.length > 1 ? ' (' + classification.candidates.length + ' kandidaten)' : '');
+  else if (classification.kind === 'profile') desc = 'Profiel, geen catalogusmatch binnen 5% — handmatig invullen';
+  else desc = 'Overig — alleen gewicht, geen voorgestelde regel';
+  return '<div class="job-row step-row" data-step-row="' + i + '"><span><b>' + esc(body.name) + '</b>' + (body.instances > 1 ? ' ×' + body.instances : '') + '<small>' + desc + ' · ' + weightKg + ' kg</small></span>' +
+    '<span>' + (classification.kind !== 'overig' ? '<button class="ghost" data-step-add="1">Overnemen</button>' : '') + '<button class="ghost" data-step-skip="1">Overslaan</button></span></div>';
+}
+function addStepProposalLine(classifiedEntry, materialKey) {
+  const j = ensureJob();
+  const line = stepProposalLine(Object.assign({}, classifiedEntry.body, { attachmentId: classifiedEntry.body.attachmentId }), classifiedEntry.classification, materialKey, uid);
+  if (!line) return;
+  const kerf = strictNumber(COST_DEFAULTS.kerfMm) || 0;
+  if (line.dims && line.dims.length && kerf) line.dims.length = line.dims.length + kerf;
+  costState.materials.push(line);
+  renderMaterials(); renderCostTotals(); queueDraft();
+}
+
+/* ---------- 3D-viewer koppelen ---------- */
+
+let stepViewerInstance = null;
+async function attachStepViewer(bodies) {
+  const container = document.getElementById('step-viewer');
+  if (!container) return;
+  if (stepViewerInstance) { stepViewerInstance.dispose(); stepViewerInstance = null; }
+  try { stepViewerInstance = await createStepViewer(container); }
+  catch (e) { container.innerHTML = '<p class="muted">3D-weergave vereist een internetverbinding om three.js te laden (eenmalig).</p>'; return; }
+  bodies.forEach((b, i) => stepViewerInstance.addMesh('body-' + i, b.positions, b.indices, 0x8a97a5));
+  stepViewerInstance.fitToView();
+  const controls = document.createElement('div');
+  controls.className = 'step-viewer-controls no-print';
+  controls.innerHTML = '<button class="ghost" type="button" id="step-fit">Passend</button><button class="ghost" type="button" id="step-section">Doorsnede aan/uit</button>';
+  container.after(controls);
+  $('step-fit').onclick = () => stepViewerInstance.fitToView();
+  $('step-section').onclick = () => stepViewerInstance.toggleSection();
+  document.querySelectorAll('.step-row').forEach((row, i) => { row.onmouseenter = () => stepViewerInstance.highlight('body-' + i); });
+}
+
+/* ---------- Snijlijst/DXF-export (3.4, experimenteel) ---------- */
+
+function downloadTextFile(name, text, mime) {
+  const blob = new Blob([text], { type: mime || 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+function downloadStepZaaglijst(classified) {
+  const profileBodies = classified.filter(c => c.classification.kind === 'profile' && c.classification.candidates.length)
+    .map(c => ({ profile: c.classification.candidates[0].profile + ' ' + c.classification.candidates[0].label, lengthMm: c.classification.lengthMm, count: c.body.instances || 1 }));
+  if (!profileBodies.length) { showToast('Geen profielen om te exporteren.'); return; }
+  downloadTextFile('zaaglijst.csv', zaaglijstCsv(zaaglijstRows(profileBodies)), 'text/csv');
+}
+function downloadStepDxf(classified) {
+  const plate = classified.find(c => c.classification.kind === 'plate');
+  if (!plate) { showToast('Geen plaat gevonden om een contour van te maken.'); return; }
+  // Vereenvoudigde rechthoekige contour uit de bounding box (geen echte vlakprojectie/gaten —
+  // dat vereist face-topologie uit de STEP-geometrie zelf, onderdeel van het ongeverifieerde
+  // STEP-parsing-deel, zie step/README.md). Nul-punt = linksonder.
+  const l = plate.classification.lengthMm, w = plate.classification.widthMm;
+  const dxf = buildDxf([{ type: 'polyline', points: [[0, 0], [l, 0], [l, w], [0, w]], closed: true }], plate.body.name);
+  downloadTextFile((plate.body.name || 'plaat') + '.dxf', dxf, 'application/dxf');
+}
+
+/* Fase 4 — CRO-afwerking: onboarding-checklist, frictiemeting (lokaal, geen externe analytics),
+   opvolg-herinneringen, en een paar ontbrekende lege staten. Geen wijziging aan de rekenkern. */
+
+/* ---------- Frictiemeting: lokaal event-log + pure aggregaties ---------- */
+
+const METRICS_KEY = 'werkbank.v2.metrics';
+function logMetric(event, extra) {
+  const list = safeGet(METRICS_KEY, []);
+  list.push(Object.assign({ event, at: new Date().toISOString() }, extra || {}));
+  rawSafeSet(METRICS_KEY, list.slice(-500));
+}
+function metricMedian(values) {
+  if (!values.length) return null;
+  const s = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+}
+// time-to-price is zelfstandig per funnel-sessie (intake_start -> first_price_shown), heeft geen
+// koppeling met een uiteindelijke klus-id nodig.
+function metricTimeToPriceMs(events) {
+  const starts = {}, durations = [];
+  for (const e of events) {
+    if (e.event === 'intake_start') starts[e.sessionId] = e.at;
+    else if (e.event === 'first_price_shown' && starts[e.sessionId]) { durations.push(new Date(e.at) - new Date(starts[e.sessionId])); delete starts[e.sessionId]; }
+  }
+  return metricMedian(durations);
+}
+// sessionId -> jobId-brug: alleen "template_chosen" (gelogd bij intakeFinish) kent beide.
+function metricSessionJobMap(events) {
+  const map = {};
+  for (const e of events) if (e.event === 'template_chosen' && e.sessionId && e.jobId) map[e.sessionId] = e.jobId;
+  return map;
+}
+function metricIntakeToQuotePct(events) {
+  const sessionJobs = metricSessionJobMap(events);
+  const fromSessions = events.filter(e => e.event === 'intake_start').map(e => e.sessionId);
+  if (!fromSessions.length) return null;
+  const quotedJobIds = new Set(events.filter(e => e.event === 'quote_sent').map(e => e.jobId));
+  const converted = fromSessions.filter(sid => quotedJobIds.has(sessionJobs[sid])).length;
+  return Math.round((converted / fromSessions.length) * 1000) / 10;
+}
+function metricQuoteToOpdrachtPct(events) {
+  const quoteJobIds = [...new Set(events.filter(e => e.event === 'quote_sent').map(e => e.jobId))];
+  if (!quoteJobIds.length) return null;
+  const opdrachtJobIds = new Set(events.filter(e => e.event === 'status_changed' && e.fase === 'opdracht').map(e => e.jobId));
+  const converted = quoteJobIds.filter(id => opdrachtJobIds.has(id)).length;
+  return Math.round((converted / quoteJobIds.length) * 1000) / 10;
+}
+function metricsSummary(events) {
+  return { medianTimeToPriceMs: metricTimeToPriceMs(events), intakeToQuotePct: metricIntakeToQuotePct(events), quoteToOpdrachtPct: metricQuoteToOpdrachtPct(events) };
+}
+function formatMetricDuration(ms) {
+  if (ms == null) return '—';
+  const s = Math.round(ms / 1000);
+  return s < 60 ? s + 's' : Math.round(s / 60) + ' min';
+}
+
+/* ---------- Onboarding-checklist ---------- */
+
+function onboardingSteps() {
+  const rates = typeof intakeRates === 'function' ? intakeRates() : {};
+  const ratesConfigured = safeGet(INTAKE_RATES_KEY, null) !== null;
+  const profile = safeGet(COMPANY_PROFILE_KEY, {});
+  const companyDone = !!(profile && profile.bedrijfsnaam);
+  const hasProjects = savedProjects().length > 0;
+  return [
+    { id: 'rates', label: 'Tarieven instellen (2 min)', done: ratesConfigured, href: '#instellingen' },
+    { id: 'company', label: 'Bedrijfsgegevens invullen', done: companyDone, href: '#instellingen' },
+    { id: 'first-price', label: 'Eerste snelprijs maken', done: hasProjects, href: '#kostprijs' }
+  ];
+}
+function renderOnboarding() {
+  const el = document.getElementById('onboarding-checklist');
+  if (!el) return;
+  const steps = onboardingSteps();
+  if (steps.every(s => s.done)) { el.hidden = true; return; }
+  el.hidden = false;
+  const doneCount = steps.filter(s => s.done).length;
+  el.innerHTML = '<div class="card"><div class="kpi-head"><span class="kpi-label">Aan de slag</span><span class="intake-price-sub">' + doneCount + ' / ' + steps.length + '</span></div>' +
+    '<div class="intake-progress-bar"><span style="width:' + Math.round(doneCount / steps.length * 100) + '%"></span></div>' +
+    '<div class="onboarding-steps">' + steps.map(s => '<a class="onboarding-step" href="' + s.href + '" data-onboarding-done="' + s.done + '">' + (s.done ? '✓ ' : '') + esc(s.label) + '</a>').join('') + '</div></div>';
+}
+
+/* ---------- Opvolg-herinnering (WhatsApp, vooringevulde tekst) ---------- */
+
+function quoteFollowUpWhatsappLink(job, quote) {
+  const text = typeof quoteFollowUpText === 'function' ? quoteFollowUpText(quote) : 'Even opvolgen over je offerte.';
+  return typeof quoteWhatsappLink === 'function' ? quoteWhatsappLink(job.phone, text) : null;
+}
+
+/* ---------- Wiring ---------- */
+
+let croSessionId = null;
+const croBaseOpenIntake = openIntakeFunnel;
+openIntakeFunnel = function () { croSessionId = uid(); logMetric('intake_start', { sessionId: croSessionId }); croBaseOpenIntake(); };
+const croBaseRenderPricePanel = intakeRenderPricePanel;
+let croFirstPriceLogged = false;
+intakeRenderPricePanel = function () { croBaseRenderPricePanel(); if (!croFirstPriceLogged && croSessionId) { logMetric('first_price_shown', { sessionId: croSessionId }); croFirstPriceLogged = true; } };
+let croPendingSession = null, croPendingTemplateId = null;
+const croBaseIntakeFinish = intakeFinish;
+intakeFinish = function (action) {
+  croBaseIntakeFinish(action);
+  croPendingSession = croSessionId; croPendingTemplateId = intakeState && intakeState.templateId;
+  croSessionId = null; croFirstPriceLogged = false;
+};
+const croBaseSaveCalculation = saveCalculation;
+saveCalculation = function () {
+  croBaseSaveCalculation();
+  if (croPendingSession && savedProjectId) {
+    logMetric('template_chosen', { sessionId: croPendingSession, jobId: savedProjectId, templateId: croPendingTemplateId });
+    croPendingSession = null; croPendingTemplateId = null;
+  }
+};
+if (typeof markQuoteSent === 'function') {
+  const croBaseMarkSent = markQuoteSent;
+  markQuoteSent = function (quote, channel, now) { croBaseMarkSent(quote, channel, now); logMetric('quote_sent', { jobId: quote.jobId }); };
+}
+const croBaseSetJobFase = setJobFase;
+setJobFase = function (job, fase, now, reason) {
+  const next = croBaseSetJobFase(job, fase, now, reason);
+  if (next !== job) logMetric('status_changed', { jobId: job.id || savedProjectId || null, fase });
+  return next;
+};
+const croBaseDashboard = renderDashboard;
+renderDashboard = function () { croBaseDashboard(); renderOnboarding(); };
+
+// Instellingenoverzicht: mediaan time-to-price, conversiepercentages.
+function addMetricsSettingsCard() {
+  const settings = document.getElementById('design-settings');
+  if (!settings || document.getElementById('metrics-summary')) return;
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = '<h2>Funnel-inzicht</h2><p class="muted">Lokaal bijgehouden, geen externe analytics.</p><div id="metrics-summary" class="material-totals"></div>';
+  settings.appendChild(card);
+  const summary = metricsSummary(safeGet(METRICS_KEY, []));
+  document.getElementById('metrics-summary').innerHTML =
+    '<div class="metric"><b>' + formatMetricDuration(summary.medianTimeToPriceMs) + '</b>Mediaan time-to-price</div>' +
+    '<div class="metric"><b>' + (summary.intakeToQuotePct == null ? '—' : summary.intakeToQuotePct + '%') + '</b>Intake → offerte</div>' +
+    '<div class="metric"><b>' + (summary.quoteToOpdrachtPct == null ? '—' : summary.quoteToOpdrachtPct + '%') + '</b>Offerte → opdracht</div>';
+}
+addMetricsSettingsCard();
+
+/* ---------- PWA: file_handlers (STEP openen vanaf OS) + share_target (gedeeld bestand ophalen) ----------
+   ONGEVERIFIEERD (zie step/README.md-stijl toelichting): beide vereisen een geïnstalleerde PWA en
+   een echte OS-actie ("openen met"/"delen naar") die in deze sessie niet te simuleren was. */
+
+if ('launchQueue' in window) {
+  window.launchQueue.setConsumer(async launchParams => {
+    if (!launchParams.files || !launchParams.files.length) return;
+    for (const handle of launchParams.files) {
+      const file = await handle.getFile();
+      showToast('Geopend vanuit het besturingssysteem: ' + file.name + '. Open of maak een klus en voeg het toe bij Bijlagen.');
+    }
+  });
+}
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+async function consumePendingShare() {
+  if (location.hash !== '#gedeeld' || !('caches' in window)) return;
+  try {
+    const cache = await caches.open('werkbank-share-target-v1');
+    const fileResponse = await cache.match('/pending-share-file');
+    if (!fileResponse) return;
+    const blob = await fileResponse.blob();
+    const name = fileResponse.headers.get('x-share-name') || 'gedeeld-bestand';
+    await cache.delete('/pending-share-file');
+    await cache.delete('/pending-share-meta');
+    showToast('Bestand "' + name + '" ontvangen via delen. Open of maak een klus en voeg het toe bij Bijlagen.');
+    window.__pendingShareBlob = { blob, name };
+  } catch (e) { /* geen wachtende share, niets te doen */ }
+}
+consumePendingShare();
+
+// Lege staat voor de klantenlijst ontbrak nog (4.2: één zin + één actie, geen illustratie).
+const croBaseRenderCustomers = renderCustomers;
+renderCustomers = function () {
+  croBaseRenderCustomers();
+  if (!customers().length) {
+    const intro = customerPage.querySelector('.job-intro');
+    if (intro && !customerPage.querySelector('.recent-empty')) intro.insertAdjacentHTML('afterend', '<p class="recent-empty">Nog geen klanten. Voeg je eerste klant hieronder toe.</p>');
+  }
+};
+
+// Opvolg-herinnering: WhatsApp-link met vooringevulde tekst naast "Opvolgen" bij een offerte
+// zonder reactie na 5 dagen (4.4).
+const croBaseQuoteRowHtml = typeof quotePipelineRowHtml === 'function' ? quotePipelineRowHtml : null;
+if (croBaseQuoteRowHtml) {
+  quotePipelineRowHtml = function (row, status) {
+    let html = croBaseQuoteRowHtml(row, status);
+    const job = row.data.job || {};
+    if (status === 'offerte_verzonden' && isQuoteStale(job.quoteSentAt, new Date())) {
+      const quotes = quotesForJob(row.id);
+      const quote = quotes[0];
+      const link = quote ? quoteFollowUpWhatsappLink(job, quote) : null;
+      if (link) html = html.replace('</button>', '</button><a class="ghost" target="_blank" rel="noopener" href="' + link + '">WhatsApp-herinnering</a>');
+    }
+    return html;
+  };
+}
 
 </script>
 </body>
